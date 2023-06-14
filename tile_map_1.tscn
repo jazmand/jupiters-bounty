@@ -50,3 +50,5 @@ layer_0/tile_data = PackedInt32Array(65536, 0, 3, 131072, 131072, 2, 1, 0, 2, 2,
 
 [node name="Camera2D" type="Camera2D" parent="."]
 script = ExtResource("2_36bhr")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
