@@ -1,7 +1,7 @@
-[gd_scene load_steps=5 format=3 uid="uid://cicwcu2xml0hg"]
+[gd_scene load_steps=5 format=3 uid="uid://d15er84a44wcr"]
 
 [ext_resource type="Texture2D" uid="uid://b2fs1g0hpegrb" path="res://assets/tileset_1.png" id="1_86urt"]
-[ext_resource type="Script" path="res://Camera2D.gd" id="2_36bhr"]
+[ext_resource type="Script" path="res://scripts/Camera2D.gd" id="2_o2j5r"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_psmxa"]
 texture = ExtResource("1_86urt")
@@ -49,6 +49,6 @@ format = 2
 layer_0/tile_data = PackedInt32Array(65536, 0, 3, 131072, 131072, 2, 1, 0, 2, 2, 0, 1, 3, 0, 2, 65539, 196608, 1, 327683, 196608, 1, 196611, 196608, 0, 393216, 131072, 2, 262144, 131072, 1, 458752, 65536, 2, 458754, 65536, 2, 65537, 196608, 3, 196610, 196608, 3, 196608, 131072, 3, 327681, 131072, 3, 262147, 196608, 2, 131074, 196608, 2, 262145, 131072, 4, 393218, 131072, 4, 131073, 0, 5, 196609, 196608, 4, 262146, 196608, 4, 327682, 65536, 5, 393219, 65536, 3, 65538, 0, 6, 131075, 0, 6, 327680, 196608, 6, 393217, 196608, 6, 458753, 65536, 1)
 
 [node name="Camera2D" type="Camera2D" parent="."]
-script = ExtResource("2_36bhr")
+script = ExtResource("2_o2j5r")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
