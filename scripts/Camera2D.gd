@@ -4,6 +4,7 @@ var input_direction: Vector2 = Vector2.ZERO
 var camera_motion: Vector2 = Vector2.ZERO
 var camera_speed: float = 500.0
 
+var zoom_smoothing: float = 0.05
 var zoom_min: float = 0.5
 var zoom_max: float = 2.0
 
@@ -23,12 +24,16 @@ func _input(event: InputEvent) -> void:
 			input_direction = Vector2.ZERO
 			
 	# Check for mouse scroll inputs
-	if event is InputEventMouseMotion:
-		var motion_event: InputEventMouseMotion = event
-		if motion_event.is_action_pressed("wheel_up") || motion_event.is_action_pressed("wheel_down"):
-			var zoom_delta = Vector2(motion_event.relative.y, motion_event.relative.y)
+	if event is InputEventMouseButton:
+		var motion_event: InputEventMouseButton = event
+		# mouse/trackpad scroll in: InputEventMouseButton and button_index = 4
+		# mouse/trackpad scroll out: InputEventMouseButton and button_index = 5
+		var zoom_delta = Vector2(1, 1)
+		if motion_event.button_index == 4:
 			update_zoom(zoom_delta)
-		
+		elif motion_event.button_index == 5:
+			update_zoom(-zoom_delta)
+			
 	# Check for pan gestures
 	if event is InputEventPanGesture:
 		print(event)
@@ -37,7 +42,7 @@ func _input(event: InputEvent) -> void:
 		update_zoom(zoom_delta)
 		
 func update_zoom(zoom_delta: Vector2) -> void:
-	zoom += zoom_delta
+	zoom += zoom_delta * zoom_smoothing
 	
 	# Clamp zoom value within the specified range
 	zoom.x = clamp(zoom.x, zoom_min, zoom_max)
