@@ -313,15 +313,6 @@ font = SubResource("SystemFont_51hv2")
 shadow_size = 2
 shadow_color = Color(0, 0, 0, 1)
 
-[sub_resource type="SystemFont" id="SystemFont_lvsnc"]
-font_names = PackedStringArray("Gadugi", "Cascadia Code")
-
-[sub_resource type="LabelSettings" id="LabelSettings_e4e6q"]
-line_spacing = 0.0
-font = SubResource("SystemFont_lvsnc")
-font_size = 26
-shadow_color = Color(0.156863, 0.156863, 0.156863, 0.698039)
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1c2m3"]
 bg_color = Color(0.6, 0.6, 0.6, 0)
 
@@ -333,6 +324,15 @@ bg_color = Color(0.6, 0.6, 0.6, 0)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6glff"]
 bg_color = Color(1, 0.109804, 0.101961, 0.627451)
+
+[sub_resource type="SystemFont" id="SystemFont_lvsnc"]
+font_names = PackedStringArray("Gadugi", "Cascadia Code")
+
+[sub_resource type="LabelSettings" id="LabelSettings_e4e6q"]
+line_spacing = 0.0
+font = SubResource("SystemFont_lvsnc")
+font_size = 26
+shadow_color = Color(0.156863, 0.156863, 0.156863, 0.698039)
 
 [node name="GUI" type="CanvasLayer"]
 
@@ -426,7 +426,7 @@ offset_bottom = 36.0
 text = "50%"
 label_settings = SubResource("LabelSettings_vwwe0")
 
-[node name="Label" type="Label" parent="Resources"]
+[node name="Currency" type="Label" parent="Resources"]
 layout_mode = 0
 offset_left = 1026.0
 offset_top = 6.0
@@ -435,7 +435,7 @@ offset_bottom = 28.0
 text = "Currency:1000"
 label_settings = SubResource("LabelSettings_kdcap")
 
-[node name="Label2" type="Label" parent="Resources"]
+[node name="Crew" type="Label" parent="Resources"]
 layout_mode = 0
 offset_left = 1092.0
 offset_top = 30.0
@@ -443,28 +443,6 @@ offset_right = 1152.0
 offset_bottom = 52.0
 text = "Crew:5"
 label_settings = SubResource("LabelSettings_2rnhy")
-
-[node name="Time" type="TextureProgressBar" parent="Resources"]
-layout_mode = 0
-offset_right = 72.0
-offset_bottom = 66.0
-value = 50.0
-nine_patch_stretch = true
-texture_under = ExtResource("2_42318")
-texture_progress = ExtResource("2_42318")
-tint_under = Color(0, 0, 0, 1)
-tint_progress = Color(0.576471, 0.360784, 0.0823529, 0.831373)
-radial_initial_angle = 180.0
-script = ExtResource("3_lc0nm")
-
-[node name="Label3" type="Label" parent="Resources/Time"]
-layout_mode = 0
-offset_left = 4.0
-offset_top = 14.0
-offset_right = 66.0
-offset_bottom = 50.0
-text = "01:24"
-label_settings = SubResource("LabelSettings_e4e6q")
 
 [node name="Build" type="Control" parent="."]
 layout_mode = 3
@@ -505,6 +483,27 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_1c2m3")
 theme_override_styles/hover = SubResource("StyleBoxFlat_6glff")
 action_mode = 0
 icon = ExtResource("5_bsx6q")
+
+[node name="Time" type="TextureProgressBar" parent="."]
+offset_right = 72.0
+offset_bottom = 66.0
+value = 50.0
+nine_patch_stretch = true
+texture_under = ExtResource("2_42318")
+texture_progress = ExtResource("2_42318")
+tint_under = Color(0, 0, 0, 1)
+tint_progress = Color(0.576471, 0.360784, 0.0823529, 0.831373)
+radial_initial_angle = 180.0
+script = ExtResource("3_lc0nm")
+
+[node name="Label3" type="Label" parent="Time"]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 14.0
+offset_right = 66.0
+offset_bottom = 50.0
+text = "01:24"
+label_settings = SubResource("LabelSettings_e4e6q")
 
 [connection signal="pressed" from="Build/BuildButton" to="Build" method="_on_build_button_pressed"]
 [connection signal="pressed" from="Build/RoomPanel/BuildCloseButton" to="Build" method="_on_build_close_button_pressed"]
