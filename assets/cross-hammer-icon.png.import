@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://6ok22b8ogh3a"
-path="res://.godot/imported/power-radial.png-2ffffa5f2863d0e326609990b7b47eac.ctex"
+uid="uid://d36pirpjdtfrt"
+path="res://.godot/imported/cross-hammer-icon.png-3ef6cc8459598d23855fec185bf97a66.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/power-radial.png"
-dest_files=["res://.godot/imported/power-radial.png-2ffffa5f2863d0e326609990b7b47eac.ctex"]
+source_file="res://assets/cross-hammer-icon.png"
+dest_files=["res://.godot/imported/cross-hammer-icon.png-3ef6cc8459598d23855fec185bf97a66.ctex"]
 
 [params]
 
