@@ -63,5 +63,5 @@ func _process(delta):
 
 	# Clamp the camera's position to the desired boundaries
 	# TODO: Update boundaries
-	position.x = clamp(position.x, 0, 1000)
-	position.y = clamp(position.y, 0, 500)
+	position.x = clamp(position.x, -500, 500)
+	position.y = clamp(position.y, -250, 250)
