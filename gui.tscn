@@ -334,9 +334,9 @@ font = SubResource("SystemFont_lvsnc")
 font_size = 26
 shadow_color = Color(0.156863, 0.156863, 0.156863, 0.698039)
 
-[node name="GUI" type="CanvasLayer"]
+[node name="CanvasLayer" type="CanvasLayer"]
 
-[node name="Resources" type="Control" parent="."]
+[node name="GUI" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -344,7 +344,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="HydrogenBar" type="ProgressBar" parent="Resources"]
+[node name="HydrogenBar" type="ProgressBar" parent="GUI"]
 layout_mode = 0
 offset_left = 1127.0
 offset_top = 58.0
@@ -356,7 +356,7 @@ fill_mode = 3
 show_percentage = false
 script = ExtResource("1_tsiq6")
 
-[node name="Label" type="Label" parent="Resources/HydrogenBar"]
+[node name="Label" type="Label" parent="GUI/HydrogenBar"]
 layout_mode = 0
 offset_left = 9.0
 offset_top = 208.0
@@ -375,7 +375,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 uppercase = true
 
-[node name="Label2" type="Label" parent="Resources/HydrogenBar"]
+[node name="Label2" type="Label" parent="GUI/HydrogenBar"]
 layout_mode = 0
 offset_left = 3.0
 offset_top = 156.0
@@ -389,7 +389,7 @@ label_settings = SubResource("LabelSettings_mhadr")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="PowerBar" type="TextureProgressBar" parent="Resources"]
+[node name="PowerBar" type="TextureProgressBar" parent="GUI"]
 layout_mode = 0
 offset_left = 1078.0
 offset_top = 582.0
@@ -405,7 +405,7 @@ tint_progress = Color(0.027451, 0.298039, 0.105882, 0.831373)
 radial_initial_angle = 180.0
 script = ExtResource("3_lc0nm")
 
-[node name="Label" type="Label" parent="Resources/PowerBar"]
+[node name="Label" type="Label" parent="GUI/PowerBar"]
 layout_mode = 0
 offset_left = 18.0
 offset_top = 28.0
@@ -417,7 +417,7 @@ label_settings = SubResource("LabelSettings_1x5g1")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Label2" type="Label" parent="Resources/PowerBar"]
+[node name="Label2" type="Label" parent="GUI/PowerBar"]
 layout_mode = 0
 offset_left = 25.0
 offset_top = 19.0
@@ -426,7 +426,7 @@ offset_bottom = 36.0
 text = "50%"
 label_settings = SubResource("LabelSettings_vwwe0")
 
-[node name="Currency" type="Label" parent="Resources"]
+[node name="Currency" type="Label" parent="GUI"]
 layout_mode = 0
 offset_left = 1026.0
 offset_top = 6.0
@@ -435,7 +435,7 @@ offset_bottom = 28.0
 text = "Currency:1000"
 label_settings = SubResource("LabelSettings_kdcap")
 
-[node name="Crew" type="Label" parent="Resources"]
+[node name="Crew" type="Label" parent="GUI"]
 layout_mode = 0
 offset_left = 1092.0
 offset_top = 30.0
@@ -444,7 +444,7 @@ offset_bottom = 52.0
 text = "Crew:5"
 label_settings = SubResource("LabelSettings_2rnhy")
 
-[node name="Build" type="Control" parent="."]
+[node name="Build" type="Control" parent="GUI"]
 layout_mode = 3
 anchors_preset = 0
 offset_top = 607.0
@@ -452,7 +452,7 @@ offset_right = 40.0
 offset_bottom = 647.0
 script = ExtResource("4_t0ryx")
 
-[node name="BuildButton" type="Button" parent="Build"]
+[node name="BuildButton" type="Button" parent="GUI/Build"]
 layout_mode = 0
 offset_left = 6.0
 offset_top = 5.0
@@ -465,14 +465,14 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_uf6tv")
 action_mode = 0
 icon = ExtResource("4_gat8x")
 
-[node name="RoomPanel" type="Panel" parent="Build"]
+[node name="RoomPanel" type="Panel" parent="GUI/Build"]
 visible = false
 layout_mode = 0
 offset_top = -57.0
 offset_right = 1071.0
 offset_bottom = 41.0
 
-[node name="BuildCloseButton" type="Button" parent="Build/RoomPanel"]
+[node name="BuildCloseButton" type="Button" parent="GUI/Build/RoomPanel"]
 layout_mode = 0
 offset_left = 1046.0
 offset_top = 4.0
@@ -484,7 +484,7 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_6glff")
 action_mode = 0
 icon = ExtResource("5_bsx6q")
 
-[node name="Time" type="TextureProgressBar" parent="."]
+[node name="Time" type="TextureProgressBar" parent="GUI"]
 offset_right = 72.0
 offset_bottom = 66.0
 value = 50.0
@@ -496,7 +496,7 @@ tint_progress = Color(0.576471, 0.360784, 0.0823529, 0.831373)
 radial_initial_angle = 180.0
 script = ExtResource("3_lc0nm")
 
-[node name="Label3" type="Label" parent="Time"]
+[node name="Label3" type="Label" parent="GUI/Time"]
 layout_mode = 0
 offset_left = 4.0
 offset_top = 14.0
@@ -505,5 +505,5 @@ offset_bottom = 50.0
 text = "01:24"
 label_settings = SubResource("LabelSettings_e4e6q")
 
-[connection signal="pressed" from="Build/BuildButton" to="Build" method="_on_build_button_pressed"]
-[connection signal="pressed" from="Build/RoomPanel/BuildCloseButton" to="Build" method="_on_build_close_button_pressed"]
+[connection signal="pressed" from="GUI/Build/BuildButton" to="GUI/Build" method="_on_build_button_pressed"]
+[connection signal="pressed" from="GUI/Build/RoomPanel/BuildCloseButton" to="GUI/Build" method="_on_build_close_button_pressed"]
