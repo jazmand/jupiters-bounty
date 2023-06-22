@@ -1,11 +1,11 @@
 [gd_scene load_steps=27 format=3 uid="uid://3qk5ovnqamld"]
 
-[ext_resource type="Script" path="res://scripts/HydrogenBar.gd" id="1_tsiq6"]
+[ext_resource type="Script" path="res://scripts/GUI.gd" id="1_w3us3"]
 [ext_resource type="Texture2D" uid="uid://6ok22b8ogh3a" path="res://assets/radial.png" id="2_42318"]
-[ext_resource type="Script" path="res://scripts/PowerBar.gd" id="3_lc0nm"]
+[ext_resource type="Resource" uid="uid://dslgiwjppbqe5" path="res://Resources/station_resources.tres" id="2_h8vob"]
 [ext_resource type="Texture2D" uid="uid://bb4awhuhh4i3r" path="res://assets/hammer-icon.png" id="4_gat8x"]
-[ext_resource type="Script" path="res://Build.gd" id="4_t0ryx"]
 [ext_resource type="Texture2D" uid="uid://d36pirpjdtfrt" path="res://assets/cross-hammer-icon.png" id="5_bsx6q"]
+[ext_resource type="Script" path="res://scripts/Build.gd" id="6_0kfgn"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_serxg"]
 bg_color = Color(0.258824, 0.258824, 0.258824, 1)
@@ -277,22 +277,22 @@ font_size = 9
 shadow_size = 2
 shadow_color = Color(0, 0, 0, 1)
 
-[sub_resource type="SystemFont" id="SystemFont_87stj"]
-font_names = PackedStringArray("Cascadia Code")
-
-[sub_resource type="LabelSettings" id="LabelSettings_1x5g1"]
-line_spacing = 0.0
-font = SubResource("SystemFont_87stj")
-font_size = 12
-shadow_size = 2
-shadow_color = Color(0, 0, 0, 1)
-
 [sub_resource type="SystemFont" id="SystemFont_7lh0v"]
 font_names = PackedStringArray("Cascadia Code")
 
 [sub_resource type="LabelSettings" id="LabelSettings_vwwe0"]
 line_spacing = 0.0
 font = SubResource("SystemFont_7lh0v")
+font_size = 12
+shadow_size = 2
+shadow_color = Color(0, 0, 0, 1)
+
+[sub_resource type="SystemFont" id="SystemFont_87stj"]
+font_names = PackedStringArray("Cascadia Code")
+
+[sub_resource type="LabelSettings" id="LabelSettings_1x5g1"]
+line_spacing = 0.0
+font = SubResource("SystemFont_87stj")
 font_size = 12
 shadow_size = 2
 shadow_color = Color(0, 0, 0, 1)
@@ -313,6 +313,15 @@ font = SubResource("SystemFont_51hv2")
 shadow_size = 2
 shadow_color = Color(0, 0, 0, 1)
 
+[sub_resource type="SystemFont" id="SystemFont_lvsnc"]
+font_names = PackedStringArray("Gadugi", "Cascadia Code")
+
+[sub_resource type="LabelSettings" id="LabelSettings_e4e6q"]
+line_spacing = 0.0
+font = SubResource("SystemFont_lvsnc")
+font_size = 26
+shadow_color = Color(0.156863, 0.156863, 0.156863, 0.698039)
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1c2m3"]
 bg_color = Color(0.6, 0.6, 0.6, 0)
 
@@ -325,15 +334,6 @@ bg_color = Color(0.6, 0.6, 0.6, 0)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6glff"]
 bg_color = Color(1, 0.109804, 0.101961, 0.627451)
 
-[sub_resource type="SystemFont" id="SystemFont_lvsnc"]
-font_names = PackedStringArray("Gadugi", "Cascadia Code")
-
-[sub_resource type="LabelSettings" id="LabelSettings_e4e6q"]
-line_spacing = 0.0
-font = SubResource("SystemFont_lvsnc")
-font_size = 26
-shadow_color = Color(0.156863, 0.156863, 0.156863, 0.698039)
-
 [node name="CanvasLayer" type="CanvasLayer"]
 
 [node name="GUI" type="Control" parent="."]
@@ -343,6 +343,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_w3us3")
+resources = ExtResource("2_h8vob")
 
 [node name="HydrogenBar" type="ProgressBar" parent="GUI"]
 layout_mode = 0
@@ -352,11 +354,11 @@ offset_right = 1153.0
 offset_bottom = 584.0
 theme_override_styles/background = SubResource("StyleBoxFlat_serxg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_wegjk")
+max_value = 1000.0
 fill_mode = 3
 show_percentage = false
-script = ExtResource("1_tsiq6")
 
-[node name="Label" type="Label" parent="GUI/HydrogenBar"]
+[node name="Hydrogen" type="Label" parent="GUI/HydrogenBar"]
 layout_mode = 0
 offset_left = 9.0
 offset_top = 208.0
@@ -375,16 +377,14 @@ horizontal_alignment = 1
 vertical_alignment = 1
 uppercase = true
 
-[node name="Label2" type="Label" parent="GUI/HydrogenBar"]
+[node name="Fraction" type="Label" parent="GUI/HydrogenBar"]
 layout_mode = 0
 offset_left = 3.0
 offset_top = 156.0
 offset_right = 24.0
 offset_bottom = 189.0
 theme_override_font_sizes/font_size = 8
-text = "50
--------
-100"
+text = "-------"
 label_settings = SubResource("LabelSettings_mhadr")
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -395,7 +395,6 @@ offset_left = 1078.0
 offset_top = 582.0
 offset_right = 1150.0
 offset_bottom = 647.0
-value = 50.0
 fill_mode = 4
 nine_patch_stretch = true
 texture_under = ExtResource("2_42318")
@@ -403,9 +402,17 @@ texture_progress = ExtResource("2_42318")
 tint_under = Color(0.25098, 0.25098, 0.25098, 1)
 tint_progress = Color(0.027451, 0.298039, 0.105882, 0.831373)
 radial_initial_angle = 180.0
-script = ExtResource("3_lc0nm")
 
-[node name="Label" type="Label" parent="GUI/PowerBar"]
+[node name="Percentage" type="Label" parent="GUI/PowerBar"]
+layout_mode = 0
+offset_left = 25.0
+offset_top = 19.0
+offset_right = 50.0
+offset_bottom = 36.0
+text = "%"
+label_settings = SubResource("LabelSettings_vwwe0")
+
+[node name="Power" type="Label" parent="GUI/PowerBar"]
 layout_mode = 0
 offset_left = 18.0
 offset_top = 28.0
@@ -417,32 +424,44 @@ label_settings = SubResource("LabelSettings_1x5g1")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Label2" type="Label" parent="GUI/PowerBar"]
+[node name="VBoxContainer" type="VBoxContainer" parent="GUI"]
 layout_mode = 0
-offset_left = 25.0
-offset_top = 19.0
-offset_right = 50.0
-offset_bottom = 36.0
-text = "50%"
-label_settings = SubResource("LabelSettings_vwwe0")
+offset_left = 1015.0
+offset_top = 2.0
+offset_right = 1151.0
+offset_bottom = 50.0
+alignment = 1
 
-[node name="Currency" type="Label" parent="GUI"]
-layout_mode = 0
-offset_left = 1026.0
-offset_top = 6.0
-offset_right = 1152.0
-offset_bottom = 28.0
-text = "Currency:1000"
+[node name="Currency" type="Label" parent="GUI/VBoxContainer"]
+layout_mode = 2
+text = "Currency:"
 label_settings = SubResource("LabelSettings_kdcap")
 
-[node name="Crew" type="Label" parent="GUI"]
-layout_mode = 0
-offset_left = 1092.0
-offset_top = 30.0
-offset_right = 1152.0
-offset_bottom = 52.0
-text = "Crew:5"
+[node name="Crew" type="Label" parent="GUI/VBoxContainer"]
+layout_mode = 2
+text = "Crew:"
 label_settings = SubResource("LabelSettings_2rnhy")
+
+[node name="TimeBar" type="TextureProgressBar" parent="GUI"]
+layout_mode = 0
+offset_right = 72.0
+offset_bottom = 66.0
+value = 50.0
+nine_patch_stretch = true
+texture_under = ExtResource("2_42318")
+texture_progress = ExtResource("2_42318")
+tint_under = Color(0, 0, 0, 1)
+tint_progress = Color(0.576471, 0.360784, 0.0823529, 0.831373)
+radial_initial_angle = 180.0
+
+[node name="Time" type="Label" parent="GUI/TimeBar"]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 14.0
+offset_right = 66.0
+offset_bottom = 50.0
+text = "01:24"
+label_settings = SubResource("LabelSettings_e4e6q")
 
 [node name="Build" type="Control" parent="GUI"]
 layout_mode = 3
@@ -450,7 +469,7 @@ anchors_preset = 0
 offset_top = 607.0
 offset_right = 40.0
 offset_bottom = 647.0
-script = ExtResource("4_t0ryx")
+script = ExtResource("6_0kfgn")
 
 [node name="BuildButton" type="Button" parent="GUI/Build"]
 layout_mode = 0
@@ -483,27 +502,6 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_1c2m3")
 theme_override_styles/hover = SubResource("StyleBoxFlat_6glff")
 action_mode = 0
 icon = ExtResource("5_bsx6q")
-
-[node name="Time" type="TextureProgressBar" parent="GUI"]
-offset_right = 72.0
-offset_bottom = 66.0
-value = 50.0
-nine_patch_stretch = true
-texture_under = ExtResource("2_42318")
-texture_progress = ExtResource("2_42318")
-tint_under = Color(0, 0, 0, 1)
-tint_progress = Color(0.576471, 0.360784, 0.0823529, 0.831373)
-radial_initial_angle = 180.0
-script = ExtResource("3_lc0nm")
-
-[node name="Label3" type="Label" parent="GUI/Time"]
-layout_mode = 0
-offset_left = 4.0
-offset_top = 14.0
-offset_right = 66.0
-offset_bottom = 50.0
-text = "01:24"
-label_settings = SubResource("LabelSettings_e4e6q")
 
 [connection signal="pressed" from="GUI/Build/BuildButton" to="GUI/Build" method="_on_build_button_pressed"]
 [connection signal="pressed" from="GUI/Build/RoomPanel/BuildCloseButton" to="GUI/Build" method="_on_build_close_button_pressed"]
