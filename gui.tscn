@@ -1,11 +1,11 @@
 [gd_scene load_steps=27 format=3 uid="uid://3qk5ovnqamld"]
 
-[ext_resource type="Script" path="res://scripts/GUI.gd" id="1_w3us3"]
+[ext_resource type="Script" path="res://scripts/ui/GUI.gd" id="1_yc0k1"]
 [ext_resource type="Texture2D" uid="uid://6ok22b8ogh3a" path="res://assets/radial.png" id="2_42318"]
-[ext_resource type="Resource" uid="uid://dslgiwjppbqe5" path="res://Resources/station_resources.tres" id="2_h8vob"]
+[ext_resource type="Resource" uid="uid://b4rrun36bjda0" path="res://assets/station/station_resources.tres" id="2_nq8ig"]
+[ext_resource type="Script" path="res://scripts/ui/Build.gd" id="4_fujp0"]
 [ext_resource type="Texture2D" uid="uid://bb4awhuhh4i3r" path="res://assets/hammer-icon.png" id="4_gat8x"]
 [ext_resource type="Texture2D" uid="uid://d36pirpjdtfrt" path="res://assets/cross-hammer-icon.png" id="5_bsx6q"]
-[ext_resource type="Script" path="res://scripts/Build.gd" id="6_0kfgn"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_serxg"]
 bg_color = Color(0.258824, 0.258824, 0.258824, 1)
@@ -343,8 +343,8 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_w3us3")
-resources = ExtResource("2_h8vob")
+script = ExtResource("1_yc0k1")
+resources = ExtResource("2_nq8ig")
 
 [node name="HydrogenBar" type="ProgressBar" parent="GUI"]
 layout_mode = 0
@@ -469,7 +469,7 @@ anchors_preset = 0
 offset_top = 607.0
 offset_right = 40.0
 offset_bottom = 647.0
-script = ExtResource("6_0kfgn")
+script = ExtResource("4_fujp0")
 
 [node name="BuildButton" type="Button" parent="GUI/Build"]
 layout_mode = 0

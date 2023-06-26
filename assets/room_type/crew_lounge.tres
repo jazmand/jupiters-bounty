@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="RoomType" load_steps=2 format=3 uid="uid://dv18xm4wtbd05"]
+
+[ext_resource type="Script" path="res://scripts/resource/RoomType.gd" id="1_ghwyo"]
+
+[resource]
+script = ExtResource("1_ghwyo")
+id = 1
+name = "Crew Lounge"
+initialPrice = 0
+powerConsumption = 0
+capacity = 0.0
+minTiles = 0
+maxTiles = 0

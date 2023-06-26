@@ -1,4 +1,8 @@
+# Station.gd
+
 extends Resource
+
+class_name Station
 
 @export var id: int
 @export var hydrogen: int
@@ -6,8 +10,7 @@ extends Resource
 @export var currency: int
 @export var crew: int
 
-
-func _init(p_id = 0, p_hydrogen = 0, p_power = 0, p_currency = 0, p_crew = 0):
+func _init(p_id: int = 0, p_hydrogen: int = 0, p_power: int = 0, p_currency: int = 0, p_crew: int = 0):
 	id = p_id
 	hydrogen = p_hydrogen
 	power = p_power

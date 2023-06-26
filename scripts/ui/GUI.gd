@@ -1,6 +1,8 @@
+# GUI.gd
+
 extends Control
 
-# Gets resources from StationResources.gd with initial values in station_resources.tres
+# Gets resources from Station.gd with initial values in station_resources.tres
 @export var resources: Resource
 
 func _ready():

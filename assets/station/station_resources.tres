@@ -1,0 +1,11 @@
+[gd_resource type="Resource" load_steps=2 format=3 uid="uid://b4rrun36bjda0"]
+
+[ext_resource type="Script" path="res://scripts/resource/Station.gd" id="1_o3hpo"]
+
+[resource]
+script = ExtResource("1_o3hpo")
+id = 0
+hydrogen = 0
+power = 0
+currency = 1000
+crew = 0

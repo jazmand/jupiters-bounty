@@ -1,13 +1,14 @@
-[gd_scene load_steps=11 format=3 uid="uid://d15er84a44wcr"]
+[gd_scene load_steps=12 format=3 uid="uid://cdw4dnrg22lhm"]
 
-[ext_resource type="Texture2D" uid="uid://b2fs1g0hpegrb" path="res://assets/tileset_1.png" id="1_86urt"]
-[ext_resource type="Script" path="res://scripts/Main.gd" id="1_k8hsp"]
+[ext_resource type="Script" path="res://scripts/scene/Main.gd" id="1_3g4j0"]
+[ext_resource type="Texture2D" uid="uid://b2fs1g0hpegrb" path="res://assets/tilesets/tileset_1.png" id="2_jak31"]
 [ext_resource type="Script" path="res://scripts/Camera2D.gd" id="2_o2j5r"]
-[ext_resource type="Texture2D" uid="uid://bbtqqfs8wl326" path="res://assets/room_placeholder.png" id="3_41mr1"]
-[ext_resource type="Texture2D" uid="uid://cpj8qo0texko4" path="res://assets/drafting.png" id="4_16hya"]
+[ext_resource type="Texture2D" uid="uid://bbtqqfs8wl326" path="res://assets/tilesets/room_placeholder.png" id="3_5hkic"]
+[ext_resource type="Texture2D" uid="uid://cpj8qo0texko4" path="res://assets/tilesets/drafting.png" id="4_7e4dr"]
+[ext_resource type="PackedScene" uid="uid://3qk5ovnqamld" path="res://gui.tscn" id="6_4lvgl"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_psmxa"]
-texture = ExtResource("1_86urt")
+texture = ExtResource("2_jak31")
 texture_region_size = Vector2i(256, 256)
 0:0/0 = 0
 1:0/0 = 0
@@ -45,12 +46,12 @@ tile_size = Vector2i(256, 148)
 sources/0 = SubResource("TileSetAtlasSource_psmxa")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ulgmx"]
-texture = ExtResource("3_41mr1")
+texture = ExtResource("3_5hkic")
 texture_region_size = Vector2i(256, 256)
 0:0/0 = 0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_teld1"]
-texture = ExtResource("4_16hya")
+texture = ExtResource("4_7e4dr")
 texture_region_size = Vector2i(256, 256)
 0:0/0 = 0
 
@@ -62,7 +63,7 @@ sources/0 = SubResource("TileSetAtlasSource_ulgmx")
 sources/1 = SubResource("TileSetAtlasSource_teld1")
 
 [node name="Main" type="Node2D"]
-script = ExtResource("1_k8hsp")
+script = ExtResource("1_3g4j0")
 
 [node name="BaseTileMap" type="TileMap" parent="."]
 y_sort_enabled = true
@@ -89,3 +90,5 @@ layer_1/tile_data = PackedInt32Array()
 offset = Vector2(2.08165e-12, 2.08165e-12)
 anchor_mode = 0
 script = ExtResource("2_o2j5r")
+
+[node name="CanvasLayer" parent="." instance=ExtResource("6_4lvgl")]

@@ -1,3 +1,5 @@
+# Camera2D.gd
+
 extends Camera2D
 
 var input_direction: Vector2 = Vector2.ZERO
