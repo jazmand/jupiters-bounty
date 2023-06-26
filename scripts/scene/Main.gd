@@ -4,6 +4,9 @@ extends Node2D
 
 var base_tile_map: TileMap
 var build_tile_map: TileMap
+
+var build_menu: Control
+
 var room_builder: RoomBuilder
 var room_types: Array
 
@@ -11,6 +14,9 @@ func _ready():
 	# Find the TileMap nodes
 	base_tile_map = $BaseTileMap
 	build_tile_map = $BaseTileMap/BuildTileMap
+	
+	# Find UI elements // TODO: Tie is_editing to open/close status of build menu
+	build_menu = $CanvasLayer/GUI/Build 
 	
 	# Create an instance of the RoomBuilder class and pass the TileMap references
 	room_builder = RoomBuilder.new(base_tile_map, build_tile_map)
@@ -65,7 +71,7 @@ func _input(event: InputEvent) -> void:
 		# Start room building on left mouse button press
 		if !room_builder.is_editing and event.pressed and event.button_index == 1:
 			room_builder.start_editing()
-			var initial_corner = room_builder.base_tile_map.local_to_map(event.position)
+			var initial_corner = base_tile_map.local_to_map(event.position)
 			room_builder.initial_tile_coords = initial_corner
 
 		# Set room on left mouse button release
@@ -76,10 +82,13 @@ func _input(event: InputEvent) -> void:
 
 		# Cancel room building on right mouse button press
 		elif room_builder.is_editing and event.pressed and event.button_index == 2:
-			room_builder.build_tile_map.clear_layer(room_builder.drafting_layer)
+			build_tile_map.clear_layer(room_builder.drafting_layer)
 			room_builder.blueprint.clear()
 			room_builder.stop_editing()
 
-	elif event is InputEventMouseMotion and room_builder.is_editing:
-		room_builder.transverse_tile_coords = room_builder.base_tile_map.local_to_map(event.position)
-		room_builder.draft_room(room_builder.initial_tile_coords, room_builder.transverse_tile_coords)
+	elif event is InputEventMouseMotion:
+		if room_builder.is_editing:
+			room_builder.transverse_tile_coords = base_tile_map.local_to_map(event.position)
+			room_builder.draft_room(room_builder.initial_tile_coords, room_builder.transverse_tile_coords)
+		elif !room_builder.is_editing:
+			room_builder.select_tile(base_tile_map.local_to_map(event.position))
