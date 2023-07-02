@@ -10,6 +10,10 @@ var build_menu: Control
 var room_builder: RoomBuilder
 var room_types: Array
 
+func _init():
+	# Load and initialize room types
+	loadRoomTypes()
+
 func _ready():
 	# Find the TileMap nodes
 	base_tile_map = $BaseTileMap
@@ -20,9 +24,6 @@ func _ready():
 	
 	# Create an instance of the RoomBuilder class and pass the TileMap references
 	room_builder = RoomBuilder.new(base_tile_map, build_tile_map)
-	
-	# Load and initialize room types
-	loadRoomTypes()
 	
 #	# Connect input events to the appropriate functions // Necessary?
 #	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
@@ -92,3 +93,6 @@ func _input(event: InputEvent) -> void:
 			room_builder.draft_room(room_builder.initial_tile_coords, room_builder.transverse_tile_coords)
 		elif !room_builder.is_editing:
 			room_builder.select_tile(base_tile_map.local_to_map(event.position))
+			
+			
+

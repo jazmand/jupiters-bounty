@@ -491,6 +491,7 @@ action_mode = 0
 icon = ExtResource("5_cbcuv")
 
 [node name="RoomPanel" type="Panel" parent="GUI/Build"]
+visible = false
 layout_mode = 0
 offset_top = -57.0
 offset_right = 1071.0
@@ -515,21 +516,6 @@ offset_top = 1.0
 offset_right = 1031.0
 offset_bottom = 96.0
 alignment = 1
-
-[node name="Room1" type="Button" parent="GUI/Build/RoomPanel/HBoxContainer"]
-custom_minimum_size = Vector2(320, 0)
-layout_mode = 2
-text = "ROOM1"
-
-[node name="Room2" type="Button" parent="GUI/Build/RoomPanel/HBoxContainer"]
-custom_minimum_size = Vector2(320, 0)
-layout_mode = 2
-text = "ROOM2"
-
-[node name="Room3" type="Button" parent="GUI/Build/RoomPanel/HBoxContainer"]
-custom_minimum_size = Vector2(320, 0)
-layout_mode = 2
-text = "ROOM3"
 
 [connection signal="pressed" from="GUI/Build/BuildButton" to="GUI/Build" method="_on_build_button_pressed"]
 [connection signal="pressed" from="GUI/Build/RoomPanel/BuildCloseButton" to="GUI/Build" method="_on_build_close_button_pressed"]
