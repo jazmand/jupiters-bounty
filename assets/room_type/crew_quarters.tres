@@ -6,7 +6,7 @@
 script = ExtResource("1_4hlch")
 id = 1
 name = "Crew Quarters"
-initialPrice = 0
+price = 0
 powerConsumption = 0
 capacity = 0.0
 minTiles = 0

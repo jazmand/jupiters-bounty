@@ -38,7 +38,6 @@ func _input(event: InputEvent) -> void:
 			
 	# Check for pan gestures
 	if event is InputEventPanGesture:
-		print(event)
 		var pan_event: InputEventPanGesture = event
 		var zoom_delta = Vector2(pan_event.delta.y, pan_event.delta.y)
 		update_zoom(zoom_delta)

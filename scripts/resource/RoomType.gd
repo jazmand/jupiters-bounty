@@ -6,7 +6,7 @@ class_name RoomType
 
 @export var id: int
 @export var name: String
-@export var initialPrice: int
+@export var price: int
 @export var powerConsumption: int
 @export var capacity: float
 @export var minTiles: int
@@ -16,7 +16,7 @@ class_name RoomType
 func _init(
 	p_id: int = 0,
 	p_name: String = "",
-	p_initialPrice: int = 0,
+	p_price: int = 0,
 	p_powerConsumption: int = 0,
 	p_capacity: float = 0.0,
 	p_minTiles: int = 0,
@@ -25,7 +25,7 @@ func _init(
 ):
 	id = p_id
 	name = p_name
-	initialPrice = p_initialPrice
+	price = p_price
 	powerConsumption = p_powerConsumption
 	capacity = p_capacity
 	minTiles = p_minTiles

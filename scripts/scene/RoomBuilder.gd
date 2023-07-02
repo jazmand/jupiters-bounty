@@ -4,10 +4,11 @@ extends Node2D
 
 class_name RoomBuilder
 
-var drafting_layer: int = 1
 var building_layer: int = 0
-var drafting_tileset_id: int = 1
+var drafting_layer: int = 1
 var building_tileset_id: int = 0
+var drafting_tileset_id: int = 1
+var selection_tileset_id: int = 2
 
 var is_editing = false
 var initial_tile_coords = Vector2i()
@@ -26,6 +27,13 @@ func start_editing():
 
 func stop_editing():
 	is_editing = false
+	
+func select_tile(coords: Vector2i):
+	# Clear layer
+	build_tile_map.clear_layer(drafting_layer)
+	
+	# Draw on tile
+	build_tile_map.set_cell(drafting_layer, coords, selection_tileset_id, Vector2i(0, 0))
 
 func draft_room(initial_corner: Vector2i, opposite_corner: Vector2i):
 	# Clear previous selection
