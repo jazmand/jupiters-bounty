@@ -52,7 +52,7 @@ func loadRoomTypes() -> void:
 				# Assign the property values to the instance
 				room_type_instance.id = room_type_resource.id
 				room_type_instance.name = room_type_resource.name
-				room_type_instance.initialPrice = room_type_resource.initialPrice
+				room_type_instance.price = room_type_resource.price
 				room_type_instance.powerConsumption = room_type_resource.powerConsumption
 				room_type_instance.capacity = room_type_resource.capacity
 				room_type_instance.minTiles = room_type_resource.minTiles
