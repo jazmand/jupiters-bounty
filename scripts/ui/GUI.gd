@@ -18,6 +18,9 @@ func _ready():
 		
 		$VBoxContainer/Crew.text += str(resources.crew);
 		
+#		Todo: Need to find best way to store and calculate 10 hour time
+#		$TimeBar/Time.text = str() 
+		
 		# Add progress bars needing animation in array below
 		animate_progress_bar([$HydrogenBar, $PowerBar, $TimeBar]);
 		

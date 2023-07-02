@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://6ok22b8ogh3a"
-path="res://.godot/imported/radial.png-90490a5884e7a3762da3f6e938467747.ctex"
+uid="uid://d36pirpjdtfrt"
+path="res://.godot/imported/cross-hammer-icon.png-b6943d6a8c8fffbbee10bc703e1456e4.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/radial.png"
-dest_files=["res://.godot/imported/radial.png-90490a5884e7a3762da3f6e938467747.ctex"]
+source_file="res://assets/GUI/cross-hammer-icon.png"
+dest_files=["res://.godot/imported/cross-hammer-icon.png-b6943d6a8c8fffbbee10bc703e1456e4.ctex"]
 
 [params]
 
