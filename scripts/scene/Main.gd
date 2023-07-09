@@ -10,6 +10,7 @@ var build_menu: Control
 var room_builder: RoomBuilder
 var room_types: Array
 
+
 func _init():
 	# Load and initialize room types
 	loadRoomTypes()
@@ -68,7 +69,7 @@ func loadRoomTypes() -> void:
 		room_type_files.list_dir_end()
 
 func _input(event: InputEvent) -> void:
-	if event is InputEventMouseButton:
+	if event is InputEventMouseButton and $CanvasLayer/GUI/Build.build_mode == true:
 		# Start room building on left mouse button press
 		if !room_builder.is_editing and event.pressed and event.button_index == 1:
 			room_builder.start_editing()
@@ -87,12 +88,14 @@ func _input(event: InputEvent) -> void:
 			room_builder.blueprint.clear()
 			room_builder.stop_editing()
 
-	elif event is InputEventMouseMotion:
+	elif event is InputEventMouseMotion and $CanvasLayer/GUI/Build.build_mode == true:
 		if room_builder.is_editing:
 			room_builder.transverse_tile_coords = base_tile_map.local_to_map(event.position)
 			room_builder.draft_room(room_builder.initial_tile_coords, room_builder.transverse_tile_coords)
 		elif !room_builder.is_editing:
 			room_builder.select_tile(base_tile_map.local_to_map(event.position))
 			
+	elif $CanvasLayer/GUI/Build.build_mode == false:
+		room_builder.clear_all()
 			
 

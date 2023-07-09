@@ -56,3 +56,7 @@ func set_room():
 	build_tile_map.clear_layer(drafting_layer)
 	for tile in blueprint:
 		build_tile_map.set_cell(building_layer, Vector2(tile.x, tile.y), building_tileset_id, Vector2i(0, 0))
+
+func clear_all():
+	is_editing = false
+	build_tile_map.clear_layer(drafting_layer)
