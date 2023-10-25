@@ -1,12 +1,12 @@
 [gd_resource type="Resource" script_class="RoomType" load_steps=2 format=3 uid="uid://37dbanj0tbwd"]
 
-[ext_resource type="Script" path="res://scripts/resource/RoomType.gd" id="1_lysqt"]
+[ext_resource type="Script" path="res://scripts/resource/RoomType.gd" id="1_xdvxu"]
 
 [resource]
-script = ExtResource("1_lysqt")
-id = 5
-name = "Hydroventilation Chamber"
-price = 0
+script = ExtResource("1_xdvxu")
+id = 2
+name = "Generator Room"
+price = 70
 powerConsumption = 0
 capacity = 0.0
 minTiles = 0

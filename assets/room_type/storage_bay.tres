@@ -6,7 +6,7 @@
 script = ExtResource("1_jq27t")
 id = 3
 name = "Storage Bay"
-initialPrice = 0
+price = 50
 powerConsumption = 0
 capacity = 0.0
 minTiles = 0
