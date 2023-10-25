@@ -15,6 +15,8 @@ var initial_tile_coords = Vector2i()
 var transverse_tile_coords = Vector2i()
 var blueprint = []
 
+var selected_room_type_id: int = 0
+
 var base_tile_map: TileMap
 var build_tile_map: TileMap
 
@@ -24,6 +26,7 @@ func _init(base_tile_map: TileMap, build_tile_map: TileMap):
 
 func start_editing():
 	is_editing = true
+	print(selected_room_type_id, 'THIS IS THE ID')
 
 func stop_editing():
 	is_editing = false
