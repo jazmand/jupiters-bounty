@@ -77,11 +77,12 @@ func _input(event: InputEvent) -> void:
 			var initial_corner = base_tile_map.local_to_map(event.position)
 			room_builder.initial_tile_coords = initial_corner
 
-		# Set room on left mouse button release
+		# Set room on left mouse button release 
 		elif room_builder.is_editing and event.pressed and event.button_index == 1:
-			room_builder.set_room()
-			room_builder.blueprint.clear()
-			room_builder.stop_editing()
+			if !room_builder.any_invalid:
+				room_builder.set_room()
+				room_builder.blueprint.clear()
+				room_builder.stop_editing()
 
 		# Cancel room building on right mouse button press
 		elif room_builder.is_editing and event.pressed and event.button_index == 2:

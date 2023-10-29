@@ -28,7 +28,7 @@ func _on_build_close_button_pressed():
 	
 func _on_room_selected(room_type):
 	room_selected = true
-	print(room_type.price)
+	print(room_type.name)
 	selected_room_type_id = room_type.id
 	
 # Need way to clear initial tile when build_mode == false
