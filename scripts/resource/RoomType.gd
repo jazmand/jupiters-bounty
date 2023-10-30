@@ -11,7 +11,7 @@ class_name RoomType
 @export var capacity: float
 @export var minTiles: int
 @export var maxTiles: int
-@export var tileset: TileSet
+@export var tilesetId: int
 
 func _init(
 	p_id: int = 0,
@@ -21,7 +21,7 @@ func _init(
 	p_capacity: float = 0.0,
 	p_minTiles: int = 0,
 	p_maxTiles: int = 0,
-	p_tileset: TileSet = null
+	p_tilesetId: int = 0
 ):
 	id = p_id
 	name = p_name
@@ -30,4 +30,4 @@ func _init(
 	capacity = p_capacity
 	minTiles = p_minTiles
 	maxTiles = p_maxTiles
-	tileset = p_tileset
+	tilesetId = p_tilesetId

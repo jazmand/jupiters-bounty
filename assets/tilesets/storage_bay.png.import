@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cpj8qo0texko4"
-path="res://.godot/imported/drafting.png-23c81a39eadd17add5a51a723804357f.ctex"
+uid="uid://k3hf5argnn4k"
+path="res://.godot/imported/storage_bay.png-358f2c72d5f5a89701da083e207c327a.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/tilesets/drafting.png"
-dest_files=["res://.godot/imported/drafting.png-23c81a39eadd17add5a51a723804357f.ctex"]
+source_file="res://assets/tilesets/storage_bay.png"
+dest_files=["res://.godot/imported/storage_bay.png-358f2c72d5f5a89701da083e207c327a.ctex"]
 
 [params]
 

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bn5ri27vtijv"
-path="res://.godot/imported/invalid.png-2da35491e712386029ac86b48cae819c.ctex"
+uid="uid://b011v7odriiqs"
+path="res://.godot/imported/generator_room.png-214036155a251bacf7dcff4672ed1c62.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/tilesets/invalid.png"
-dest_files=["res://.godot/imported/invalid.png-2da35491e712386029ac86b48cae819c.ctex"]
+source_file="res://assets/tilesets/generator_room.png"
+dest_files=["res://.godot/imported/generator_room.png-214036155a251bacf7dcff4672ed1c62.ctex"]
 
 [params]
 

@@ -11,3 +11,4 @@ powerConsumption = 0
 capacity = 0.0
 minTiles = 0
 maxTiles = 0
+tilesetId = 6

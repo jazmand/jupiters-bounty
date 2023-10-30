@@ -1,4 +1,4 @@
-[gd_scene load_steps=16 format=3 uid="uid://cdw4dnrg22lhm"]
+[gd_scene load_steps=22 format=3 uid="uid://cdw4dnrg22lhm"]
 
 [ext_resource type="Script" path="res://scripts/scene/Main.gd" id="1_3g4j0"]
 [ext_resource type="Texture2D" uid="uid://b2fs1g0hpegrb" path="res://assets/tilesets/tileset_1.png" id="2_jak31"]
@@ -8,6 +8,9 @@
 [ext_resource type="Texture2D" uid="uid://dihqbub138rkb" path="res://assets/tilesets/invalid_new.png" id="5_y3eoa"]
 [ext_resource type="PackedScene" uid="uid://3qk5ovnqamld" path="res://gui.tscn" id="6_4lvgl"]
 [ext_resource type="Texture2D" uid="uid://bin8xqkuxyohw" path="res://assets/tilesets/drafting_new.png" id="6_jemiv"]
+[ext_resource type="Texture2D" uid="uid://dw0d3bcfauhf2" path="res://assets/tilesets/crew_quarters.png" id="7_ypvsj"]
+[ext_resource type="Texture2D" uid="uid://b011v7odriiqs" path="res://assets/tilesets/generator_room.png" id="8_snmxr"]
+[ext_resource type="Texture2D" uid="uid://k3hf5argnn4k" path="res://assets/tilesets/storage_bay.png" id="9_x6k6u"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_psmxa"]
 texture = ExtResource("2_jak31")
@@ -67,6 +70,21 @@ texture = ExtResource("3_5hkic")
 texture_region_size = Vector2i(256, 256)
 0:0/0 = 0
 
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_mtln5"]
+texture = ExtResource("7_ypvsj")
+texture_region_size = Vector2i(256, 256)
+0:0/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_okf4u"]
+texture = ExtResource("8_snmxr")
+texture_region_size = Vector2i(256, 256)
+0:0/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_i553p"]
+texture = ExtResource("9_x6k6u")
+texture_region_size = Vector2i(256, 256)
+0:0/0 = 0
+
 [sub_resource type="TileSet" id="TileSet_ru5bf"]
 tile_shape = 1
 tile_layout = 5
@@ -75,6 +93,9 @@ sources/1 = SubResource("TileSetAtlasSource_teld1")
 sources/0 = SubResource("TileSetAtlasSource_w7dmn")
 sources/3 = SubResource("TileSetAtlasSource_ulgmx")
 sources/2 = SubResource("TileSetAtlasSource_npoi5")
+sources/6 = SubResource("TileSetAtlasSource_mtln5")
+sources/7 = SubResource("TileSetAtlasSource_okf4u")
+sources/8 = SubResource("TileSetAtlasSource_i553p")
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_3g4j0")
@@ -83,6 +104,7 @@ script = ExtResource("1_3g4j0")
 y_sort_enabled = true
 tile_set = SubResource("TileSet_yt465")
 format = 2
+layer_0/name = "Base layer"
 layer_0/y_sort_enabled = true
 layer_0/tile_data = PackedInt32Array(-65536, 0, 1, 65536, 131072, 1, 0, 0, 3, 131073, 131072, 2, -131071, 0, 2, -196606, 0, 1, 196610, 131072, 1, 196611, 131072, 4, 196612, 131072, 4, 196613, 65536, 2, -196605, 196608, 2, -196604, 196608, 3, -196603, 196608, 0, -131067, 131072, 6, 131077, 131072, 6, 65541, 131072, 6, 5, 131072, 6, -65531, 131072, 6, 131076, 196608, 5, 65540, 131072, 5, -65532, 131072, 5, 4, 196608, 5, -131068, 196608, 5, 3, 65536, 5, 2, 196608, 4, 1, 0, 5, -65535, 65536, 0, -65533, 65536, 0, -131070, 65536, 0, 131074, 65536, 0, 65539, 65536, 0, -131069, 131072, 0, 65537, 131072, 0, 131075, 131072, 0, 65538, 0, 0, -65534, 0, 0)
 
@@ -90,14 +112,15 @@ layer_0/tile_data = PackedInt32Array(-65536, 0, 1, 65536, 131072, 1, 0, 0, 3, 13
 y_sort_enabled = true
 tile_set = SubResource("TileSet_ru5bf")
 format = 2
+layer_0/name = "Draft layer"
 layer_0/y_sort_enabled = true
-layer_0/z_index = 2
-layer_1/name = ""
+layer_0/z_index = 1
+layer_1/name = "Build layer"
 layer_1/enabled = true
 layer_1/modulate = Color(1, 1, 1, 1)
 layer_1/y_sort_enabled = true
 layer_1/y_sort_origin = 0
-layer_1/z_index = 1
+layer_1/z_index = 2
 layer_1/tile_data = PackedInt32Array()
 
 [node name="Camera2D" type="Camera2D" parent="."]

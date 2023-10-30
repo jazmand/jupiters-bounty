@@ -9,6 +9,7 @@ var build_menu: Control
 
 var room_builder: RoomBuilder
 var room_types: Array
+var rooms: Array # TODO: Save & load on init
 
 
 func _init():
@@ -23,15 +24,14 @@ func _ready():
 	# Find UI elements // TODO: Tie is_editing to open/close status of build menu
 	build_menu = $CanvasLayer/GUI/Build 
 	
-	# Create an instance of the RoomBuilder class and pass the TileMap references
-	room_builder = RoomBuilder.new(base_tile_map, build_tile_map)
+	# Create an instance of the RoomBuilder class and pass the TileMap references & rooms array
+	room_builder = RoomBuilder.new(base_tile_map, build_tile_map, rooms, room_types)
 	
 #	# Connect input events to the appropriate functions // Necessary?
 #	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
 #	Input.set_default_cursor_shape(Input.CURSOR_ARROW)
 
 func loadRoomTypes() -> void:
-	
 	var room_types_folder = "res://assets/room_type/"
 	var room_type_files = DirAccess.open(room_types_folder)
 	
@@ -59,14 +59,14 @@ func loadRoomTypes() -> void:
 				room_type_instance.capacity = room_type_resource.capacity
 				room_type_instance.minTiles = room_type_resource.minTiles
 				room_type_instance.maxTiles = room_type_resource.maxTiles
-				room_type_instance.tileset = room_type_resource.tileset
-				
+				room_type_instance.tilesetId = room_type_resource.tilesetId
 				# Add the room type instance to the list
 				room_types.append(room_type_instance)
 				
 			file_name = room_type_files.get_next()
 				
 		room_type_files.list_dir_end()
+		
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and build_menu.build_mode == true:
@@ -81,13 +81,11 @@ func _input(event: InputEvent) -> void:
 		elif room_builder.is_editing and event.pressed and event.button_index == 1:
 			if !room_builder.any_invalid:
 				room_builder.set_room()
-				room_builder.blueprint.clear()
 				room_builder.stop_editing()
 
 		# Cancel room building on right mouse button press
 		elif room_builder.is_editing and event.pressed and event.button_index == 2:
 			build_tile_map.clear_layer(room_builder.drafting_layer)
-			room_builder.blueprint.clear()
 			room_builder.stop_editing()
 
 	elif event is InputEventMouseMotion and build_menu.build_mode == true:
