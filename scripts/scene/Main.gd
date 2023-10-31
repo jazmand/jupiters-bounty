@@ -72,10 +72,10 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and build_menu.build_mode == true:
 		# Start room building on left mouse button press
 		if !room_builder.is_editing and event.pressed and event.button_index == 1:
-			room_builder.selected_room_type_id = build_menu.selected_room_type_id
-			room_builder.start_editing()
-			var initial_corner = base_tile_map.local_to_map(event.position)
-			room_builder.initial_tile_coords = initial_corner
+			if !room_builder.any_invalid:
+				room_builder.selected_room_type_id = build_menu.selected_room_type_id
+				room_builder.initial_tile_coords = base_tile_map.local_to_map(event.position)
+				room_builder.start_editing()
 
 		# Set room on left mouse button release 
 		elif room_builder.is_editing and event.pressed and event.button_index == 1:
