@@ -43,30 +43,39 @@ func select_tile(coords: Vector2i):
 	# Draw on tile
 	if check_selection_valid(coords):
 		build_tile_map.set_cell(drafting_layer, coords, selection_tileset_id, Vector2i(0, 0))
+		any_invalid = false
 	else:
 		build_tile_map.set_cell(drafting_layer, coords, invalid_tileset_id, Vector2i(0, 0))
+		any_invalid = true
 
 func draft_room(initial_corner: Vector2i, opposite_corner: Vector2i):
 	# Clear previous selection
 	build_tile_map.clear_layer(drafting_layer)
-
+	
 	var min_x = min(initial_corner.x, opposite_corner.x)
 	var max_x = max(initial_corner.x, opposite_corner.x) + 1
 	var min_y = min(initial_corner.y, opposite_corner.y)
 	var max_y = max(initial_corner.y, opposite_corner.y) + 1
 	any_invalid = false
 	
-
-	# Redraw tile on all coordinates between initial and traverse corners
+	# Check validity of all coordinates between initial and traverse corners
 	for x in range(min_x, max_x):
 		for y in range(min_y, max_y):
 			var coords = Vector2(x, y)
-			if check_selection_valid(coords):
-				build_tile_map.set_cell(drafting_layer, coords, drafting_tileset_id, Vector2i(0, 0))
-			else:
-				# If any tile is invalid use the invalid_tileset_id below
-				build_tile_map.set_cell(drafting_layer, coords, invalid_tileset_id, Vector2i(0, 0))
+			if !check_selection_valid(coords):
 				any_invalid = true
+				break  # If any tile is invalid, no need to continue checking
+				
+	# Redraw the entire selection based on whether any tile was invalid
+	for x in range(min_x, max_x):
+		for y in range(min_y, max_y):
+			var coords = Vector2(x, y)
+			var tileset_id
+			if any_invalid:
+				tileset_id = invalid_tileset_id
+			else:
+				tileset_id = drafting_tileset_id
+			build_tile_map.set_cell(drafting_layer, coords, tileset_id, Vector2i(0, 0))
 
 func set_room():	
 	# Create a new Room instance and add it to the array
@@ -78,14 +87,13 @@ func set_room():
 	rooms.append(new_room)
 	
 	draw_rooms()
-#	for tile in blueprint:
-	#	build_tile_map.set_cell(building_layer, Vector2(tile.x, tile.y), building_tileset_id, Vector2i(0, 0))
+	print('Current rooms:', rooms)
 
 func clear_all():
 	is_editing = false
 	selected_room_type_id = 0 # Deselect
 	build_tile_map.clear_layer(drafting_layer)
-	
+
 func draw_rooms():
 	# Clear drafting layer
 	build_tile_map.clear_layer(drafting_layer)
@@ -119,6 +127,9 @@ func check_selection_valid(coords: Vector2i) -> bool:
 	# Check if overlapping an existing room
 	elif build_tile_map.get_cell_tile_data(building_layer, coords) is TileData:
 		is_valid = false
+		
+	# TODO: Check if size is within min & max range
+	# TODO: Check if price is within budget
 	
 	return is_valid
 
