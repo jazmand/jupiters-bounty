@@ -1,6 +1,7 @@
-[gd_scene load_steps=22 format=3 uid="uid://cdw4dnrg22lhm"]
+[gd_scene load_steps=23 format=3 uid="uid://cdw4dnrg22lhm"]
 
 [ext_resource type="Script" path="res://scripts/scene/Main.gd" id="1_3g4j0"]
+[ext_resource type="Texture2D" uid="uid://dwwc4ti4c1ifx" path="res://assets/backgrounds/jupiter.png" id="2_i0a8p"]
 [ext_resource type="Texture2D" uid="uid://b2fs1g0hpegrb" path="res://assets/tilesets/tileset_1.png" id="2_jak31"]
 [ext_resource type="Script" path="res://scripts/Camera2D.gd" id="2_o2j5r"]
 [ext_resource type="Texture2D" uid="uid://bbtqqfs8wl326" path="res://assets/tilesets/room_placeholder.png" id="3_5hkic"]
@@ -99,6 +100,18 @@ sources/8 = SubResource("TileSetAtlasSource_i553p")
 
 [node name="Main" type="Node2D"]
 script = ExtResource("1_3g4j0")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+offset_left = -752.0
+offset_top = -624.0
+offset_right = 1728.0
+offset_bottom = 1272.0
+color = Color(0, 0, 0, 1)
+
+[node name="Jupiter" type="Sprite2D" parent="ColorRect"]
+position = Vector2(1242, 1624)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("2_i0a8p")
 
 [node name="BaseTileMap" type="TileMap" parent="."]
 y_sort_enabled = true
