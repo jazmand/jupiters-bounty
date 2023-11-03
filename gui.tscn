@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3 uid="uid://3qk5ovnqamld"]
+[gd_scene load_steps=29 format=3 uid="uid://3qk5ovnqamld"]
 
 [ext_resource type="Script" path="res://scripts/ui/GUI.gd" id="1_yc0k1"]
 [ext_resource type="Resource" uid="uid://b4rrun36bjda0" path="res://assets/station/station_resources.tres" id="2_nq8ig"]
@@ -340,6 +340,13 @@ bg_color = Color(0.6, 0.6, 0.6, 0)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6glff"]
 bg_color = Color(1, 0.109804, 0.101961, 0.627451)
 
+[sub_resource type="SystemFont" id="SystemFont_1dxa0"]
+font_names = PackedStringArray("Cascadia Code")
+
+[sub_resource type="LabelSettings" id="LabelSettings_ahsq4"]
+font = SubResource("SystemFont_1dxa0")
+font_size = 25
+
 [node name="CanvasLayer" type="CanvasLayer"]
 
 [node name="GUI" type="Control" parent="."]
@@ -516,9 +523,54 @@ offset_right = 1031.0
 offset_bottom = 96.0
 alignment = 1
 
+[node name="PopupPanel" type="Panel" parent="GUI/Build"]
+visible = false
+layout_mode = 0
+offset_left = 206.0
+offset_top = -355.0
+offset_right = 857.0
+offset_bottom = -148.0
+
+[node name="HBoxContainer" type="BoxContainer" parent="GUI/Build/PopupPanel"]
+layout_mode = 0
+offset_left = 17.0
+offset_top = 167.0
+offset_right = 631.0
+offset_bottom = 202.0
+alignment = 1
+
+[node name="Label" type="Label" parent="GUI/Build/PopupPanel"]
+layout_mode = 0
+offset_left = 53.0
+offset_top = 83.0
+offset_right = 608.0
+offset_bottom = 128.0
+text = "Build {{room_type}} for {{currency}}?"
+label_settings = SubResource("LabelSettings_ahsq4")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="yesButton" type="Button" parent="GUI/Build/PopupPanel"]
+layout_mode = 2
+offset_left = 277.0
+offset_top = 167.0
+offset_right = 320.0
+offset_bottom = 202.0
+text = " Yes "
+
+[node name="noButton" type="Button" parent="GUI/Build/PopupPanel"]
+layout_mode = 2
+offset_left = 324.0
+offset_top = 167.0
+offset_right = 371.0
+offset_bottom = 202.0
+text = "  No  "
+
 [connection signal="pressed" from="GUI/Build/BuildButton" to="GUI/Build" method="_on_build_button_pressed"]
 [connection signal="mouse_entered" from="GUI/Build/RoomPanel" to="GUI/Build" method="_on_room_panel_mouse_entered"]
 [connection signal="mouse_exited" from="GUI/Build/RoomPanel" to="GUI/Build" method="_on_room_panel_mouse_exited"]
 [connection signal="mouse_entered" from="GUI/Build/RoomPanel/BuildCloseButton" to="GUI/Build" method="_on_room_panel_mouse_entered"]
 [connection signal="mouse_exited" from="GUI/Build/RoomPanel/BuildCloseButton" to="GUI/Build" method="_on_room_panel_mouse_exited"]
 [connection signal="pressed" from="GUI/Build/RoomPanel/BuildCloseButton" to="GUI/Build" method="_on_build_close_button_pressed"]
+[connection signal="pressed" from="GUI/Build/PopupPanel/yesButton" to="GUI/Build" method="_on_popup_yes_button_pressed"]
+[connection signal="pressed" from="GUI/Build/PopupPanel/noButton" to="GUI/Build" method="_on_popup_no_button_pressed"]

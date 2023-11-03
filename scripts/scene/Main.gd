@@ -101,6 +101,7 @@ func _input(event: InputEvent) -> void:
 		# Set room on left mouse button release 
 		elif room_builder.is_editing and event.pressed and event.button_index == 1:
 			if !room_builder.any_invalid:
+				show_popup()
 				room_builder.set_room()
 				room_builder.stop_editing()
 
@@ -119,6 +120,10 @@ func _input(event: InputEvent) -> void:
 	elif build_menu.build_mode == false:
 		room_builder.clear_all()
 			
+func show_popup():
+	# TODO disable button click for rooms
+	$CanvasLayer/GUI/Build/PopupPanel.visible = true
+	build_menu.build_mode = false
 
 func update_in_game_time():
 	in_game_time += 5 # Add 5 in game seconds every 0.25 real world seconds
@@ -133,5 +138,5 @@ func update_clock() -> void:
 
 func rotate_jupiter() -> void:
 	var degree_rotation = (float(in_game_time) / float(one_in_game_day)) * 360.0
-	print(degree_rotation, 'deg')
+	#print(degree_rotation, 'deg')
 	$ColorRect/Jupiter.rotation_degrees = degree_rotation
