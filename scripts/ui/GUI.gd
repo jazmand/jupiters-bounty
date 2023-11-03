@@ -18,8 +18,8 @@ func _ready():
 		
 		$VBoxContainer/Crew.text += str(resources.crew);
 		
-#		Todo: Need to find best way to store and calculate 10 hour time
-#		$TimeBar/Time.text = str() 
+		# TODO: Need to find best way to store and calculate 10 hour time
+		# SEE Main.gd
 		
 		# Add progress bars needing animation in array below
 		animate_progress_bar([$HydrogenBar, $PowerBar, $TimeBar]);
@@ -29,4 +29,3 @@ func animate_progress_bar(progressBarArr):
 	for x in progressBarArr:	
 		var tween = get_tree().create_tween();
 		tween.tween_property(x, "value", x.value, 2).set_trans(Tween.TRANS_LINEAR).from(0);
-

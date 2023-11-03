@@ -466,7 +466,6 @@ offset_left = 4.0
 offset_top = 14.0
 offset_right = 66.0
 offset_bottom = 50.0
-text = "01:24"
 label_settings = SubResource("LabelSettings_e4e6q")
 
 [node name="Build" type="Control" parent="GUI"]
