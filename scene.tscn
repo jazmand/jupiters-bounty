@@ -109,8 +109,8 @@ offset_bottom = 1272.0
 color = Color(0, 0, 0, 1)
 
 [node name="Jupiter" type="Sprite2D" parent="ColorRect"]
-position = Vector2(1242, 1624)
-scale = Vector2(2.5, 2.5)
+position = Vector2(1242, 2432)
+scale = Vector2(2, 2)
 texture = ExtResource("2_i0a8p")
 
 [node name="BaseTileMap" type="TileMap" parent="."]
