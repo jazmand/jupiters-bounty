@@ -6,6 +6,8 @@ var build_mode = false
 var room_selected = false
 var selected_room_type_id: int
 
+# @onready var popup = $Popup
+
 # Called when the node enters the scene tree for the first time
 func _ready():
 	var main_node = get_tree().root.get_node("Main")
@@ -16,6 +18,7 @@ func _ready():
 		button.mouse_entered.connect(_on_room_panel_mouse_entered)
 		button.mouse_exited.connect(_on_room_panel_mouse_exited)
 		$RoomPanel/HBoxContainer.add_child(button)
+		
 
 func _on_build_button_pressed():
 	$RoomPanel.visible = true
@@ -35,5 +38,14 @@ func _on_room_panel_mouse_entered():
 	build_mode = false
 
 func _on_room_panel_mouse_exited():
-	if room_selected == true:
+	if room_selected == true && $PopupPanel.visible == false:
 		build_mode = true
+		
+func _on_popup_yes_button_pressed():
+	$PopupPanel.visible = false
+	room_selected = false
+
+func _on_popup_no_button_pressed():
+	# TODO clear room that has been set
+	$PopupPanel.visible = false
+	room_selected = false
