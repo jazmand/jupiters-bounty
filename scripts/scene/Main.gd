@@ -133,5 +133,9 @@ func update_clock() -> void:
 
 func rotate_jupiter() -> void:
 	var degree_rotation = (float(in_game_time) / float(one_in_game_day)) * 360.0
-	print(degree_rotation, 'deg')
 	$ColorRect/Jupiter.rotation_degrees = degree_rotation
+	var overlay_offset = sin(degree_rotation * PI / 2)  # Gives overlay an oscillation of +/- 1 degree
+	print(overlay_offset)
+	$ColorRect/Jupiter/JupiterOverlay.rotation_degrees = overlay_offset
+
+
