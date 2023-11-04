@@ -1,10 +1,11 @@
-[gd_scene load_steps=23 format=3 uid="uid://cdw4dnrg22lhm"]
+[gd_scene load_steps=24 format=3 uid="uid://cdw4dnrg22lhm"]
 
 [ext_resource type="Script" path="res://scripts/scene/Main.gd" id="1_3g4j0"]
 [ext_resource type="Texture2D" uid="uid://dwwc4ti4c1ifx" path="res://assets/backgrounds/jupiter.png" id="2_i0a8p"]
 [ext_resource type="Texture2D" uid="uid://b2fs1g0hpegrb" path="res://assets/tilesets/tileset_1.png" id="2_jak31"]
 [ext_resource type="Script" path="res://scripts/Camera2D.gd" id="2_o2j5r"]
 [ext_resource type="Texture2D" uid="uid://bbtqqfs8wl326" path="res://assets/tilesets/room_placeholder.png" id="3_5hkic"]
+[ext_resource type="Texture2D" uid="uid://cjwac7twpt2tt" path="res://assets/backgrounds/jupiter_overlay.png" id="3_6bejq"]
 [ext_resource type="Texture2D" uid="uid://di1gw67qnf5nt" path="res://assets/tilesets/select_new.png" id="5_ehm63"]
 [ext_resource type="Texture2D" uid="uid://dihqbub138rkb" path="res://assets/tilesets/invalid_new.png" id="5_y3eoa"]
 [ext_resource type="PackedScene" uid="uid://3qk5ovnqamld" path="res://gui.tscn" id="6_4lvgl"]
@@ -112,6 +113,10 @@ color = Color(0, 0, 0, 1)
 position = Vector2(1242, 2432)
 scale = Vector2(2, 2)
 texture = ExtResource("2_i0a8p")
+
+[node name="JupiterOverlay" type="Sprite2D" parent="ColorRect/Jupiter"]
+scale = Vector2(1.003, 1.003)
+texture = ExtResource("3_6bejq")
 
 [node name="BaseTileMap" type="TileMap" parent="."]
 y_sort_enabled = true
