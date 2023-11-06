@@ -7,6 +7,9 @@ var build_tile_map: TileMap
 
 var build_menu: Control
 
+var gui: Control
+var background: Control
+
 var room_builder: RoomBuilder
 var room_types: Array
 var rooms: Array # TODO: Save & load on init
@@ -27,6 +30,8 @@ func _ready():
 	
 	# Find UI elements // TODO: Tie is_editing to open/close status of build menu
 	build_menu = $CanvasLayer/GUI/Build 
+	gui = $CanvasLayer/GUI
+	background = $Background
 	
 	# Create an instance of the RoomBuilder class and pass the TileMap references & rooms array
 	room_builder = RoomBuilder.new(base_tile_map, build_tile_map, rooms, room_types)
@@ -36,7 +41,7 @@ func _ready():
 	in_game_time = 27200 # Start at 02:00
 		
 	update_in_game_time()
-	rotate_jupiter()
+	background.rotate_jupiter(in_game_time, one_in_game_day)
 	
 #	# Connect input events to the appropriate functions // Necessary?
 #	Input.set_mouse_mode(Input.MOUSE_MODE_VISIBLE)
@@ -49,8 +54,8 @@ func _process(delta):
 	if delta_time >= 0.25:
 		delta_time = 0
 		update_in_game_time()
-		update_clock()
-		rotate_jupiter()
+		gui.update_clock(in_game_time)
+		background.rotate_jupiter(in_game_time, one_in_game_day)
 
 func load_room_types() -> void:
 	var room_types_folder = "res://assets/room_type/"
@@ -88,7 +93,6 @@ func load_room_types() -> void:
 				
 		room_type_files.list_dir_end()
 		
-
 func _input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and build_menu.build_mode == true:
 		# Start room building on left mouse button press
@@ -101,9 +105,15 @@ func _input(event: InputEvent) -> void:
 		# Set room on left mouse button release 
 		elif room_builder.is_editing and event.pressed and event.button_index == 1:
 			if !room_builder.any_invalid:
-				show_popup()
-				room_builder.set_room()
-				room_builder.stop_editing()
+				for room_type in room_types:
+					if room_type.id == room_builder.selected_room_type_id:
+						var room_cost = room_type.price
+						var room_size = calculate_tile_count(room_builder.initial_tile_coords, room_builder.transverse_tile_coords)
+						var popup_message = "Build " + room_type.name + " for " + str(room_cost * room_size)
+						gui.show_popup(popup_message)
+						build_menu.build_mode = false
+						room_builder.set_room()
+						room_builder.stop_editing()
 
 		# Cancel room building on right mouse button press
 		elif room_builder.is_editing and event.pressed and event.button_index == 2:
@@ -119,33 +129,12 @@ func _input(event: InputEvent) -> void:
 			
 	elif build_menu.build_mode == false:
 		room_builder.clear_all()
-			
-func show_popup():
-	# TODO disable button click for rooms
-	$CanvasLayer/GUI/Build/PopupPanel.visible = true
-	for room_type in room_types:
-		if room_type.id == room_builder.selected_room_type_id:
-			var room_cost = room_type.price
-			var room_size = calculate_tile_count(room_builder.initial_tile_coords, room_builder.transverse_tile_coords)
-			$CanvasLayer/GUI/Build/PopupPanel/Label.text = "Build " + room_type.name + " for " + str(room_cost * room_size)
-	build_menu.build_mode = false
 
 func update_in_game_time():
 	in_game_time += 5 # Add 5 in game seconds every 0.25 real world seconds
 		
 	if in_game_time >= one_in_game_day:  # 10 hours * 3600 seconds/hour
 		in_game_time = 5 # Reset
-
-func update_clock() -> void:
-	var hours = int(in_game_time / 3600)
-	var minutes = int((in_game_time % 3600) / 60)
-	$CanvasLayer/GUI/TimeBar/Time.text = str(hours).pad_zeros(2) + ":" + str(minutes).pad_zeros(2)
-
-func rotate_jupiter() -> void:
-	var degree_rotation = (float(in_game_time) / float(one_in_game_day)) * 360.0
-	$ColorRect/Jupiter.rotation_degrees = degree_rotation
-	var overlay_offset = sin(degree_rotation * PI / 4) - 1 # Gives overlay an oscillation of +/- 1 degree
-	$ColorRect/Jupiter/JupiterOverlay.rotation_degrees = overlay_offset
 
 func calculate_tile_count(vector1: Vector2, vector2: Vector2) -> int:
 	var difference_x = abs(vector2.x - vector1.x) + 1 

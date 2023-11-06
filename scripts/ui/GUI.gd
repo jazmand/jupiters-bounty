@@ -18,9 +18,6 @@ func _ready():
 		
 		$VBoxContainer/Crew.text += str(resources.crew);
 		
-		# TODO: Need to find best way to store and calculate 10 hour time
-		# SEE Main.gd
-		
 		# Add progress bars needing animation in array below
 		animate_progress_bar([$HydrogenBar, $PowerBar, $TimeBar]);
 		
@@ -29,3 +26,13 @@ func animate_progress_bar(progressBarArr):
 	for x in progressBarArr:	
 		var tween = get_tree().create_tween();
 		tween.tween_property(x, "value", x.value, 2).set_trans(Tween.TRANS_LINEAR).from(0);
+		
+func update_clock(in_game_time) -> void:
+	var hours = int(in_game_time / 3600)
+	var minutes = int((in_game_time % 3600) / 60)
+	$TimeBar/Time.text = str(hours).pad_zeros(2) + ":" + str(minutes).pad_zeros(2)
+
+func show_popup(popup_message):
+	# TODO disable button click for rooms
+	$Build/PopupPanel.visible = true
+	$Build/PopupPanel/Label.text = popup_message
