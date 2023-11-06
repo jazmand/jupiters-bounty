@@ -33,7 +33,7 @@ func _ready():
 	
 	delta_time = 0
 	one_in_game_day = 36000 # 10 in game hours per in game day
-	in_game_time = 7200 # Start at 02:00
+	in_game_time = 27200 # Start at 02:00
 		
 	update_in_game_time()
 	rotate_jupiter()
@@ -123,6 +123,11 @@ func _input(event: InputEvent) -> void:
 func show_popup():
 	# TODO disable button click for rooms
 	$CanvasLayer/GUI/Build/PopupPanel.visible = true
+	for room_type in room_types:
+		if room_type.id == room_builder.selected_room_type_id:
+			var room_cost = room_type.price
+			var room_size = calculate_tile_count(room_builder.initial_tile_coords, room_builder.transverse_tile_coords)
+			$CanvasLayer/GUI/Build/PopupPanel/Label.text = "Build " + room_type.name + " for " + str(room_cost * room_size)
 	build_menu.build_mode = false
 
 func update_in_game_time():
@@ -139,8 +144,10 @@ func update_clock() -> void:
 func rotate_jupiter() -> void:
 	var degree_rotation = (float(in_game_time) / float(one_in_game_day)) * 360.0
 	$ColorRect/Jupiter.rotation_degrees = degree_rotation
-	var overlay_offset = sin(degree_rotation * PI / 2)  # Gives overlay an oscillation of +/- 1 degree
-	print(overlay_offset)
+	var overlay_offset = sin(degree_rotation * PI / 4) - 1 # Gives overlay an oscillation of +/- 1 degree
 	$ColorRect/Jupiter/JupiterOverlay.rotation_degrees = overlay_offset
 
-
+func calculate_tile_count(vector1: Vector2, vector2: Vector2) -> int:
+	var difference_x = abs(vector2.x - vector1.x) + 1 
+	var difference_y = abs(vector2.y - vector1.y) + 1
+	return difference_x * difference_y
