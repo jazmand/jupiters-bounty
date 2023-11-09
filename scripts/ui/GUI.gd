@@ -19,7 +19,7 @@ func _ready():
 		$VBoxContainer/Crew.text += str(resources.crew);
 		
 		# Add progress bars needing animation in array below
-		animate_progress_bar([$HydrogenBar, $PowerBar, $TimeBar]);
+		animate_progress_bar([$HydrogenBar, $PowerBar]);
 		
 # Animate progress bars to start from 0 and stop at their current value
 func animate_progress_bar(progressBarArr):
@@ -30,7 +30,7 @@ func animate_progress_bar(progressBarArr):
 func update_clock(in_game_time) -> void:
 	var hours = int(in_game_time / 3600)
 	var minutes = int((in_game_time % 3600) / 60)
-	$TimeBar/Time.text = str(hours).pad_zeros(2) + ":" + str(minutes).pad_zeros(2)
+	$Clock/Time.text = str(hours).pad_zeros(2) + ":" + str(minutes).pad_zeros(2)
 
 func show_popup(popup_message):
 	# TODO disable button click for rooms

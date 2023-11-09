@@ -38,7 +38,7 @@ func _ready():
 	
 	delta_time = 0
 	one_in_game_day = 36000 # 10 in game hours per in game day
-	in_game_time = 27200 # Start at 02:00
+	in_game_time = 7200 # Start at 02:00
 		
 	update_in_game_time()
 	background.rotate_jupiter(in_game_time, one_in_game_day)
