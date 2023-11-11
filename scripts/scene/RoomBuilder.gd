@@ -17,20 +17,27 @@ var transverse_tile_coords = Vector2i()
 var any_invalid = false
 
 var selected_room_type_id: int = 0
+var selected_room_type: RoomType 
+
+var station: Station
 
 var base_tile_map: TileMap
 var build_tile_map: TileMap
 var rooms: Array
 var room_types: Array
 
-func _init(base_tile_map: TileMap, build_tile_map: TileMap, rooms: Array, room_types: Array):
+
+
+func _init(station: Station, base_tile_map: TileMap, build_tile_map: TileMap, rooms: Array, room_types: Array):
 	self.base_tile_map = base_tile_map
 	self.build_tile_map = build_tile_map
 	self.rooms = rooms
 	self.room_types = room_types
-
+	self.station = station
+	
 func start_editing():
 	is_editing = true
+	selected_room_type = get_room_type_by_id(selected_room_type_id)	
 
 func stop_editing():
 	is_editing = false
@@ -62,7 +69,7 @@ func draft_room(initial_corner: Vector2i, opposite_corner: Vector2i):
 	for x in range(min_x, max_x):
 		for y in range(min_y, max_y):
 			var coords = Vector2(x, y)
-			if !check_selection_valid(coords):
+			if !check_selection_valid(coords, true):
 				any_invalid = true
 				break  # If any tile is invalid, no need to continue checking
 				
@@ -81,10 +88,13 @@ func set_room():
 	# Create a new Room instance and add it to the array
 	var new_room = Room.new()
 	new_room.id = generate_unique_room_id()
-	new_room.roomTypeId = selected_room_type_id
+	new_room.roomTypeId = selected_room_type.id
 	new_room.topLeft = initial_tile_coords
 	new_room.bottomRight = transverse_tile_coords
 	rooms.append(new_room)
+	# Make deductions for buying rooms 
+	station.currency -= calculate_room_price()
+	print(station.currency)
 	
 	draw_rooms()
 	print('Current rooms:', rooms)
@@ -104,11 +114,7 @@ func draw_rooms():
 		var min_y = min(room.topLeft.y, room.bottomRight.y)
 		var max_y = max(room.topLeft.y, room.bottomRight.y)
 		
-		var room_type_tileset_id = null
-		for room_type in room_types:
-			if room_type.id == room.roomTypeId:
-				room_type_tileset_id = room_type.tilesetId
-				break
+		var room_type_tileset_id = selected_room_type.tilesetId
 		
 		# Iterate over the tiles within the room's boundaries and set them on the building layer
 		for x in range(min_x, max_x + 1):
@@ -117,7 +123,12 @@ func draw_rooms():
 
 # --- Helper functions ---
 
-func check_selection_valid(coords: Vector2i) -> bool:
+func get_room_type_by_id(id):
+	for room_type in room_types:
+		if room_type.id == id:
+			return room_type
+
+func check_selection_valid(coords: Vector2i, check_price_and_size: bool = false) -> bool:
 	var is_valid = true 
 	
 	# Check if outside station bounds
@@ -128,10 +139,21 @@ func check_selection_valid(coords: Vector2i) -> bool:
 	elif build_tile_map.get_cell_tile_data(building_layer, coords) is TileData:
 		is_valid = false
 		
-	# TODO: Check if size is within min & max range
-	# TODO: Check if price is within budget
 	
+	elif check_price_and_size:
+		var tile_count = calculate_tile_count(initial_tile_coords, transverse_tile_coords)
+		print(tile_count)
+		print(selected_room_type.minTiles)
+		print(selected_room_type.maxTiles)
+		if (calculate_room_price() >= station.currency):
+			is_valid = false
+		if (tile_count < selected_room_type.minTiles || tile_count > selected_room_type.maxTiles):
+			is_valid = false
+			
 	return is_valid
+	
+func calculate_room_price() -> int:
+	return selected_room_type.price * calculate_tile_count(initial_tile_coords, transverse_tile_coords)
 
 func generate_unique_room_id() -> int:
 	var unique_id = rooms.size() + 1
@@ -144,3 +166,8 @@ func check_room_id_exists(room_id: int) -> bool:
 		if room.id == room_id:
 			return true
 	return false
+
+func calculate_tile_count(vector1: Vector2, vector2: Vector2) -> int:
+	var difference_x = abs(vector2.x - vector1.x) + 1 
+	var difference_y = abs(vector2.y - vector1.y) + 1
+	return difference_x * difference_y

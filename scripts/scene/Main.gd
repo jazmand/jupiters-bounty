@@ -2,6 +2,8 @@
 
 extends Node2D
 
+var station: Station = preload("res://assets/station/station_resources.tres")
+
 var base_tile_map: TileMap
 var build_tile_map: TileMap
 
@@ -19,6 +21,8 @@ var in_game_time: int
 var one_in_game_day: int
 var delta_time: float
 
+var room_cost_total: int
+
 func _init():
 	# Load and initialize room types
 	load_room_types()
@@ -34,7 +38,7 @@ func _ready():
 	background = $Background
 	
 	# Create an instance of the RoomBuilder class and pass the TileMap references & rooms array
-	room_builder = RoomBuilder.new(base_tile_map, build_tile_map, rooms, room_types)
+	room_builder = RoomBuilder.new(station, base_tile_map, build_tile_map, rooms, room_types)
 	
 	delta_time = 0
 	one_in_game_day = 36000 # 10 in game hours per in game day
@@ -56,7 +60,7 @@ func _process(delta):
 		update_in_game_time()
 		gui.update_clock(in_game_time)
 		background.rotate_jupiter(in_game_time, one_in_game_day)
-
+	
 func load_room_types() -> void:
 	var room_types_folder = "res://assets/room_type/"
 	var room_type_files = DirAccess.open(room_types_folder)
@@ -107,9 +111,9 @@ func _input(event: InputEvent) -> void:
 			if !room_builder.any_invalid:
 				for room_type in room_types:
 					if room_type.id == room_builder.selected_room_type_id:
-						var room_cost = room_type.price
-						var room_size = calculate_tile_count(room_builder.initial_tile_coords, room_builder.transverse_tile_coords)
-						var popup_message = "Build " + room_type.name + " for " + str(room_cost * room_size)
+						var room_size = room_builder.calculate_tile_count(room_builder.initial_tile_coords, room_builder.transverse_tile_coords)
+						room_cost_total = room_type.price * room_size
+						var popup_message = "Build " + room_type.name + " for " + str(room_cost_total)
 						gui.show_popup(popup_message)
 						build_menu.build_mode = false
 						room_builder.set_room()
@@ -136,7 +140,3 @@ func update_in_game_time():
 	if in_game_time >= one_in_game_day:  # 10 hours * 3600 seconds/hour
 		in_game_time = 5 # Reset
 
-func calculate_tile_count(vector1: Vector2, vector2: Vector2) -> int:
-	var difference_x = abs(vector2.x - vector1.x) + 1 
-	var difference_y = abs(vector2.y - vector1.y) + 1
-	return difference_x * difference_y

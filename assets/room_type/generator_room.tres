@@ -9,6 +9,6 @@ name = "Generator Room"
 price = 70
 powerConsumption = 0
 capacity = 0.0
-minTiles = 0
+minTiles = 6
 maxTiles = 0
 tilesetId = 7
