@@ -7,7 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://bb4awhuhh4i3r" path="res://assets/GUI/hammer-icon.png" id="5_cbcuv"]
 [ext_resource type="Texture2D" uid="uid://d36pirpjdtfrt" path="res://assets/GUI/cross-hammer-icon.png" id="6_nem4v"]
 [ext_resource type="Texture2D" uid="uid://cycqtp3ml1bgf" path="res://assets/GUI/paper-back.png" id="8_sr1my"]
-[ext_resource type="Texture2D" uid="uid://caqgffg5j2pg7" path="res://assets/GUI/clock.png" id="9_a20wn"]
+[ext_resource type="Texture2D" uid="uid://s4krlkyoe82n" path="res://assets/GUI/clock.png" id="9_a20wn"]
 [ext_resource type="Texture2D" uid="uid://b8rq101wopsf4" path="res://assets/GUI/jupiter-motif.png" id="9_g1jby"]
 [ext_resource type="Texture2D" uid="uid://cx0lmtowilep7" path="res://assets/GUI/sun-motif.png" id="10_xnxf8"]
 
@@ -552,16 +552,16 @@ offset_bottom = 202.0
 text = "  No  "
 
 [node name="Clock" type="Sprite2D" parent="GUI"]
-position = Vector2(152, 104)
-scale = Vector2(0.4, 0.4)
+position = Vector2(222, 152)
+scale = Vector2(0.3, 0.3)
 texture = ExtResource("9_a20wn")
 
 [node name="PaperBack" type="Sprite2D" parent="GUI/Clock"]
 modulate = Color(0.529412, 0.529412, 0.529412, 1)
 z_index = -1
-position = Vector2(142.5, 30)
+position = Vector2(282.971, 57.9713)
 rotation = -6.28319
-scale = Vector2(0.7, 0.7)
+scale = Vector2(1.35663, 1.35663)
 texture = ExtResource("8_sr1my")
 
 [node name="JupiterMotif" type="Sprite2D" parent="GUI/Clock/PaperBack"]

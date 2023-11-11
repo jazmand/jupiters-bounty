@@ -1,10 +1,10 @@
-[gd_scene load_steps=25 format=3 uid="uid://cdw4dnrg22lhm"]
+[gd_scene load_steps=25 format=3 uid="uid://dk4217a8o433o"]
 
 [ext_resource type="Script" path="res://scripts/scene/Main.gd" id="1_3g4j0"]
 [ext_resource type="Texture2D" uid="uid://dwwc4ti4c1ifx" path="res://assets/backgrounds/jupiter.png" id="2_i0a8p"]
 [ext_resource type="Texture2D" uid="uid://b2fs1g0hpegrb" path="res://assets/tilesets/tileset_1.png" id="2_jak31"]
 [ext_resource type="Script" path="res://scripts/Camera2D.gd" id="2_o2j5r"]
-[ext_resource type="Script" path="res://Background.gd" id="2_o7v3q"]
+[ext_resource type="Script" path="res://scripts/Background.gd" id="2_w13bo"]
 [ext_resource type="Texture2D" uid="uid://bbtqqfs8wl326" path="res://assets/tilesets/room_placeholder.png" id="3_5hkic"]
 [ext_resource type="Texture2D" uid="uid://cjwac7twpt2tt" path="res://assets/backgrounds/jupiter_overlay.png" id="3_6bejq"]
 [ext_resource type="Texture2D" uid="uid://di1gw67qnf5nt" path="res://assets/tilesets/select_new.png" id="5_ehm63"]
@@ -109,7 +109,7 @@ offset_top = -624.0
 offset_right = 1728.0
 offset_bottom = 1272.0
 color = Color(0, 0, 0, 1)
-script = ExtResource("2_o7v3q")
+script = ExtResource("2_w13bo")
 
 [node name="Jupiter" type="Sprite2D" parent="Background"]
 position = Vector2(1242, 2432)
@@ -117,6 +117,7 @@ scale = Vector2(2, 2)
 texture = ExtResource("2_i0a8p")
 
 [node name="JupiterOverlay" type="Sprite2D" parent="Background/Jupiter"]
+position = Vector2(-1, 0)
 scale = Vector2(1.003, 1.003)
 texture = ExtResource("3_6bejq")
 
