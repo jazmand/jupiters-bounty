@@ -147,7 +147,7 @@ func check_selection_valid(coords: Vector2i, check_price_and_size: bool = false)
 		print(selected_room_type.maxTiles)
 		if (calculate_room_price() >= station.currency):
 			is_valid = false
-		if (tile_count < selected_room_type.minTiles || tile_count > selected_room_type.maxTiles):
+		if (tile_count < selected_room_type.minTiles or tile_count > selected_room_type.maxTiles):
 			is_valid = false
 			
 	return is_valid

@@ -1,15 +1,19 @@
-[gd_scene load_steps=33 format=3 uid="uid://cb8lng77y3kwm"]
+[gd_scene load_steps=37 format=3 uid="uid://cb8lng77y3kwm"]
 
 [ext_resource type="Script" path="res://scripts/ui/GUI.gd" id="1_yc0k1"]
-[ext_resource type="Resource" uid="uid://b4rrun36bjda0" path="res://assets/station/station_resources.tres" id="2_nq8ig"]
+[ext_resource type="Texture2D" uid="uid://csl221uu2ec02" path="res://assets/GUI/power-meter.png" id="2_m17qj"]
+[ext_resource type="Texture2D" uid="uid://crpwfpudhatrq" path="res://assets/GUI/dial.png" id="3_gxdii"]
 [ext_resource type="Texture2D" uid="uid://6ok22b8ogh3a" path="res://assets/GUI/radial.png" id="3_ixbel"]
 [ext_resource type="Script" path="res://scripts/ui/Build.gd" id="4_fujp0"]
+[ext_resource type="Texture2D" uid="uid://c4dguxm0oy6t5" path="res://assets/GUI/filament.png" id="4_uuqsp"]
 [ext_resource type="Texture2D" uid="uid://bb4awhuhh4i3r" path="res://assets/GUI/hammer-icon.png" id="5_cbcuv"]
 [ext_resource type="Texture2D" uid="uid://d36pirpjdtfrt" path="res://assets/GUI/cross-hammer-icon.png" id="6_nem4v"]
 [ext_resource type="Texture2D" uid="uid://cycqtp3ml1bgf" path="res://assets/GUI/paper-back.png" id="8_sr1my"]
-[ext_resource type="Texture2D" uid="uid://s4krlkyoe82n" path="res://assets/GUI/clock.png" id="9_a20wn"]
+[ext_resource type="Texture2D" uid="uid://b041sxdcwmy58" path="res://assets/GUI/clock.png" id="9_a20wn"]
 [ext_resource type="Texture2D" uid="uid://b8rq101wopsf4" path="res://assets/GUI/jupiter-motif.png" id="9_g1jby"]
 [ext_resource type="Texture2D" uid="uid://cx0lmtowilep7" path="res://assets/GUI/sun-motif.png" id="10_xnxf8"]
+[ext_resource type="Texture2D" uid="uid://dmb2c7oas0f1u" path="res://assets/GUI/glass-tube.png" id="11_5oy5m"]
+[ext_resource type="Texture2D" uid="uid://bcr0cjkhy5ik" path="res://assets/GUI/light-burst.png" id="12_3fce4"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_serxg"]
 bg_color = Color(0.258824, 0.258824, 0.258824, 1)
@@ -362,9 +366,38 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_yc0k1")
-resources = ExtResource("2_nq8ig")
+resources = ExtResource("2_m17qj")
+
+[node name="PowerMeter" type="Sprite2D" parent="GUI"]
+position = Vector2(1736, 949)
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("2_m17qj")
+
+[node name="Dial" type="Sprite2D" parent="GUI/PowerMeter"]
+position = Vector2(213.332, -183.334)
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("3_gxdii")
+offset = Vector2(2.08165e-12, -200)
+
+[node name="PowerMeterLightBurst" type="Sprite2D" parent="GUI/PowerMeter"]
+modulate = Color(1, 1, 0.843137, 1)
+position = Vector2(-220.005, -286.668)
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("12_3fce4")
+
+[node name="Filament" type="Sprite2D" parent="GUI/PowerMeter/PowerMeterLightBurst"]
+z_index = -1
+position = Vector2(-22.207, 0.00390625)
+scale = Vector2(0.7, 0.7)
+texture = ExtResource("4_uuqsp")
+
+[node name="PointLight2D" type="PointLight2D" parent="GUI/PowerMeter/PowerMeterLightBurst"]
+visible = false
+color = Color(1, 0.941176, 0.784314, 1)
+texture = ExtResource("12_3fce4")
 
 [node name="HydrogenBar" type="ProgressBar" parent="GUI"]
+visible = false
 layout_mode = 0
 offset_left = 1127.0
 offset_top = 58.0
@@ -408,6 +441,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="PowerBar" type="TextureProgressBar" parent="GUI"]
+visible = false
 layout_mode = 0
 offset_left = 1078.0
 offset_top = 582.0
@@ -463,9 +497,10 @@ label_settings = SubResource("LabelSettings_2rnhy")
 [node name="Build" type="Control" parent="GUI"]
 layout_mode = 3
 anchors_preset = 0
-offset_top = 607.0
-offset_right = 40.0
-offset_bottom = 647.0
+offset_left = 8.0
+offset_top = 1032.0
+offset_right = 48.0
+offset_bottom = 1072.0
 script = ExtResource("4_fujp0")
 
 [node name="BuildButton" type="Button" parent="GUI/Build"]
@@ -581,6 +616,12 @@ offset_left = 120.0
 offset_right = 260.0
 offset_bottom = 60.0
 label_settings = SubResource("LabelSettings_e4e6q")
+
+[node name="HydrogenMeter" type="Sprite2D" parent="GUI"]
+position = Vector2(1856, 504)
+rotation = -1.5708
+scale = Vector2(0.275, 0.275)
+texture = ExtResource("11_5oy5m")
 
 [connection signal="pressed" from="GUI/Build/BuildButton" to="GUI/Build" method="_on_build_button_pressed"]
 [connection signal="mouse_entered" from="GUI/Build/RoomPanel" to="GUI/Build" method="_on_room_panel_mouse_entered"]

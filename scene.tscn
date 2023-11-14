@@ -104,10 +104,10 @@ sources/8 = SubResource("TileSetAtlasSource_i553p")
 script = ExtResource("1_3g4j0")
 
 [node name="Background" type="ColorRect" parent="."]
-offset_left = -752.0
-offset_top = -624.0
-offset_right = 1728.0
-offset_bottom = 1272.0
+offset_left = -280.0
+offset_top = -256.0
+offset_right = 2200.0
+offset_bottom = 1640.0
 color = Color(0, 0, 0, 1)
 script = ExtResource("2_w13bo")
 
@@ -117,12 +117,13 @@ scale = Vector2(2, 2)
 texture = ExtResource("2_i0a8p")
 
 [node name="JupiterOverlay" type="Sprite2D" parent="Background/Jupiter"]
-position = Vector2(-1, 0)
+position = Vector2(-4, 0)
 scale = Vector2(1.003, 1.003)
 texture = ExtResource("3_6bejq")
 
 [node name="BaseTileMap" type="TileMap" parent="."]
 y_sort_enabled = true
+position = Vector2(448, 192)
 tile_set = SubResource("TileSet_yt465")
 format = 2
 layer_0/name = "Base layer"
