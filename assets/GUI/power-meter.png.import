@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b041sxdcwmy58"
-path="res://.godot/imported/clock.png-756e7274a3e4c5929ceea3c380a324a3.ctex"
+uid="uid://csl221uu2ec02"
+path="res://.godot/imported/power-meter.png-494c19a9bb3894ff28771b059865148e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/GUI/clock.png"
-dest_files=["res://.godot/imported/clock.png-756e7274a3e4c5929ceea3c380a324a3.ctex"]
+source_file="res://assets/GUI/power-meter.png"
+dest_files=["res://.godot/imported/power-meter.png-494c19a9bb3894ff28771b059865148e.ctex"]
 
 [params]
 
