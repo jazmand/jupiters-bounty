@@ -161,13 +161,14 @@ func draw_rooms() -> void:
 		var max_x = max(room.topLeft.x, room.bottomRight.x)
 		var min_y = min(room.topLeft.y, room.bottomRight.y)
 		var max_y = max(room.topLeft.y, room.bottomRight.y)
+		for room_type in room_types:
+			if (room_type.id == room.roomTypeId):
+				var tileset_id = room_type.tilesetId
+				# Iterate over the tiles within the room's boundaries and set them on the building layer
+				for x in range(min_x, max_x + 1):
+					for y in range(min_y, max_y + 1):
+						build_tile_map.set_cell(building_layer, Vector2(x, y), tileset_id, Vector2i(0, 0))
 		
-		var room_type_tileset_id = selected_room_type.tilesetId
-		
-		# Iterate over the tiles within the room's boundaries and set them on the building layer
-		for x in range(min_x, max_x + 1):
-			for y in range(min_y, max_y + 1):
-				build_tile_map.set_cell(building_layer, Vector2(x, y), room_type_tileset_id, Vector2i(0, 0))
 
 # --- Helper functions ---
 

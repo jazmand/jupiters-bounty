@@ -13,6 +13,7 @@ var gui: Control
 var background: Control
 
 var room_builder: RoomBuilder
+var room_selector: RoomSelector
 var room_types: Array
 var rooms: Array # TODO: Save & load on init
 
@@ -39,6 +40,7 @@ func _ready():
 	
 	# Create an instance of the RoomBuilder class and pass the TileMap references & rooms array
 	room_builder = RoomBuilder.new(gui, build_menu, station, base_tile_map, build_tile_map, rooms, room_types)
+	room_selector = RoomSelector.new(gui, station, build_tile_map, rooms, room_types)
 	
 	delta_time = 0
 	one_in_game_day = 36000 # 10 in game hours per in game day
@@ -104,7 +106,7 @@ func _input(event: InputEvent) -> void:
 		room_builder.handle_building_input(event, build_menu.selected_room_type_id)
 	elif build_menu.build_mode == false:
 		room_builder.clear_all()
-		handle_general_input(event)
+		room_selector.handle_select_input(event)
 		
 
 func handle_general_input(event: InputEvent) -> void:
