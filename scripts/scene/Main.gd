@@ -38,7 +38,7 @@ func _ready():
 	background = $Background
 	
 	# Create an instance of the RoomBuilder class and pass the TileMap references & rooms array
-	room_builder = RoomBuilder.new(station, base_tile_map, build_tile_map, rooms, room_types)
+	room_builder = RoomBuilder.new(gui, build_menu, station, base_tile_map, build_tile_map, rooms, room_types)
 	
 	delta_time = 0
 	one_in_game_day = 36000 # 10 in game hours per in game day
@@ -60,7 +60,7 @@ func _process(delta):
 		update_in_game_time()
 		gui.update_clock(in_game_time)
 		background.rotate_jupiter(in_game_time, one_in_game_day)
-	
+
 func load_room_types() -> void:
 	var room_types_folder = "res://assets/room_type/"
 	var room_type_files = DirAccess.open(room_types_folder)
@@ -96,43 +96,29 @@ func load_room_types() -> void:
 			file_name = room_type_files.get_next()
 				
 		room_type_files.list_dir_end()
-		
+
+# --- Input functions ---
+
 func _input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and build_menu.build_mode == true:
-		# Start room building on left mouse button press
-		if !room_builder.is_editing and event.pressed and event.button_index == 1:
-			if !room_builder.any_invalid:
-				room_builder.selected_room_type_id = build_menu.selected_room_type_id
-				room_builder.initial_tile_coords = base_tile_map.local_to_map(event.position)
-				room_builder.start_editing()
-
-		# Set room on left mouse button release 
-		elif room_builder.is_editing and event.pressed and event.button_index == 1:
-			if !room_builder.any_invalid:
-				for room_type in room_types:
-					if room_type.id == room_builder.selected_room_type_id:
-						var room_size = room_builder.calculate_tile_count(room_builder.initial_tile_coords, room_builder.transverse_tile_coords)
-						room_cost_total = room_type.price * room_size
-						var popup_message = "Build " + room_type.name + " for " + str(room_cost_total)
-						gui.show_popup(popup_message)
-						build_menu.build_mode = false
-						room_builder.set_room()
-						room_builder.stop_editing()
-
-		# Cancel room building on right mouse button press
-		elif room_builder.is_editing and event.pressed and event.button_index == 2:
-			build_tile_map.clear_layer(room_builder.drafting_layer)
-			room_builder.stop_editing()
-
-	elif event is InputEventMouseMotion and build_menu.build_mode == true:
-		if room_builder.is_editing:
-			room_builder.transverse_tile_coords = base_tile_map.local_to_map(event.position)
-			room_builder.draft_room(room_builder.initial_tile_coords, room_builder.transverse_tile_coords)
-		elif !room_builder.is_editing:
-			room_builder.select_tile(base_tile_map.local_to_map(event.position))
-			
+	if build_menu.build_mode == true:
+		room_builder.handle_building_input(event, build_menu.selected_room_type_id)
 	elif build_menu.build_mode == false:
 		room_builder.clear_all()
+		handle_general_input(event)
+		
+
+func handle_general_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		if event.pressed and event.button_index == 1:
+			pass
+#			# Call a function for left mouse button press outside build mode
+#			on_left_mouse_button_press(event)
+#		elif event.pressed and event.button_index == 2:
+#			# Call a function for right mouse button press outside build mode
+#			on_right_mouse_button_press(event)
+#		elif event is InputEventMouseMotion:
+#			# Call a function for mouse motion outside build mode
+#			on_mouse_motion(event)
 
 func update_in_game_time():
 	in_game_time += 5 # Add 5 in game seconds every 0.25 real world seconds

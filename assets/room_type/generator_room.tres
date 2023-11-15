@@ -10,5 +10,5 @@ price = 70
 powerConsumption = 0
 capacity = 0.0
 minTiles = 6
-maxTiles = 0
+maxTiles = 8
 tilesetId = 7
