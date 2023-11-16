@@ -29,8 +29,6 @@ func _process(delta):
 	delta_time += delta
 	
 	$PowerMeter/PowerMeterLightBurst.modulate = Color(255, 255, 215, 1 - delta_time)
-	$PowerMeter/PowerMeterLightBurst/PointLight2D.energy = 1 - delta_time
-	
 	$PowerMeter/Dial.rotation_degrees += delta_time * dial_rotation_direction
 	
 	# Check if the rotation has reached the limits, and change direction accordingly
