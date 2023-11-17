@@ -1,7 +1,8 @@
-[gd_scene load_steps=37 format=3 uid="uid://cb8lng77y3kwm"]
+[gd_scene load_steps=38 format=3 uid="uid://cb8lng77y3kwm"]
 
 [ext_resource type="Script" path="res://scripts/ui/GUI.gd" id="1_yc0k1"]
 [ext_resource type="Texture2D" uid="uid://b7ci31uxx3in3" path="res://assets/GUI/power-meter.png" id="2_m17qj"]
+[ext_resource type="Texture2D" uid="uid://12wi58pijmfg" path="res://assets/GUI/view-screen.png" id="2_rdfey"]
 [ext_resource type="Texture2D" uid="uid://crpwfpudhatrq" path="res://assets/GUI/dial.png" id="3_gxdii"]
 [ext_resource type="Texture2D" uid="uid://6ok22b8ogh3a" path="res://assets/GUI/radial.png" id="3_ixbel"]
 [ext_resource type="Script" path="res://scripts/ui/Build.gd" id="4_fujp0"]
@@ -9,7 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://bb4awhuhh4i3r" path="res://assets/GUI/hammer-icon.png" id="5_cbcuv"]
 [ext_resource type="Texture2D" uid="uid://d36pirpjdtfrt" path="res://assets/GUI/cross-hammer-icon.png" id="6_nem4v"]
 [ext_resource type="Texture2D" uid="uid://cycqtp3ml1bgf" path="res://assets/GUI/paper-back.png" id="8_sr1my"]
-[ext_resource type="Texture2D" uid="uid://b041sxdcwmy58" path="res://assets/GUI/clock.png" id="9_a20wn"]
+[ext_resource type="Texture2D" uid="uid://blo261a6mqidv" path="res://assets/GUI/clock.png" id="9_a20wn"]
 [ext_resource type="Texture2D" uid="uid://b8rq101wopsf4" path="res://assets/GUI/jupiter-motif.png" id="9_g1jby"]
 [ext_resource type="Texture2D" uid="uid://cx0lmtowilep7" path="res://assets/GUI/sun-motif.png" id="10_xnxf8"]
 [ext_resource type="Texture2D" uid="uid://dmb2c7oas0f1u" path="res://assets/GUI/glass-tube.png" id="11_5oy5m"]
@@ -366,24 +367,24 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_yc0k1")
-resources = ExtResource("2_m17qj")
+resources = ExtResource("2_rdfey")
 
 [node name="PowerMeter" type="Sprite2D" parent="GUI"]
-position = Vector2(1736, 949)
+position = Vector2(1734, 949)
 scale = Vector2(0.3, 0.3)
 texture = ExtResource("2_m17qj")
 
 [node name="Dial" type="Sprite2D" parent="GUI/PowerMeter"]
-position = Vector2(105, -183.334)
-rotation = -0.0523599
+position = Vector2(103, -184)
+rotation = -0.0296706
 scale = Vector2(0.3, 0.3)
 texture = ExtResource("3_gxdii")
 offset = Vector2(2.08165e-12, -200)
 
 [node name="PowerMeterLightBurst" type="Sprite2D" parent="GUI/PowerMeter"]
 modulate = Color(1, 1, 0.843137, 1)
-position = Vector2(-275, -243.331)
-scale = Vector2(0.25, 0.25)
+position = Vector2(-278.334, -243.331)
+scale = Vector2(0.3, 0.3)
 texture = ExtResource("12_3fce4")
 
 [node name="Filament" type="Sprite2D" parent="GUI/PowerMeter/PowerMeterLightBurst"]
@@ -473,11 +474,12 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="VBoxContainer" type="VBoxContainer" parent="GUI"]
+z_index = 1
 layout_mode = 0
-offset_left = 1015.0
-offset_top = 2.0
-offset_right = 1151.0
-offset_bottom = 50.0
+offset_left = 1424.0
+offset_top = 58.0
+offset_right = 1560.0
+offset_bottom = 114.0
 alignment = 1
 
 [node name="Currency" type="Label" parent="GUI/VBoxContainer"]
@@ -583,7 +585,7 @@ offset_bottom = 202.0
 text = "  No  "
 
 [node name="Clock" type="Sprite2D" parent="GUI"]
-position = Vector2(222, 152)
+position = Vector2(226, 155)
 scale = Vector2(0.3, 0.3)
 texture = ExtResource("9_a20wn")
 
@@ -618,6 +620,11 @@ position = Vector2(1856, 504)
 rotation = -1.5708
 scale = Vector2(0.275, 0.275)
 texture = ExtResource("11_5oy5m")
+
+[node name="ViewScreen" type="Sprite2D" parent="GUI"]
+position = Vector2(1622, 83)
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("2_rdfey")
 
 [connection signal="pressed" from="GUI/Build/BuildButton" to="GUI/Build" method="_on_build_button_pressed"]
 [connection signal="mouse_entered" from="GUI/Build/RoomPanel" to="GUI/Build" method="_on_room_panel_mouse_entered"]
