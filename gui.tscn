@@ -1,16 +1,16 @@
 [gd_scene load_steps=38 format=3 uid="uid://cb8lng77y3kwm"]
 
 [ext_resource type="Script" path="res://scripts/ui/GUI.gd" id="1_yc0k1"]
-[ext_resource type="Texture2D" uid="uid://b7ci31uxx3in3" path="res://assets/GUI/power-meter.png" id="2_m17qj"]
+[ext_resource type="Texture2D" uid="uid://bg5gnnxbufgam" path="res://assets/GUI/power-meter.png" id="2_m17qj"]
 [ext_resource type="Texture2D" uid="uid://12wi58pijmfg" path="res://assets/GUI/view-screen.png" id="2_rdfey"]
 [ext_resource type="Texture2D" uid="uid://crpwfpudhatrq" path="res://assets/GUI/dial.png" id="3_gxdii"]
 [ext_resource type="Texture2D" uid="uid://6ok22b8ogh3a" path="res://assets/GUI/radial.png" id="3_ixbel"]
 [ext_resource type="Script" path="res://scripts/ui/Build.gd" id="4_fujp0"]
 [ext_resource type="Texture2D" uid="uid://c4dguxm0oy6t5" path="res://assets/GUI/filament.png" id="4_uuqsp"]
-[ext_resource type="Texture2D" uid="uid://bb4awhuhh4i3r" path="res://assets/GUI/hammer-icon.png" id="5_cbcuv"]
+[ext_resource type="Texture2D" uid="uid://dxyi558sqthwu" path="res://assets/GUI/hammer-icon.png" id="5_cbcuv"]
 [ext_resource type="Texture2D" uid="uid://d36pirpjdtfrt" path="res://assets/GUI/cross-hammer-icon.png" id="6_nem4v"]
 [ext_resource type="Texture2D" uid="uid://cycqtp3ml1bgf" path="res://assets/GUI/paper-back.png" id="8_sr1my"]
-[ext_resource type="Texture2D" uid="uid://blo261a6mqidv" path="res://assets/GUI/clock.png" id="9_a20wn"]
+[ext_resource type="Texture2D" uid="uid://2vof5uvanb7" path="res://assets/GUI/clock.png" id="9_a20wn"]
 [ext_resource type="Texture2D" uid="uid://b8rq101wopsf4" path="res://assets/GUI/jupiter-motif.png" id="9_g1jby"]
 [ext_resource type="Texture2D" uid="uid://cx0lmtowilep7" path="res://assets/GUI/sun-motif.png" id="10_xnxf8"]
 [ext_resource type="Texture2D" uid="uid://dmb2c7oas0f1u" path="res://assets/GUI/glass-tube.png" id="11_5oy5m"]
@@ -370,12 +370,12 @@ script = ExtResource("1_yc0k1")
 resources = ExtResource("2_rdfey")
 
 [node name="PowerMeter" type="Sprite2D" parent="GUI"]
-position = Vector2(1734, 949)
+position = Vector2(1735, 920)
 scale = Vector2(0.3, 0.3)
 texture = ExtResource("2_m17qj")
 
 [node name="Dial" type="Sprite2D" parent="GUI/PowerMeter"]
-position = Vector2(103, -184)
+position = Vector2(103, -74.001)
 rotation = -0.0296706
 scale = Vector2(0.3, 0.3)
 texture = ExtResource("3_gxdii")
@@ -383,7 +383,7 @@ offset = Vector2(2.08165e-12, -200)
 
 [node name="PowerMeterLightBurst" type="Sprite2D" parent="GUI/PowerMeter"]
 modulate = Color(1, 1, 0.843137, 1)
-position = Vector2(-278.334, -243.331)
+position = Vector2(-278.334, -133.332)
 scale = Vector2(0.3, 0.3)
 texture = ExtResource("12_3fce4")
 
@@ -503,11 +503,10 @@ script = ExtResource("4_fujp0")
 
 [node name="BuildButton" type="Button" parent="GUI/Build"]
 layout_mode = 0
-offset_left = 6.0
-offset_top = 5.0
-offset_right = 1102.0
-offset_bottom = 1037.0
-scale = Vector2(0.03, 0.03)
+offset_top = -113.0
+offset_right = 1920.0
+offset_bottom = 967.0
+scale = Vector2(0.15, 0.15)
 theme_override_styles/normal = SubResource("StyleBoxFlat_1c2m3")
 theme_override_styles/hover = SubResource("StyleBoxFlat_c2vui")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_uf6tv")
@@ -616,7 +615,7 @@ offset_bottom = 60.0
 label_settings = SubResource("LabelSettings_e4e6q")
 
 [node name="HydrogenMeter" type="Sprite2D" parent="GUI"]
-position = Vector2(1856, 504)
+position = Vector2(1856, 498)
 rotation = -1.5708
 scale = Vector2(0.275, 0.275)
 texture = ExtResource("11_5oy5m")
