@@ -12,6 +12,7 @@ var drafting_tileset_id: int = 1
 var invalid_tileset_id: int = 2
 
 var is_editing = false
+var is_confirming = false
 var initial_tile_coords = Vector2i()
 var transverse_tile_coords = Vector2i()
 var any_invalid = false
@@ -35,14 +36,16 @@ func _init(gui: Control, build_menu: Control, station: Station, base_tile_map: T
 	self.build_tile_map = build_tile_map
 	self.rooms = rooms
 	self.room_types = room_types
+	
 
-func start_editing():
+func start_editing() -> void:
 	is_editing = true
 	selected_room_type = get_room_type_by_id(selected_room_type_id)	
 
-func stop_editing():
+func stop_editing() -> void:
 	is_editing = false
 	selected_room_type_id = 0 # Deselect
+	build_tile_map.clear_layer(drafting_layer)
 
 # --- Input functions ---
 
@@ -64,21 +67,21 @@ func on_left_mouse_button_press(event: InputEvent, selected_room_type_id: int) -
 	elif is_editing:
 		if !any_invalid:
 			confirm_room_details()
-			stop_editing()
 
 func on_right_mouse_button_press(event: InputEvent) -> void:
 	if is_editing:
-		build_tile_map.clear_layer(drafting_layer)
 		stop_editing()
 		
 func on_mouse_motion(event: InputEvent) -> void:
-	if is_editing:
+	if is_editing && !is_confirming:
 		transverse_tile_coords = base_tile_map.local_to_map(event.position)
 		draft_room(initial_tile_coords, transverse_tile_coords)
 	elif !is_editing:
 		select_tile(base_tile_map.local_to_map(event.position))
 
-func select_tile(coords: Vector2i):
+# -- Selection and drawing functions
+
+func select_tile(coords: Vector2i) -> void:
 	# Clear layer
 	build_tile_map.clear_layer(drafting_layer)
 	
@@ -90,7 +93,7 @@ func select_tile(coords: Vector2i):
 		build_tile_map.set_cell(drafting_layer, coords, invalid_tileset_id, Vector2i(0, 0))
 		any_invalid = true
 
-func draft_room(initial_corner: Vector2i, opposite_corner: Vector2i):
+func draft_room(initial_corner: Vector2i, opposite_corner: Vector2i) -> void:
 	# Clear previous selection
 	build_tile_map.clear_layer(drafting_layer)
 	
@@ -119,18 +122,6 @@ func draft_room(initial_corner: Vector2i, opposite_corner: Vector2i):
 				tileset_id = drafting_tileset_id
 			build_tile_map.set_cell(drafting_layer, coords, tileset_id, Vector2i(0, 0))
 
-
-func confirm_room_details() -> void:
-	for room_type in room_types:
-		if room_type.id == selected_room_type_id:
-			var room_size = calculate_tile_count(initial_tile_coords, transverse_tile_coords)
-			var room_cost_total = room_type.price * room_size
-			var popup_message = "Build " + room_type.name + " for " + str(room_cost_total)
-			gui.show_popup(popup_message)
-			
-			# If confirmed:
-			set_room()
-
 func set_room() -> void:	
 	# Create a new Room instance and add it to the array
 	var new_room = Room.new()
@@ -141,16 +132,28 @@ func set_room() -> void:
 	rooms.append(new_room)
 	# Make deductions for buying rooms 
 	station.currency -= calculate_room_price()
-	print("Money remaining:", station.currency)
+	print("Money remaining: ", station.currency)
 	
 	draw_rooms()
 	build_menu.build_mode = false
-	print('Current rooms:', rooms)
+	print("Current rooms: ", rooms)
 
-func clear_all() -> void:
-	is_editing = false
-	selected_room_type_id = 0 # Deselect
-	build_tile_map.clear_layer(drafting_layer)
+func confirm_room_details() -> void:
+	is_confirming = true
+	for room_type in room_types:
+		if room_type.id == selected_room_type_id:
+			var room_size = calculate_tile_count(initial_tile_coords, transverse_tile_coords)
+			var room_cost_total = room_type.price * room_size
+			var popup_message = "Build " + room_type.name + " for " + str(room_cost_total)
+			gui.show_popup("confirm_build", popup_message, confirm_build, cancel_build)
+
+func confirm_build() -> void:
+	set_room()
+	is_confirming = false
+
+func cancel_build() -> void:
+	stop_editing()
+	is_confirming = false
 
 func draw_rooms() -> void:
 	# Clear drafting layer
@@ -168,7 +171,6 @@ func draw_rooms() -> void:
 				for x in range(min_x, max_x + 1):
 					for y in range(min_y, max_y + 1):
 						build_tile_map.set_cell(building_layer, Vector2(x, y), tileset_id, Vector2i(0, 0))
-		
 
 # --- Helper functions ---
 

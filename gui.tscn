@@ -567,7 +567,7 @@ label_settings = SubResource("LabelSettings_ahsq4")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="yesButton" type="Button" parent="GUI/Build/PopupPanel"]
+[node name="YesButton" type="Button" parent="GUI/Build/PopupPanel"]
 layout_mode = 2
 offset_left = 277.0
 offset_top = 167.0
@@ -575,7 +575,7 @@ offset_right = 320.0
 offset_bottom = 202.0
 text = " Yes "
 
-[node name="noButton" type="Button" parent="GUI/Build/PopupPanel"]
+[node name="NoButton" type="Button" parent="GUI/Build/PopupPanel"]
 layout_mode = 2
 offset_left = 324.0
 offset_top = 167.0
@@ -631,5 +631,5 @@ texture = ExtResource("2_rdfey")
 [connection signal="mouse_entered" from="GUI/Build/RoomPanel/BuildCloseButton" to="GUI/Build" method="_on_room_panel_mouse_entered"]
 [connection signal="mouse_exited" from="GUI/Build/RoomPanel/BuildCloseButton" to="GUI/Build" method="_on_room_panel_mouse_exited"]
 [connection signal="pressed" from="GUI/Build/RoomPanel/BuildCloseButton" to="GUI/Build" method="_on_build_close_button_pressed"]
-[connection signal="pressed" from="GUI/Build/PopupPanel/yesButton" to="GUI/Build" method="_on_popup_yes_button_pressed"]
-[connection signal="pressed" from="GUI/Build/PopupPanel/noButton" to="GUI/Build" method="_on_popup_no_button_pressed"]
+[connection signal="pressed" from="GUI/Build/PopupPanel/YesButton" to="GUI/Build" method="_on_popup_yes_button_pressed"]
+[connection signal="pressed" from="GUI/Build/PopupPanel/NoButton" to="GUI/Build" method="_on_popup_no_button_pressed"]

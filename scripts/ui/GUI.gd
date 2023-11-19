@@ -11,6 +11,7 @@ var dial_rotation_direction: int
 func _ready():
 	delta_time = 0
 	dial_rotation_direction = 1
+
 #	if resources:
 		# Set values of GUI nodes with station resource values and update text 
 #		$HydrogenBar.value = resources.hydrogen;
@@ -25,6 +26,7 @@ func _ready():
 		
 		# Add progress bars needing animation in array below
 #		animate_progress_bar([$HydrogenBar, $PowerBar]);
+
 func _process(delta):
 	delta_time += delta
 	
@@ -39,7 +41,7 @@ func _process(delta):
 		delta_time = 0
 		
 # Animate progress bars to start from 0 and stop at their current value
-func animate_progress_bar(progressBarArr):
+func animate_progress_bar(progressBarArr) -> void:
 	for x in progressBarArr:	
 		var tween = get_tree().create_tween();
 		tween.tween_property(x, "value", x.value, 2).set_trans(Tween.TRANS_LINEAR).from(0);
@@ -49,7 +51,16 @@ func update_clock(in_game_time) -> void:
 	var minutes = int((in_game_time % 3600) / 60)
 	$Clock/Time.text = str(hours).pad_zeros(2) + ":" + str(minutes).pad_zeros(2)
 
-func show_popup(popup_message):
-	# TODO disable button click for rooms
-	$Build/PopupPanel.visible = true
-	$Build/PopupPanel/Label.text = popup_message
+func show_popup(popup_type: String, popup_message: String, accept_function: Callable, decline_function: Callable) -> void:
+	if popup_type == "confirm_build":
+		$Build/PopupPanel.visible = true
+		$Build/PopupPanel/Label.text = popup_message
+		# Connect the buttons to the confirmation functions in the GUI script
+		$Build/PopupPanel/YesButton.pressed.connect(accept_function)
+		$Build/PopupPanel/NoButton.pressed.connect(decline_function)
+	elif popup_type == "room_details":
+		pass
+#		$Build/PopupPanel.visible = true
+#		$Build/PopupPanel/Label.text = popup_message
+		# Show the room_details_popup
+		# ... (handle the room_details_popup logic and connect signals as needed)

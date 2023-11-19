@@ -41,7 +41,7 @@ func select_room(selected_tile_coords: Vector2i) -> void:
 			selected_room = room
 			var room_details = get_room_details(room)
 			var popup_message = "You have selected " + room_details.name + " it's size is " + str(room_details.size) + " and it's power consumption is " + str(room_details.powerConsumption)
-			gui.show_popup(popup_message)
+			gui.show_popup("room_details", popup_message, confirm_delete, cancel_delete)
 			
 func get_room_details(room):
 	# Create a JSON dictionary
@@ -52,7 +52,13 @@ func get_room_details(room):
 			room_details.size = calculate_tile_count(room.topLeft, room.bottomRight)
 			room_details.powerConsumption = room_type.powerConsumption * room_details.size
 	return room_details
-			
+
+func confirm_delete() -> void:
+	pass
+
+func cancel_delete() -> void:
+	pass
+
 func calculate_tile_count(vector1: Vector2, vector2: Vector2) -> int:
 	var difference_x = abs(vector2.x - vector1.x) + 1 
 	var difference_y = abs(vector2.y - vector1.y) + 1

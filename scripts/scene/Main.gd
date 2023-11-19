@@ -105,7 +105,7 @@ func _input(event: InputEvent) -> void:
 	if build_menu.build_mode == true:
 		room_builder.handle_building_input(event, build_menu.selected_room_type_id)
 	elif build_menu.build_mode == false:
-		room_builder.clear_all()
+		room_builder.stop_editing()
 		room_selector.handle_select_input(event)
 		
 
