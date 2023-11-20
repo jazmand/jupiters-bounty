@@ -194,6 +194,7 @@ func check_selection_valid(coords: Vector2i, check_price_and_size: bool = false)
 	elif check_price_and_size:
 		var tile_count = calculate_tile_count(initial_tile_coords, transverse_tile_coords)
 		var room_width = abs(transverse_tile_coords.x - initial_tile_coords.x) + 1
+		var room_height = abs(transverse_tile_coords.y - initial_tile_coords.y) + 1
 		
 		if (calculate_room_price() >= station.currency):
 			is_valid = false
@@ -201,7 +202,7 @@ func check_selection_valid(coords: Vector2i, check_price_and_size: bool = false)
 		if (tile_count < selected_room_type.minTiles or tile_count > selected_room_type.maxTiles):
 			is_valid = false
 			
-		if room_width <= 1:
+		if room_width <= 1 or room_height <=1:
 			is_valid = false
 			
 	return is_valid
