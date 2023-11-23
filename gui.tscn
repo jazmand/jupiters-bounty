@@ -1,10 +1,10 @@
-[gd_scene load_steps=34 format=3 uid="uid://cb8lng77y3kwm"]
+[gd_scene load_steps=25 format=3 uid="uid://cb8lng77y3kwm"]
 
 [ext_resource type="Script" path="res://scripts/ui/GUI.gd" id="1_yc0k1"]
 [ext_resource type="Texture2D" uid="uid://bg5gnnxbufgam" path="res://assets/GUI/power-meter.png" id="2_m17qj"]
 [ext_resource type="Texture2D" uid="uid://12wi58pijmfg" path="res://assets/GUI/view-screen.png" id="2_rdfey"]
+[ext_resource type="Resource" uid="uid://b4rrun36bjda0" path="res://assets/station/station_resources.tres" id="2_s5blo"]
 [ext_resource type="Texture2D" uid="uid://crpwfpudhatrq" path="res://assets/GUI/dial.png" id="3_gxdii"]
-[ext_resource type="Texture2D" uid="uid://6ok22b8ogh3a" path="res://assets/GUI/radial.png" id="3_ixbel"]
 [ext_resource type="Script" path="res://scripts/ui/Build.gd" id="4_fujp0"]
 [ext_resource type="Texture2D" uid="uid://c4dguxm0oy6t5" path="res://assets/GUI/filament.png" id="4_uuqsp"]
 [ext_resource type="Texture2D" uid="uid://dxyi558sqthwu" path="res://assets/GUI/hammer-icon.png" id="5_cbcuv"]
@@ -15,299 +15,6 @@
 [ext_resource type="Texture2D" uid="uid://cx0lmtowilep7" path="res://assets/GUI/sun-motif.png" id="10_xnxf8"]
 [ext_resource type="Texture2D" uid="uid://dmb2c7oas0f1u" path="res://assets/GUI/glass-tube.png" id="11_5oy5m"]
 [ext_resource type="Texture2D" uid="uid://bcr0cjkhy5ik" path="res://assets/GUI/light-burst.png" id="12_3fce4"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_serxg"]
-bg_color = Color(0.258824, 0.258824, 0.258824, 1)
-corner_radius_top_left = 64
-corner_radius_bottom_left = 64
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wegjk"]
-bg_color = Color(0.156863, 0.537255, 0.662745, 1)
-corner_radius_top_left = 64
-corner_radius_bottom_left = 64
-
-[sub_resource type="FontFile" id="FontFile_o70lh"]
-subpixel_positioning = 0
-msdf_pixel_range = 14
-msdf_size = 128
-face_index = null
-embolden = null
-transform = null
-cache/0/16/0/ascent = 0.0
-cache/0/16/0/descent = 0.0
-cache/0/16/0/underline_position = 0.0
-cache/0/16/0/underline_thickness = 0.0
-cache/0/16/0/scale = 1.0
-cache/0/16/0/kerning_overrides/16/0 = Vector2(0, 0)
-cache/0/16/0/kerning_overrides/15/0 = Vector2(0, 0)
-cache/0/16/0/kerning_overrides/14/0 = Vector2(0, 0)
-cache/0/16/0/kerning_overrides/13/0 = Vector2(0, 0)
-cache/0/16/0/kerning_overrides/12/0 = Vector2(0, 0)
-cache/0/16/0/kerning_overrides/11/0 = Vector2(0, 0)
-cache/0/16/0/kerning_overrides/10/0 = Vector2(0, 0)
-cache/0/16/0/kerning_overrides/9/0 = Vector2(0, 0)
-cache/0/16/0/kerning_overrides/8/0 = Vector2(0, 0)
-cache/0/16/0/kerning_overrides/7/0 = Vector2(0, 0)
-cache/0/16/0/kerning_overrides/6/0 = Vector2(0, 0)
-cache/0/16/0/kerning_overrides/5/0 = Vector2(0, 0)
-cache/0/16/0/kerning_overrides/4/0 = Vector2(0, 0)
-cache/0/15/0/ascent = 0.0
-cache/0/15/0/descent = 0.0
-cache/0/15/0/underline_position = 0.0
-cache/0/15/0/underline_thickness = 0.0
-cache/0/15/0/scale = 1.0
-cache/0/15/0/kerning_overrides/16/0 = Vector2(0, 0)
-cache/0/15/0/kerning_overrides/15/0 = Vector2(0, 0)
-cache/0/15/0/kerning_overrides/14/0 = Vector2(0, 0)
-cache/0/15/0/kerning_overrides/13/0 = Vector2(0, 0)
-cache/0/15/0/kerning_overrides/12/0 = Vector2(0, 0)
-cache/0/15/0/kerning_overrides/11/0 = Vector2(0, 0)
-cache/0/15/0/kerning_overrides/10/0 = Vector2(0, 0)
-cache/0/15/0/kerning_overrides/9/0 = Vector2(0, 0)
-cache/0/15/0/kerning_overrides/8/0 = Vector2(0, 0)
-cache/0/15/0/kerning_overrides/7/0 = Vector2(0, 0)
-cache/0/15/0/kerning_overrides/6/0 = Vector2(0, 0)
-cache/0/15/0/kerning_overrides/5/0 = Vector2(0, 0)
-cache/0/15/0/kerning_overrides/4/0 = Vector2(0, 0)
-cache/0/14/0/ascent = 0.0
-cache/0/14/0/descent = 0.0
-cache/0/14/0/underline_position = 0.0
-cache/0/14/0/underline_thickness = 0.0
-cache/0/14/0/scale = 1.0
-cache/0/14/0/kerning_overrides/16/0 = Vector2(0, 0)
-cache/0/14/0/kerning_overrides/15/0 = Vector2(0, 0)
-cache/0/14/0/kerning_overrides/14/0 = Vector2(0, 0)
-cache/0/14/0/kerning_overrides/13/0 = Vector2(0, 0)
-cache/0/14/0/kerning_overrides/12/0 = Vector2(0, 0)
-cache/0/14/0/kerning_overrides/11/0 = Vector2(0, 0)
-cache/0/14/0/kerning_overrides/10/0 = Vector2(0, 0)
-cache/0/14/0/kerning_overrides/9/0 = Vector2(0, 0)
-cache/0/14/0/kerning_overrides/8/0 = Vector2(0, 0)
-cache/0/14/0/kerning_overrides/7/0 = Vector2(0, 0)
-cache/0/14/0/kerning_overrides/6/0 = Vector2(0, 0)
-cache/0/14/0/kerning_overrides/5/0 = Vector2(0, 0)
-cache/0/14/0/kerning_overrides/4/0 = Vector2(0, 0)
-cache/0/13/0/ascent = 0.0
-cache/0/13/0/descent = 0.0
-cache/0/13/0/underline_position = 0.0
-cache/0/13/0/underline_thickness = 0.0
-cache/0/13/0/scale = 1.0
-cache/0/13/0/kerning_overrides/16/0 = Vector2(0, 0)
-cache/0/13/0/kerning_overrides/15/0 = Vector2(0, 0)
-cache/0/13/0/kerning_overrides/14/0 = Vector2(0, 0)
-cache/0/13/0/kerning_overrides/13/0 = Vector2(0, 0)
-cache/0/13/0/kerning_overrides/12/0 = Vector2(0, 0)
-cache/0/13/0/kerning_overrides/11/0 = Vector2(0, 0)
-cache/0/13/0/kerning_overrides/10/0 = Vector2(0, 0)
-cache/0/13/0/kerning_overrides/9/0 = Vector2(0, 0)
-cache/0/13/0/kerning_overrides/8/0 = Vector2(0, 0)
-cache/0/13/0/kerning_overrides/7/0 = Vector2(0, 0)
-cache/0/13/0/kerning_overrides/6/0 = Vector2(0, 0)
-cache/0/13/0/kerning_overrides/5/0 = Vector2(0, 0)
-cache/0/13/0/kerning_overrides/4/0 = Vector2(0, 0)
-cache/0/12/0/ascent = 0.0
-cache/0/12/0/descent = 0.0
-cache/0/12/0/underline_position = 0.0
-cache/0/12/0/underline_thickness = 0.0
-cache/0/12/0/scale = 1.0
-cache/0/12/0/kerning_overrides/16/0 = Vector2(0, 0)
-cache/0/12/0/kerning_overrides/15/0 = Vector2(0, 0)
-cache/0/12/0/kerning_overrides/14/0 = Vector2(0, 0)
-cache/0/12/0/kerning_overrides/13/0 = Vector2(0, 0)
-cache/0/12/0/kerning_overrides/12/0 = Vector2(0, 0)
-cache/0/12/0/kerning_overrides/11/0 = Vector2(0, 0)
-cache/0/12/0/kerning_overrides/10/0 = Vector2(0, 0)
-cache/0/12/0/kerning_overrides/9/0 = Vector2(0, 0)
-cache/0/12/0/kerning_overrides/8/0 = Vector2(0, 0)
-cache/0/12/0/kerning_overrides/7/0 = Vector2(0, 0)
-cache/0/12/0/kerning_overrides/6/0 = Vector2(0, 0)
-cache/0/12/0/kerning_overrides/5/0 = Vector2(0, 0)
-cache/0/12/0/kerning_overrides/4/0 = Vector2(0, 0)
-cache/0/11/0/ascent = 0.0
-cache/0/11/0/descent = 0.0
-cache/0/11/0/underline_position = 0.0
-cache/0/11/0/underline_thickness = 0.0
-cache/0/11/0/scale = 1.0
-cache/0/11/0/kerning_overrides/16/0 = Vector2(0, 0)
-cache/0/11/0/kerning_overrides/15/0 = Vector2(0, 0)
-cache/0/11/0/kerning_overrides/14/0 = Vector2(0, 0)
-cache/0/11/0/kerning_overrides/13/0 = Vector2(0, 0)
-cache/0/11/0/kerning_overrides/12/0 = Vector2(0, 0)
-cache/0/11/0/kerning_overrides/11/0 = Vector2(0, 0)
-cache/0/11/0/kerning_overrides/10/0 = Vector2(0, 0)
-cache/0/11/0/kerning_overrides/9/0 = Vector2(0, 0)
-cache/0/11/0/kerning_overrides/8/0 = Vector2(0, 0)
-cache/0/11/0/kerning_overrides/7/0 = Vector2(0, 0)
-cache/0/11/0/kerning_overrides/6/0 = Vector2(0, 0)
-cache/0/11/0/kerning_overrides/5/0 = Vector2(0, 0)
-cache/0/11/0/kerning_overrides/4/0 = Vector2(0, 0)
-cache/0/10/0/ascent = 0.0
-cache/0/10/0/descent = 0.0
-cache/0/10/0/underline_position = 0.0
-cache/0/10/0/underline_thickness = 0.0
-cache/0/10/0/scale = 1.0
-cache/0/10/0/kerning_overrides/16/0 = Vector2(0, 0)
-cache/0/10/0/kerning_overrides/15/0 = Vector2(0, 0)
-cache/0/10/0/kerning_overrides/14/0 = Vector2(0, 0)
-cache/0/10/0/kerning_overrides/13/0 = Vector2(0, 0)
-cache/0/10/0/kerning_overrides/12/0 = Vector2(0, 0)
-cache/0/10/0/kerning_overrides/11/0 = Vector2(0, 0)
-cache/0/10/0/kerning_overrides/10/0 = Vector2(0, 0)
-cache/0/10/0/kerning_overrides/9/0 = Vector2(0, 0)
-cache/0/10/0/kerning_overrides/8/0 = Vector2(0, 0)
-cache/0/10/0/kerning_overrides/7/0 = Vector2(0, 0)
-cache/0/10/0/kerning_overrides/6/0 = Vector2(0, 0)
-cache/0/10/0/kerning_overrides/5/0 = Vector2(0, 0)
-cache/0/10/0/kerning_overrides/4/0 = Vector2(0, 0)
-cache/0/9/0/ascent = 0.0
-cache/0/9/0/descent = 0.0
-cache/0/9/0/underline_position = 0.0
-cache/0/9/0/underline_thickness = 0.0
-cache/0/9/0/scale = 1.0
-cache/0/9/0/kerning_overrides/16/0 = Vector2(0, 0)
-cache/0/9/0/kerning_overrides/15/0 = Vector2(0, 0)
-cache/0/9/0/kerning_overrides/14/0 = Vector2(0, 0)
-cache/0/9/0/kerning_overrides/13/0 = Vector2(0, 0)
-cache/0/9/0/kerning_overrides/12/0 = Vector2(0, 0)
-cache/0/9/0/kerning_overrides/11/0 = Vector2(0, 0)
-cache/0/9/0/kerning_overrides/10/0 = Vector2(0, 0)
-cache/0/9/0/kerning_overrides/9/0 = Vector2(0, 0)
-cache/0/9/0/kerning_overrides/8/0 = Vector2(0, 0)
-cache/0/9/0/kerning_overrides/7/0 = Vector2(0, 0)
-cache/0/9/0/kerning_overrides/6/0 = Vector2(0, 0)
-cache/0/9/0/kerning_overrides/5/0 = Vector2(0, 0)
-cache/0/9/0/kerning_overrides/4/0 = Vector2(0, 0)
-cache/0/8/0/ascent = 0.0
-cache/0/8/0/descent = 0.0
-cache/0/8/0/underline_position = 0.0
-cache/0/8/0/underline_thickness = 0.0
-cache/0/8/0/scale = 1.0
-cache/0/8/0/kerning_overrides/16/0 = Vector2(0, 0)
-cache/0/8/0/kerning_overrides/15/0 = Vector2(0, 0)
-cache/0/8/0/kerning_overrides/14/0 = Vector2(0, 0)
-cache/0/8/0/kerning_overrides/13/0 = Vector2(0, 0)
-cache/0/8/0/kerning_overrides/12/0 = Vector2(0, 0)
-cache/0/8/0/kerning_overrides/11/0 = Vector2(0, 0)
-cache/0/8/0/kerning_overrides/10/0 = Vector2(0, 0)
-cache/0/8/0/kerning_overrides/9/0 = Vector2(0, 0)
-cache/0/8/0/kerning_overrides/8/0 = Vector2(0, 0)
-cache/0/8/0/kerning_overrides/7/0 = Vector2(0, 0)
-cache/0/8/0/kerning_overrides/6/0 = Vector2(0, 0)
-cache/0/8/0/kerning_overrides/5/0 = Vector2(0, 0)
-cache/0/8/0/kerning_overrides/4/0 = Vector2(0, 0)
-cache/0/7/0/ascent = 0.0
-cache/0/7/0/descent = 0.0
-cache/0/7/0/underline_position = 0.0
-cache/0/7/0/underline_thickness = 0.0
-cache/0/7/0/scale = 1.0
-cache/0/7/0/kerning_overrides/16/0 = Vector2(0, 0)
-cache/0/7/0/kerning_overrides/15/0 = Vector2(0, 0)
-cache/0/7/0/kerning_overrides/14/0 = Vector2(0, 0)
-cache/0/7/0/kerning_overrides/13/0 = Vector2(0, 0)
-cache/0/7/0/kerning_overrides/12/0 = Vector2(0, 0)
-cache/0/7/0/kerning_overrides/11/0 = Vector2(0, 0)
-cache/0/7/0/kerning_overrides/10/0 = Vector2(0, 0)
-cache/0/7/0/kerning_overrides/9/0 = Vector2(0, 0)
-cache/0/7/0/kerning_overrides/8/0 = Vector2(0, 0)
-cache/0/7/0/kerning_overrides/7/0 = Vector2(0, 0)
-cache/0/7/0/kerning_overrides/6/0 = Vector2(0, 0)
-cache/0/7/0/kerning_overrides/5/0 = Vector2(0, 0)
-cache/0/7/0/kerning_overrides/4/0 = Vector2(0, 0)
-cache/0/6/0/ascent = 0.0
-cache/0/6/0/descent = 0.0
-cache/0/6/0/underline_position = 0.0
-cache/0/6/0/underline_thickness = 0.0
-cache/0/6/0/scale = 1.0
-cache/0/6/0/kerning_overrides/16/0 = Vector2(0, 0)
-cache/0/6/0/kerning_overrides/15/0 = Vector2(0, 0)
-cache/0/6/0/kerning_overrides/14/0 = Vector2(0, 0)
-cache/0/6/0/kerning_overrides/13/0 = Vector2(0, 0)
-cache/0/6/0/kerning_overrides/12/0 = Vector2(0, 0)
-cache/0/6/0/kerning_overrides/11/0 = Vector2(0, 0)
-cache/0/6/0/kerning_overrides/10/0 = Vector2(0, 0)
-cache/0/6/0/kerning_overrides/9/0 = Vector2(0, 0)
-cache/0/6/0/kerning_overrides/8/0 = Vector2(0, 0)
-cache/0/6/0/kerning_overrides/7/0 = Vector2(0, 0)
-cache/0/6/0/kerning_overrides/6/0 = Vector2(0, 0)
-cache/0/6/0/kerning_overrides/5/0 = Vector2(0, 0)
-cache/0/6/0/kerning_overrides/4/0 = Vector2(0, 0)
-cache/0/5/0/ascent = 0.0
-cache/0/5/0/descent = 0.0
-cache/0/5/0/underline_position = 0.0
-cache/0/5/0/underline_thickness = 0.0
-cache/0/5/0/scale = 1.0
-cache/0/5/0/kerning_overrides/16/0 = Vector2(0, 0)
-cache/0/5/0/kerning_overrides/15/0 = Vector2(0, 0)
-cache/0/5/0/kerning_overrides/14/0 = Vector2(0, 0)
-cache/0/5/0/kerning_overrides/13/0 = Vector2(0, 0)
-cache/0/5/0/kerning_overrides/12/0 = Vector2(0, 0)
-cache/0/5/0/kerning_overrides/11/0 = Vector2(0, 0)
-cache/0/5/0/kerning_overrides/10/0 = Vector2(0, 0)
-cache/0/5/0/kerning_overrides/9/0 = Vector2(0, 0)
-cache/0/5/0/kerning_overrides/8/0 = Vector2(0, 0)
-cache/0/5/0/kerning_overrides/7/0 = Vector2(0, 0)
-cache/0/5/0/kerning_overrides/6/0 = Vector2(0, 0)
-cache/0/5/0/kerning_overrides/5/0 = Vector2(0, 0)
-cache/0/5/0/kerning_overrides/4/0 = Vector2(0, 0)
-cache/0/4/0/ascent = 0.0
-cache/0/4/0/descent = 0.0
-cache/0/4/0/underline_position = 0.0
-cache/0/4/0/underline_thickness = 0.0
-cache/0/4/0/scale = 1.0
-cache/0/4/0/kerning_overrides/16/0 = Vector2(0, 0)
-cache/0/4/0/kerning_overrides/15/0 = Vector2(0, 0)
-cache/0/4/0/kerning_overrides/14/0 = Vector2(0, 0)
-cache/0/4/0/kerning_overrides/13/0 = Vector2(0, 0)
-cache/0/4/0/kerning_overrides/12/0 = Vector2(0, 0)
-cache/0/4/0/kerning_overrides/11/0 = Vector2(0, 0)
-cache/0/4/0/kerning_overrides/10/0 = Vector2(0, 0)
-cache/0/4/0/kerning_overrides/9/0 = Vector2(0, 0)
-cache/0/4/0/kerning_overrides/8/0 = Vector2(0, 0)
-cache/0/4/0/kerning_overrides/7/0 = Vector2(0, 0)
-cache/0/4/0/kerning_overrides/6/0 = Vector2(0, 0)
-cache/0/4/0/kerning_overrides/5/0 = Vector2(0, 0)
-cache/0/4/0/kerning_overrides/4/0 = Vector2(0, 0)
-
-[sub_resource type="LabelSettings" id="LabelSettings_l6ti5"]
-line_spacing = 0.0
-font = SubResource("FontFile_o70lh")
-font_size = 11
-outline_color = Color(0, 0, 0, 1)
-shadow_size = 2
-shadow_color = Color(0, 0, 0, 1)
-
-[sub_resource type="SystemFont" id="SystemFont_gikku"]
-font_weight = 325
-subpixel_positioning = 0
-
-[sub_resource type="LabelSettings" id="LabelSettings_mhadr"]
-line_spacing = -6.0
-font = SubResource("SystemFont_gikku")
-font_size = 9
-shadow_size = 2
-shadow_color = Color(0, 0, 0, 1)
-
-[sub_resource type="SystemFont" id="SystemFont_7lh0v"]
-font_names = PackedStringArray("Cascadia Code")
-subpixel_positioning = 0
-
-[sub_resource type="LabelSettings" id="LabelSettings_vwwe0"]
-line_spacing = 0.0
-font = SubResource("SystemFont_7lh0v")
-font_size = 12
-shadow_size = 2
-shadow_color = Color(0, 0, 0, 1)
-
-[sub_resource type="SystemFont" id="SystemFont_87stj"]
-font_names = PackedStringArray("Cascadia Code")
-subpixel_positioning = 0
-
-[sub_resource type="LabelSettings" id="LabelSettings_1x5g1"]
-line_spacing = 0.0
-font = SubResource("SystemFont_87stj")
-font_size = 12
-shadow_size = 2
-shadow_color = Color(0, 0, 0, 1)
 
 [sub_resource type="SystemFont" id="SystemFont_oc4iu"]
 font_names = PackedStringArray("Cascadia Code")
@@ -327,13 +34,8 @@ font = SubResource("SystemFont_51hv2")
 shadow_size = 2
 shadow_color = Color(0, 0, 0, 1)
 
-[sub_resource type="SystemFont" id="SystemFont_1dxa0"]
-font_names = PackedStringArray("Cascadia Code")
-subpixel_positioning = 0
-
-[sub_resource type="LabelSettings" id="LabelSettings_ahsq4"]
-font = SubResource("SystemFont_1dxa0")
-font_size = 25
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wegjk"]
+bg_color = Color(0.117647, 0.52549, 1, 1)
 
 [sub_resource type="SystemFont" id="SystemFont_lvsnc"]
 font_names = PackedStringArray("Gadugi", "Cascadia Code")
@@ -345,6 +47,14 @@ font = SubResource("SystemFont_lvsnc")
 font_size = 40
 shadow_color = Color(0.156863, 0.156863, 0.156863, 0.698039)
 
+[sub_resource type="SystemFont" id="SystemFont_1dxa0"]
+font_names = PackedStringArray("Cascadia Code")
+subpixel_positioning = 0
+
+[sub_resource type="LabelSettings" id="LabelSettings_ahsq4"]
+font = SubResource("SystemFont_1dxa0")
+font_size = 25
+
 [node name="CanvasLayer" type="CanvasLayer"]
 
 [node name="GUI" type="Control" parent="."]
@@ -355,7 +65,30 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_yc0k1")
-resources = ExtResource("2_rdfey")
+resources = ExtResource("2_s5blo")
+
+[node name="ViewScreen" type="Sprite2D" parent="GUI"]
+position = Vector2(1622, 83)
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("2_rdfey")
+
+[node name="CurrencyAndCrew" type="VBoxContainer" parent="GUI"]
+z_index = 1
+layout_mode = 0
+offset_left = 1424.0
+offset_top = 58.0
+offset_right = 1560.0
+offset_bottom = 114.0
+alignment = 1
+
+[node name="Currency" type="Label" parent="GUI/CurrencyAndCrew"]
+layout_mode = 2
+label_settings = SubResource("LabelSettings_kdcap")
+
+[node name="Crew" type="Label" parent="GUI/CurrencyAndCrew"]
+layout_mode = 2
+text = "Crew:"
+label_settings = SubResource("LabelSettings_2rnhy")
 
 [node name="PowerMeter" type="Sprite2D" parent="GUI"]
 position = Vector2(1735, 920)
@@ -381,104 +114,61 @@ position = Vector2(-22.207, 0.00390625)
 scale = Vector2(0.7, 0.7)
 texture = ExtResource("4_uuqsp")
 
-[node name="HydrogenBar" type="ProgressBar" parent="GUI"]
-visible = false
-layout_mode = 0
-offset_left = 1127.0
-offset_top = 58.0
-offset_right = 1153.0
-offset_bottom = 584.0
-theme_override_styles/background = SubResource("StyleBoxFlat_serxg")
+[node name="HydrogenMeter" type="Sprite2D" parent="GUI"]
+top_level = true
+clip_children = 1
+position = Vector2(1856, 498)
+rotation = -1.5708
+scale = Vector2(0.275, 0.275)
+texture = ExtResource("11_5oy5m")
+
+[node name="HydrogenMeterOverlay" type="Sprite2D" parent="GUI/HydrogenMeter"]
+top_level = true
+position = Vector2(1856, 498)
+rotation = -1.5708
+scale = Vector2(0.275, 0.275)
+texture = ExtResource("11_5oy5m")
+
+[node name="HydrogenMeterFluid" type="ProgressBar" parent="GUI/HydrogenMeter"]
+show_behind_parent = true
+offset_left = -989.09
+offset_top = -356.368
+offset_right = 1075.91
+offset_bottom = 319.632
 theme_override_styles/fill = SubResource("StyleBoxFlat_wegjk")
 max_value = 1000.0
-fill_mode = 3
 show_percentage = false
 
-[node name="Hydrogen" type="Label" parent="GUI/HydrogenBar"]
-layout_mode = 0
-offset_left = 9.0
-offset_top = 208.0
-offset_right = 18.0
-offset_bottom = 328.0
-text = "H
-y
-d
-r
-o
-g
-e
-n"
-label_settings = SubResource("LabelSettings_l6ti5")
-horizontal_alignment = 1
-vertical_alignment = 1
-uppercase = true
+[node name="Clock" type="Sprite2D" parent="GUI"]
+position = Vector2(226, 155)
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("9_a20wn")
 
-[node name="Fraction" type="Label" parent="GUI/HydrogenBar"]
-layout_mode = 0
-offset_left = 3.0
-offset_top = 156.0
-offset_right = 24.0
-offset_bottom = 189.0
-theme_override_font_sizes/font_size = 8
-text = "-------"
-label_settings = SubResource("LabelSettings_mhadr")
-horizontal_alignment = 1
-vertical_alignment = 1
+[node name="PaperBack" type="Sprite2D" parent="GUI/Clock"]
+modulate = Color(0.529412, 0.529412, 0.529412, 1)
+z_index = -1
+position = Vector2(282.971, 57.9713)
+rotation = -6.28319
+scale = Vector2(1.35663, 1.35663)
+texture = ExtResource("8_sr1my")
 
-[node name="PowerBar" type="TextureProgressBar" parent="GUI"]
-visible = false
-layout_mode = 0
-offset_left = 1078.0
-offset_top = 582.0
-offset_right = 1150.0
-offset_bottom = 647.0
-fill_mode = 4
-nine_patch_stretch = true
-texture_under = ExtResource("3_ixbel")
-texture_progress = ExtResource("3_ixbel")
-tint_under = Color(0.25098, 0.25098, 0.25098, 1)
-tint_progress = Color(0.027451, 0.298039, 0.105882, 0.831373)
-radial_initial_angle = 180.0
+[node name="JupiterMotif" type="Sprite2D" parent="GUI/Clock/PaperBack"]
+self_modulate = Color(1, 1, 1, 0.431373)
+position = Vector2(42.8571, 0)
+scale = Vector2(0.43, 0.43)
+texture = ExtResource("9_g1jby")
 
-[node name="Percentage" type="Label" parent="GUI/PowerBar"]
-layout_mode = 0
-offset_left = 25.0
-offset_top = 19.0
-offset_right = 50.0
-offset_bottom = 36.0
-text = "%"
-label_settings = SubResource("LabelSettings_vwwe0")
+[node name="Sun-motif" type="Sprite2D" parent="GUI/Clock/PaperBack"]
+self_modulate = Color(1, 0.862745, 0.588235, 0.431373)
+position = Vector2(-185.715, 0.000244141)
+scale = Vector2(0.4, 0.4)
+texture = ExtResource("10_xnxf8")
 
-[node name="Power" type="Label" parent="GUI/PowerBar"]
-layout_mode = 0
-offset_left = 18.0
-offset_top = 28.0
-offset_right = 55.0
-offset_bottom = 45.0
-theme_override_font_sizes/font_size = 2
-text = "Power"
-label_settings = SubResource("LabelSettings_1x5g1")
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="VBoxContainer" type="VBoxContainer" parent="GUI"]
-z_index = 1
-layout_mode = 0
-offset_left = 1424.0
-offset_top = 58.0
-offset_right = 1560.0
-offset_bottom = 114.0
-alignment = 1
-
-[node name="Currency" type="Label" parent="GUI/VBoxContainer"]
-layout_mode = 2
-text = "Currency:"
-label_settings = SubResource("LabelSettings_kdcap")
-
-[node name="Crew" type="Label" parent="GUI/VBoxContainer"]
-layout_mode = 2
-text = "Crew:"
-label_settings = SubResource("LabelSettings_2rnhy")
+[node name="Time" type="Label" parent="GUI/Clock"]
+offset_left = 120.0
+offset_right = 260.0
+offset_bottom = 60.0
+label_settings = SubResource("LabelSettings_e4e6q")
 
 [node name="Build" type="Control" parent="GUI"]
 layout_mode = 3
@@ -568,48 +258,6 @@ offset_top = 167.0
 offset_right = 371.0
 offset_bottom = 202.0
 text = "  No  "
-
-[node name="Clock" type="Sprite2D" parent="GUI"]
-position = Vector2(226, 155)
-scale = Vector2(0.3, 0.3)
-texture = ExtResource("9_a20wn")
-
-[node name="PaperBack" type="Sprite2D" parent="GUI/Clock"]
-modulate = Color(0.529412, 0.529412, 0.529412, 1)
-z_index = -1
-position = Vector2(282.971, 57.9713)
-rotation = -6.28319
-scale = Vector2(1.35663, 1.35663)
-texture = ExtResource("8_sr1my")
-
-[node name="JupiterMotif" type="Sprite2D" parent="GUI/Clock/PaperBack"]
-self_modulate = Color(1, 1, 1, 0.431373)
-position = Vector2(42.8571, 0)
-scale = Vector2(0.43, 0.43)
-texture = ExtResource("9_g1jby")
-
-[node name="Sun-motif" type="Sprite2D" parent="GUI/Clock/PaperBack"]
-self_modulate = Color(1, 0.862745, 0.588235, 0.431373)
-position = Vector2(-185.715, 0.000244141)
-scale = Vector2(0.4, 0.4)
-texture = ExtResource("10_xnxf8")
-
-[node name="Time" type="Label" parent="GUI/Clock"]
-offset_left = 120.0
-offset_right = 260.0
-offset_bottom = 60.0
-label_settings = SubResource("LabelSettings_e4e6q")
-
-[node name="HydrogenMeter" type="Sprite2D" parent="GUI"]
-position = Vector2(1856, 498)
-rotation = -1.5708
-scale = Vector2(0.275, 0.275)
-texture = ExtResource("11_5oy5m")
-
-[node name="ViewScreen" type="Sprite2D" parent="GUI"]
-position = Vector2(1622, 83)
-scale = Vector2(0.3, 0.3)
-texture = ExtResource("2_rdfey")
 
 [connection signal="pressed" from="GUI/Build/BuildButton" to="GUI/Build" method="_on_build_button_pressed"]
 [connection signal="mouse_entered" from="GUI/Build/RoomPanel" to="GUI/Build" method="_on_room_panel_mouse_entered"]

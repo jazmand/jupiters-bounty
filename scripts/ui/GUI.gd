@@ -12,20 +12,15 @@ func _ready():
 	delta_time = 0
 	dial_rotation_direction = 1
 
-#	if resources:
-		# Set values of GUI nodes with station resource values and update text 
-#		$HydrogenBar.value = resources.hydrogen;
-#		$HydrogenBar/Fraction.text = str(resources.hydrogen)+ "\n" + $HydrogenBar/Fraction.text + "\n" + str($HydrogenBar.max_value);
-		
-#		$PowerBar.value = resources.power;
-#		$PowerBar/Percentage.text = str(resources.power) + $PowerBar/Percentage.text;
-#
-#		$VBoxContainer/Currency.text += str(resources.currency);
-#
-#		$VBoxContainer/Crew.text += str(resources.crew);
-		
-		# Add progress bars needing animation in array below
-#		animate_progress_bar([$HydrogenBar, $PowerBar]);
+	if resources:
+		# Set values of GUI nodes with station resource values and update text 		
+		update_resource("currency");
+		update_resource("crew");
+		update_resource("power");
+		$HydrogenMeter/HydrogenMeterFluid.value = resources.hydrogen;
+		# Animate hydrogen progress bar to initially start from 0
+		animate_progress_bar($HydrogenMeter/HydrogenMeterFluid, 0, resources.hydrogen);
+
 
 func _process(delta):
 	delta_time += delta
@@ -40,11 +35,10 @@ func _process(delta):
 	if delta_time >= 0.1:
 		delta_time = 0
 		
-# Animate progress bars to start from 0 and stop at their current value
-func animate_progress_bar(progressBarArr) -> void:
-	for x in progressBarArr:	
-		var tween = get_tree().create_tween();
-		tween.tween_property(x, "value", x.value, 2).set_trans(Tween.TRANS_LINEAR).from(0);
+# Animate progress bar to increase or decrease
+func animate_progress_bar(progressBar, from, to) -> void:
+	var tween = get_tree().create_tween();
+	tween.tween_property(progressBar, "value", to, 2).set_trans(Tween.TRANS_LINEAR).from(from);
 		
 func update_clock(in_game_time) -> void:
 	var hours = int(in_game_time / 3600)
@@ -64,3 +58,16 @@ func show_popup(popup_type: String, popup_message: String, accept_function: Call
 #		$Build/PopupPanel/Label.text = popup_message
 		# Show the room_details_popup
 		# ... (handle the room_details_popup logic and connect signals as needed)
+		
+func update_resource(resource_to_update: String) -> void: 
+	if resource_to_update == "currency":
+		$CurrencyAndCrew/Currency.text = "Currency:" + str(resources.currency);
+	if resource_to_update == "crew":
+		$CurrencyAndCrew/Crew.text = "Crew:" + str(resources.crew)
+	if resource_to_update == "power":
+		pass
+		#Must calculate/match how to set dial roation to power value
+		#$PowerMeter/Dial.rotation_degrees = resources.power;
+	if resource_to_update == "hydrogen":
+		animate_progress_bar($HydrogenMeter/HydrogenMeterFluid, $HydrogenMeter/HydrogenMeterFluid.value, resources.hydrogen)
+		$HydrogenMeter/HydrogenMeterFluid.value = resources.hydrogen;
