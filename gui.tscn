@@ -83,6 +83,7 @@ alignment = 1
 
 [node name="Currency" type="Label" parent="GUI/CurrencyAndCrew"]
 layout_mode = 2
+text = "Currency:"
 label_settings = SubResource("LabelSettings_kdcap")
 
 [node name="Crew" type="Label" parent="GUI/CurrencyAndCrew"]
