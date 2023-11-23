@@ -1,4 +1,4 @@
-[gd_scene load_steps=38 format=3 uid="uid://cb8lng77y3kwm"]
+[gd_scene load_steps=34 format=3 uid="uid://cb8lng77y3kwm"]
 
 [ext_resource type="Script" path="res://scripts/ui/GUI.gd" id="1_yc0k1"]
 [ext_resource type="Texture2D" uid="uid://bg5gnnxbufgam" path="res://assets/GUI/power-meter.png" id="2_m17qj"]
@@ -8,7 +8,7 @@
 [ext_resource type="Script" path="res://scripts/ui/Build.gd" id="4_fujp0"]
 [ext_resource type="Texture2D" uid="uid://c4dguxm0oy6t5" path="res://assets/GUI/filament.png" id="4_uuqsp"]
 [ext_resource type="Texture2D" uid="uid://dxyi558sqthwu" path="res://assets/GUI/hammer-icon.png" id="5_cbcuv"]
-[ext_resource type="Texture2D" uid="uid://d36pirpjdtfrt" path="res://assets/GUI/cross-hammer-icon.png" id="6_nem4v"]
+[ext_resource type="Texture2D" uid="uid://bu647kqahgq15" path="res://assets/GUI/cross-hammer-icon.png" id="6_nem4v"]
 [ext_resource type="Texture2D" uid="uid://cycqtp3ml1bgf" path="res://assets/GUI/paper-back.png" id="8_sr1my"]
 [ext_resource type="Texture2D" uid="uid://2vof5uvanb7" path="res://assets/GUI/clock.png" id="9_a20wn"]
 [ext_resource type="Texture2D" uid="uid://b8rq101wopsf4" path="res://assets/GUI/jupiter-motif.png" id="9_g1jby"]
@@ -327,18 +327,6 @@ font = SubResource("SystemFont_51hv2")
 shadow_size = 2
 shadow_color = Color(0, 0, 0, 1)
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1c2m3"]
-bg_color = Color(0.6, 0.6, 0.6, 0)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_c2vui"]
-bg_color = Color(0, 0.721569, 0.282353, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_uf6tv"]
-bg_color = Color(0.6, 0.6, 0.6, 0)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6glff"]
-bg_color = Color(1, 0.109804, 0.101961, 0.627451)
-
 [sub_resource type="SystemFont" id="SystemFont_1dxa0"]
 font_names = PackedStringArray("Cascadia Code")
 subpixel_positioning = 0
@@ -503,15 +491,14 @@ script = ExtResource("4_fujp0")
 
 [node name="BuildButton" type="Button" parent="GUI/Build"]
 layout_mode = 0
-offset_top = -113.0
-offset_right = 1920.0
-offset_bottom = 967.0
+offset_left = 6.0
+offset_top = -64.0
+offset_right = 726.0
+offset_bottom = 651.0
 scale = Vector2(0.15, 0.15)
-theme_override_styles/normal = SubResource("StyleBoxFlat_1c2m3")
-theme_override_styles/hover = SubResource("StyleBoxFlat_c2vui")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_uf6tv")
 action_mode = 0
 icon = ExtResource("5_cbcuv")
+flat = true
 
 [node name="RoomPanel" type="Panel" parent="GUI/Build"]
 visible = false
@@ -527,10 +514,9 @@ offset_top = 4.0
 offset_right = 1558.0
 offset_bottom = 516.0
 scale = Vector2(0.04, 0.04)
-theme_override_styles/normal = SubResource("StyleBoxFlat_1c2m3")
-theme_override_styles/hover = SubResource("StyleBoxFlat_6glff")
 action_mode = 0
 icon = ExtResource("6_nem4v")
+flat = true
 
 [node name="HBoxContainer" type="HBoxContainer" parent="GUI/Build/RoomPanel"]
 layout_mode = 0
