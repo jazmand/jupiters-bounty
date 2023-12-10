@@ -8,7 +8,7 @@ var camera_speed: float = 500.0
 
 var zoom_smoothing: float = 0.05
 var zoom_min: float = 0.5
-var zoom_max: float = 2.0
+var zoom_max: float = 1.5
 
 func _input(event: InputEvent) -> void:
 	if event is InputEventKey:
@@ -61,8 +61,9 @@ func _process(delta):
 		camera_motion = input_direction * (delta * camera_speed)
 		
 	position += camera_motion
+	
 
 	# Clamp the camera's position to the desired boundaries
 	# TODO: Update boundaries
-	position.x = clamp(position.x, -500, 500)
-	position.y = clamp(position.y, -250, 250)
+	position.x = clamp(position.x, 0, 500)
+	position.y = clamp(position.y, 0, 250)
