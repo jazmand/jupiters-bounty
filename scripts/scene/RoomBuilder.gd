@@ -36,7 +36,6 @@ func _init(gui: Control, build_menu: Control, station: Station, base_tile_map: T
 	self.build_tile_map = build_tile_map
 	self.rooms = rooms
 	self.room_types = room_types
-	
 
 func start_editing() -> void:
 	is_editing = true
@@ -49,35 +48,35 @@ func stop_editing() -> void:
 
 # --- Input functions ---
 
-func handle_building_input(event: InputEvent, selected_room_type_id: int) -> void:
+func handle_building_input(event: InputEventMouse, offset: Vector2, zoom: Vector2, selected_room_type_id: int) -> void:
 	if event is InputEventMouseButton:
 		if event.pressed:
 			match event.button_index:
-				1: on_left_mouse_button_press(event, selected_room_type_id)
+				1: on_left_mouse_button_press(event, offset, zoom, selected_room_type_id)
 				2: on_right_mouse_button_press(event)
 	elif event is InputEventMouseMotion:
-		on_mouse_motion(event)
+		on_mouse_motion(event, offset, zoom)
 
-func on_left_mouse_button_press(event: InputEvent, selected_room_type_id: int) -> void:
+func on_left_mouse_button_press(event: InputEventMouseButton, offset: Vector2, zoom: Vector2, selected_room_type_id: int) -> void:
 	if !is_editing:
 		if !any_invalid:
 			self.selected_room_type_id = selected_room_type_id
-			initial_tile_coords = base_tile_map.local_to_map(event.position)
+			initial_tile_coords = base_tile_map.local_to_map((event.position / zoom) + offset)
 			start_editing()
 	elif is_editing:
 		if !any_invalid:
 			confirm_room_details()
 
-func on_right_mouse_button_press(event: InputEvent) -> void:
+func on_right_mouse_button_press(event: InputEventMouseButton) -> void:
 	if is_editing:
 		stop_editing()
 		
-func on_mouse_motion(event: InputEvent) -> void:
+func on_mouse_motion(event: InputEvent, offset: Vector2, zoom: Vector2) -> void:
 	if is_editing && !is_confirming:
-		transverse_tile_coords = base_tile_map.local_to_map(event.position)
+		transverse_tile_coords = base_tile_map.local_to_map((event.position / zoom) + offset)
 		draft_room(initial_tile_coords, transverse_tile_coords)
 	elif !is_editing:
-		select_tile(base_tile_map.local_to_map(event.position))
+		select_tile(base_tile_map.local_to_map((event.position / zoom) + offset))
 
 # -- Selection and drawing functions
 
@@ -124,6 +123,7 @@ func draft_room(initial_corner: Vector2i, opposite_corner: Vector2i) -> void:
 
 func set_room() -> void:	
 	# Create a new Room instance and add it to the array
+	print('new room')
 	var new_room = Room.new()
 	new_room.id = generate_unique_room_id()
 	new_room.roomTypeId = selected_room_type.id

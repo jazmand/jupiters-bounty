@@ -18,7 +18,6 @@ func _ready():
 		button.mouse_entered.connect(_on_room_panel_mouse_entered)
 		button.mouse_exited.connect(_on_room_panel_mouse_exited)
 		$RoomPanel/HBoxContainer.add_child(button)
-		
 
 func _on_build_button_pressed():
 	$RoomPanel.visible = true
@@ -28,12 +27,13 @@ func _on_build_close_button_pressed():
 	build_mode = false
 	$RoomPanel.visible = false
 	$BuildButton.visible = true
-	
+
 func _on_room_selected(room_type):
 	room_selected = true
 	selected_room_type_id = room_type.id
 	
 # Need way to clear initial tile when build_mode == false
+
 func _on_room_panel_mouse_entered():
 	build_mode = false
 

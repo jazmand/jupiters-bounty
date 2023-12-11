@@ -18,15 +18,15 @@ func _init(gui: Control, station: Station, build_tile_map: TileMap, rooms: Array
 	self.build_tile_map = build_tile_map
 	self.rooms = rooms
 	self.room_types = room_types
-	
-func handle_select_input(event: InputEvent) -> void:
+
+func handle_select_input(event: InputEventMouse, offset: Vector2, zoom: Vector2) -> void:
 	if event is InputEventMouseButton:
 		if event.pressed:
 			match event.button_index:
-				1: on_left_mouse_button_press(event) 
-				
-func on_left_mouse_button_press(event: InputEvent) -> void:
-	selected_tile_coords = build_tile_map.local_to_map(event.position)
+				1: on_left_mouse_button_press(event, offset, zoom)
+
+func on_left_mouse_button_press(event: InputEvent, offset: Vector2, zoom: Vector2) -> void:
+	selected_tile_coords = build_tile_map.local_to_map((event.position / zoom) + offset)
 	select_room(selected_tile_coords)
 	
 func select_room(selected_tile_coords: Vector2i) -> void:
@@ -63,4 +63,3 @@ func calculate_tile_count(vector1: Vector2, vector2: Vector2) -> int:
 	var difference_x = abs(vector2.x - vector1.x) + 1 
 	var difference_y = abs(vector2.y - vector1.y) + 1
 	return difference_x * difference_y
-	
