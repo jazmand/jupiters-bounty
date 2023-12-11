@@ -50,7 +50,6 @@ func update_zoom(zoom_delta: Vector2) -> void:
 	zoom.y = clamp(zoom.y, zoom_min, zoom_max)
 
 func _process(delta):
-	
 	# Reconsider using fps instead of delta
 	# var fps = Engine.get_frames_per_second()
 	
@@ -61,7 +60,6 @@ func _process(delta):
 		camera_motion = input_direction * (delta * camera_speed)
 		
 	position += camera_motion
-	
 
 	# Clamp the camera's position to the desired boundaries
 	# TODO: Update boundaries

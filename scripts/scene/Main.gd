@@ -8,9 +8,9 @@ var base_tile_map: TileMap
 var build_tile_map: TileMap
 
 var build_menu: Control
-
 var gui: Control
 var background: Control
+var camera: Camera2D
 
 var room_builder: RoomBuilder
 var room_selector: RoomSelector
@@ -37,6 +37,7 @@ func _ready():
 	build_menu = $CanvasLayer/GUI/Build 
 	gui = $CanvasLayer/GUI
 	background = $Background
+	camera = $Camera2D
 	
 	# Create an instance of the RoomBuilder class and pass the TileMap references & rooms array
 	room_builder = RoomBuilder.new(gui, build_menu, station, base_tile_map, build_tile_map, rooms, room_types)
@@ -102,12 +103,16 @@ func load_room_types() -> void:
 # --- Input functions ---
 
 func _input(event: InputEvent) -> void:
-	if build_menu.build_mode == true:
-		room_builder.handle_building_input(event, build_menu.selected_room_type_id)
-	elif build_menu.build_mode == false:
-		room_builder.stop_editing()
-		room_selector.handle_select_input(event)
+	# Check if the event is a mouse event
+	if event is InputEventMouse:
+		var offset = camera.position
+		var zoom = camera.zoom
 		
+		if build_menu.build_mode == true:
+			room_builder.handle_building_input(event, offset, zoom, build_menu.selected_room_type_id)
+		elif build_menu.build_mode == false:
+			room_builder.stop_editing()
+			room_selector.handle_select_input(event, offset, zoom)
 
 func handle_general_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
