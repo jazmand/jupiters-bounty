@@ -1,4 +1,4 @@
-[gd_scene load_steps=24 format=3 uid="uid://dhh5wq2ka1ay8"]
+[gd_scene load_steps=26 format=3 uid="uid://dhh5wq2ka1ay8"]
 
 [ext_resource type="Script" path="res://scripts/scene/Main.gd" id="1_3g4j0"]
 [ext_resource type="Texture2D" uid="uid://dwwc4ti4c1ifx" path="res://assets/backgrounds/jupiter.png" id="2_i0a8p"]
@@ -13,6 +13,8 @@
 [ext_resource type="Texture2D" uid="uid://dw0d3bcfauhf2" path="res://assets/tilesets/crew_quarters.png" id="7_ypvsj"]
 [ext_resource type="Texture2D" uid="uid://b011v7odriiqs" path="res://assets/tilesets/generator_room.png" id="8_snmxr"]
 [ext_resource type="Texture2D" uid="uid://k3hf5argnn4k" path="res://assets/tilesets/storage_bay.png" id="9_x6k6u"]
+[ext_resource type="Texture2D" uid="uid://d0a26f7nbiylj" path="res://assets/sprites/t_pose.png" id="14_8rn0g"]
+[ext_resource type="Texture2D" uid="uid://bpmey73nbq8f1" path="res://assets/sprites/flirty_pose.png" id="15_lk8ys"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_psmxa"]
 texture = ExtResource("5_408k5")
@@ -173,3 +175,14 @@ anchor_mode = 0
 script = ExtResource("2_o2j5r")
 
 [node name="CanvasLayer" parent="." instance=ExtResource("6_4lvgl")]
+visible = false
+
+[node name="TPoseDummy" type="Sprite2D" parent="."]
+position = Vector2(1528, 1040)
+scale = Vector2(0.85, 0.85)
+texture = ExtResource("14_8rn0g")
+
+[node name="FlirtyPoseDummy" type="Sprite2D" parent="."]
+position = Vector2(1328, 936)
+scale = Vector2(1.1, 1.1)
+texture = ExtResource("15_lk8ys")
