@@ -10,6 +10,7 @@ var drafting_layer: int = 1
 var selection_tileset_id: int = 0
 var drafting_tileset_id: int = 1
 var invalid_tileset_id: int = 2
+var door_tileset_id: int = 4 # TEMPORARY. Door tiles will be included in room tilesets.
 
 var is_editing = false
 var is_confirming = false
@@ -121,9 +122,8 @@ func draft_room(initial_corner: Vector2i, opposite_corner: Vector2i) -> void:
 				tileset_id = drafting_tileset_id
 			build_tile_map.set_cell(drafting_layer, coords, tileset_id, Vector2i(0, 0))
 
-func set_room() -> void:	
+func set_room() -> void:
 	# Create a new Room instance and add it to the array
-	print('new room')
 	var new_room = Room.new()
 	new_room.id = generate_unique_room_id()
 	new_room.roomTypeId = selected_room_type.id
@@ -133,11 +133,9 @@ func set_room() -> void:
 	# Make deductions for buying rooms 
 	station.currency -= calculate_room_price()
 	gui.update_resource("currency");
-	print("Money remaining: ", station.currency)
 	
-	draw_rooms()
-	build_menu.build_mode = false
-	print("Current rooms: ", rooms)
+#
+#func set_door() -> void:
 
 func confirm_room_details() -> void:
 	is_confirming = true
@@ -151,6 +149,8 @@ func confirm_room_details() -> void:
 func confirm_build() -> void:
 	set_room()
 	is_confirming = false
+	draw_rooms()
+	build_menu.build_mode = false
 
 func cancel_build() -> void:
 	stop_editing()
@@ -198,6 +198,7 @@ func check_selection_valid(coords: Vector2i, check_price_and_size: bool = false)
 		var room_height = abs(transverse_tile_coords.y - initial_tile_coords.y) + 1
 		
 		if (calculate_room_price() >= station.currency):
+			print(calculate_room_price())
 			is_valid = false
 			
 		if (tile_count < selected_room_type.minTiles or tile_count > selected_room_type.maxTiles):
@@ -207,7 +208,7 @@ func check_selection_valid(coords: Vector2i, check_price_and_size: bool = false)
 			is_valid = false
 			
 	return is_valid
-	
+
 func calculate_room_price() -> int:
 	return selected_room_type.price * calculate_tile_count(initial_tile_coords, transverse_tile_coords)
 
@@ -218,12 +219,7 @@ func generate_unique_room_id() -> int:
 	return unique_id
 
 func check_room_id_exists(room_id: int) -> bool:
-	for room in rooms:
-		if room.id == room_id:
-			return true
-	return false
+	return room_id in rooms
 
 func calculate_tile_count(vector1: Vector2, vector2: Vector2) -> int:
-	var difference_x = abs(vector2.x - vector1.x) + 1 
-	var difference_y = abs(vector2.y - vector1.y) + 1
-	return difference_x * difference_y
+	return abs(vector2.x - vector1.x + 1) * abs(vector2.y - vector1.y + 1)

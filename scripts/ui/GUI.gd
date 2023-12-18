@@ -47,11 +47,11 @@ func update_clock(in_game_time) -> void:
 
 func show_popup(popup_type: String, popup_message: String, accept_function: Callable, decline_function: Callable) -> void:
 #	if popup_type == "confirm_build":
-		$Build/PopupPanel.visible = true
-		$Build/PopupPanel/Label.text = popup_message
+		$BuildMenu/PopupPanel.visible = true
+		$BuildMenu/PopupPanel/Label.text = popup_message
 		# Connect the buttons to the confirmation functions in the GUI script
-		$Build/PopupPanel/YesButton.pressed.connect(accept_function)
-		$Build/PopupPanel/NoButton.pressed.connect(decline_function)
+		$BuildMenu/PopupPanel/YesButton.pressed.connect(accept_function)
+		$BuildMenu/PopupPanel/NoButton.pressed.connect(decline_function)
 #	elif popup_type == "room_details":
 #		$Build/PopupPanel.visible = true
 #		$Build/PopupPanel/Label.text = popup_message

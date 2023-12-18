@@ -1,11 +1,10 @@
-[gd_scene load_steps=25 format=3 uid="uid://cb8lng77y3kwm"]
+[gd_scene load_steps=25 format=3 uid="uid://cpi6duyqx08ba"]
 
 [ext_resource type="Script" path="res://scripts/ui/GUI.gd" id="1_yc0k1"]
 [ext_resource type="Texture2D" uid="uid://bg5gnnxbufgam" path="res://assets/GUI/power-meter.png" id="2_m17qj"]
 [ext_resource type="Texture2D" uid="uid://12wi58pijmfg" path="res://assets/GUI/view-screen.png" id="2_rdfey"]
 [ext_resource type="Resource" uid="uid://b4rrun36bjda0" path="res://assets/station/station_resources.tres" id="2_s5blo"]
 [ext_resource type="Texture2D" uid="uid://crpwfpudhatrq" path="res://assets/GUI/dial.png" id="3_gxdii"]
-[ext_resource type="Script" path="res://scripts/ui/Build.gd" id="4_fujp0"]
 [ext_resource type="Texture2D" uid="uid://c4dguxm0oy6t5" path="res://assets/GUI/filament.png" id="4_uuqsp"]
 [ext_resource type="Texture2D" uid="uid://dxyi558sqthwu" path="res://assets/GUI/hammer-icon.png" id="5_cbcuv"]
 [ext_resource type="Texture2D" uid="uid://bu647kqahgq15" path="res://assets/GUI/cross-hammer-icon.png" id="6_nem4v"]
@@ -15,6 +14,7 @@
 [ext_resource type="Texture2D" uid="uid://cx0lmtowilep7" path="res://assets/GUI/sun-motif.png" id="10_xnxf8"]
 [ext_resource type="Texture2D" uid="uid://dmb2c7oas0f1u" path="res://assets/GUI/glass-tube.png" id="11_5oy5m"]
 [ext_resource type="Texture2D" uid="uid://bcr0cjkhy5ik" path="res://assets/GUI/light-burst.png" id="12_3fce4"]
+[ext_resource type="Script" path="res://scripts/ui/BuildMenu.gd" id="13_v3skq"]
 
 [sub_resource type="SystemFont" id="SystemFont_oc4iu"]
 font_names = PackedStringArray("Cascadia Code")
@@ -171,16 +171,16 @@ offset_right = 260.0
 offset_bottom = 60.0
 label_settings = SubResource("LabelSettings_e4e6q")
 
-[node name="Build" type="Control" parent="GUI"]
+[node name="BuildMenu" type="Control" parent="GUI"]
 layout_mode = 3
 anchors_preset = 0
 offset_left = 8.0
 offset_top = 1032.0
 offset_right = 48.0
 offset_bottom = 1072.0
-script = ExtResource("4_fujp0")
+script = ExtResource("13_v3skq")
 
-[node name="BuildButton" type="Button" parent="GUI/Build"]
+[node name="BuildButton" type="Button" parent="GUI/BuildMenu"]
 layout_mode = 0
 offset_left = 6.0
 offset_top = -64.0
@@ -191,14 +191,14 @@ action_mode = 0
 icon = ExtResource("5_cbcuv")
 flat = true
 
-[node name="RoomPanel" type="Panel" parent="GUI/Build"]
+[node name="RoomPanel" type="Panel" parent="GUI/BuildMenu"]
 visible = false
 layout_mode = 0
 offset_top = -57.0
 offset_right = 1071.0
 offset_bottom = 41.0
 
-[node name="BuildCloseButton" type="Button" parent="GUI/Build/RoomPanel"]
+[node name="BuildCloseButton" type="Button" parent="GUI/BuildMenu/RoomPanel"]
 layout_mode = 0
 offset_left = 1046.0
 offset_top = 4.0
@@ -209,7 +209,7 @@ action_mode = 0
 icon = ExtResource("6_nem4v")
 flat = true
 
-[node name="HBoxContainer" type="HBoxContainer" parent="GUI/Build/RoomPanel"]
+[node name="HBoxContainer" type="HBoxContainer" parent="GUI/BuildMenu/RoomPanel"]
 layout_mode = 0
 offset_left = 54.0
 offset_top = 1.0
@@ -217,7 +217,7 @@ offset_right = 1031.0
 offset_bottom = 96.0
 alignment = 1
 
-[node name="PopupPanel" type="Panel" parent="GUI/Build"]
+[node name="PopupPanel" type="Panel" parent="GUI/BuildMenu"]
 visible = false
 layout_mode = 0
 offset_left = 206.0
@@ -225,7 +225,7 @@ offset_top = -355.0
 offset_right = 857.0
 offset_bottom = -148.0
 
-[node name="HBoxContainer" type="BoxContainer" parent="GUI/Build/PopupPanel"]
+[node name="HBoxContainer" type="BoxContainer" parent="GUI/BuildMenu/PopupPanel"]
 layout_mode = 0
 offset_left = 17.0
 offset_top = 167.0
@@ -233,7 +233,7 @@ offset_right = 631.0
 offset_bottom = 202.0
 alignment = 1
 
-[node name="Label" type="Label" parent="GUI/Build/PopupPanel"]
+[node name="Label" type="Label" parent="GUI/BuildMenu/PopupPanel"]
 layout_mode = 0
 offset_left = 53.0
 offset_top = 83.0
@@ -244,7 +244,7 @@ label_settings = SubResource("LabelSettings_ahsq4")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="YesButton" type="Button" parent="GUI/Build/PopupPanel"]
+[node name="YesButton" type="Button" parent="GUI/BuildMenu/PopupPanel"]
 layout_mode = 2
 offset_left = 277.0
 offset_top = 167.0
@@ -252,7 +252,7 @@ offset_right = 320.0
 offset_bottom = 202.0
 text = " Yes "
 
-[node name="NoButton" type="Button" parent="GUI/Build/PopupPanel"]
+[node name="NoButton" type="Button" parent="GUI/BuildMenu/PopupPanel"]
 layout_mode = 2
 offset_left = 324.0
 offset_top = 167.0
@@ -260,11 +260,11 @@ offset_right = 371.0
 offset_bottom = 202.0
 text = "  No  "
 
-[connection signal="pressed" from="GUI/Build/BuildButton" to="GUI/Build" method="_on_build_button_pressed"]
-[connection signal="mouse_entered" from="GUI/Build/RoomPanel" to="GUI/Build" method="_on_room_panel_mouse_entered"]
-[connection signal="mouse_exited" from="GUI/Build/RoomPanel" to="GUI/Build" method="_on_room_panel_mouse_exited"]
-[connection signal="mouse_entered" from="GUI/Build/RoomPanel/BuildCloseButton" to="GUI/Build" method="_on_room_panel_mouse_entered"]
-[connection signal="mouse_exited" from="GUI/Build/RoomPanel/BuildCloseButton" to="GUI/Build" method="_on_room_panel_mouse_exited"]
-[connection signal="pressed" from="GUI/Build/RoomPanel/BuildCloseButton" to="GUI/Build" method="_on_build_close_button_pressed"]
-[connection signal="pressed" from="GUI/Build/PopupPanel/YesButton" to="GUI/Build" method="_on_popup_yes_button_pressed"]
-[connection signal="pressed" from="GUI/Build/PopupPanel/NoButton" to="GUI/Build" method="_on_popup_no_button_pressed"]
+[connection signal="pressed" from="GUI/BuildMenu/BuildButton" to="GUI/BuildMenu" method="_on_build_button_pressed"]
+[connection signal="mouse_entered" from="GUI/BuildMenu/RoomPanel" to="GUI/BuildMenu" method="_on_room_panel_mouse_entered"]
+[connection signal="mouse_exited" from="GUI/BuildMenu/RoomPanel" to="GUI/BuildMenu" method="_on_room_panel_mouse_exited"]
+[connection signal="mouse_entered" from="GUI/BuildMenu/RoomPanel/BuildCloseButton" to="GUI/BuildMenu" method="_on_room_panel_mouse_entered"]
+[connection signal="mouse_exited" from="GUI/BuildMenu/RoomPanel/BuildCloseButton" to="GUI/BuildMenu" method="_on_room_panel_mouse_exited"]
+[connection signal="pressed" from="GUI/BuildMenu/RoomPanel/BuildCloseButton" to="GUI/BuildMenu" method="_on_build_close_button_pressed"]
+[connection signal="pressed" from="GUI/BuildMenu/PopupPanel/YesButton" to="GUI/BuildMenu" method="_on_popup_yes_button_pressed"]
+[connection signal="pressed" from="GUI/BuildMenu/PopupPanel/NoButton" to="GUI/BuildMenu" method="_on_popup_no_button_pressed"]

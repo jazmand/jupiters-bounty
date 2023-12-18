@@ -34,7 +34,7 @@ func _ready():
 	build_tile_map = $BaseTileMap/BuildTileMap
 	
 	# Find UI elements // TODO: Tie is_editing to open/close status of build menu
-	build_menu = $CanvasLayer/GUI/Build 
+	build_menu = $CanvasLayer/GUI/BuildMenu
 	gui = $CanvasLayer/GUI
 	background = $Background
 	camera = $Camera2D
