@@ -114,19 +114,6 @@ func _input(event: InputEvent) -> void:
 			room_builder.stop_editing()
 			room_selector.handle_select_input(event, offset, zoom)
 
-func handle_general_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton:
-		if event.pressed and event.button_index == 1:
-			pass
-#			# Call a function for left mouse button press outside build mode
-#			on_left_mouse_button_press(event)
-#		elif event.pressed and event.button_index == 2:
-#			# Call a function for right mouse button press outside build mode
-#			on_right_mouse_button_press(event)
-#		elif event is InputEventMouseMotion:
-#			# Call a function for mouse motion outside build mode
-#			on_mouse_motion(event)
-
 func update_in_game_time():
 	in_game_time += 5 # Add 5 in game seconds every 0.25 real world seconds
 		
