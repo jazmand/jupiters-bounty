@@ -224,6 +224,7 @@ func check_selection_valid(coords: Vector2i, check_price_and_size: bool = false)
 		var room_width = abs(transverse_tile_coords.x - initial_tile_coords.x) + 1
 		var room_height = abs(transverse_tile_coords.y - initial_tile_coords.y) + 1
 		
+		
 		if (calculate_room_price() >= station.currency):
 			print(calculate_room_price())
 			is_valid = false
@@ -249,7 +250,7 @@ func check_room_id_exists(room_id: int) -> bool:
 	return room_id in rooms
 
 func calculate_tile_count(vector1: Vector2, vector2: Vector2) -> int:
-	return abs(vector2.x - vector1.x + 1) * abs(vector2.y - vector1.y + 1)
+	return (abs(vector2.x - vector1.x) + 1) * (abs(vector2.y - vector1.y) + 1)
 	
 func is_on_room_edge(coords: Vector2i) -> bool:
 	var min_x = min(initial_tile_coords.x, transverse_tile_coords.x)
