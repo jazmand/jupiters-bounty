@@ -12,22 +12,29 @@ var drafting_tileset_id: int = 1
 var invalid_tileset_id: int = 2
 var door_tileset_id: int = 4 # TEMPORARY. Door tiles will be included in room tilesets.
 
-var is_editing = false
-var is_confirming = false
 var initial_tile_coords = Vector2i()
 var transverse_tile_coords = Vector2i()
-var any_invalid = false
+
+var any_invalid: bool = false
 
 var selected_room_type_id: int = 0
 var selected_room_type: RoomType 
 
 var gui : Control
 var build_menu : Control
-var station: Station
 var base_tile_map: TileMap
 var build_tile_map: TileMap
+var station: Station
 var rooms: Array
 var room_types: Array
+
+enum State {
+	SELECTING_TILE,
+	DRAFTING_ROOM,
+	SETTING_DOOR,
+	CONFIRMING_ROOM
+}
+var state: int = State.SELECTING_TILE
 
 func _init(gui: Control, build_menu: Control, station: Station, base_tile_map: TileMap, build_tile_map: TileMap, rooms: Array, room_types: Array):
 	self.gui = gui
@@ -39,11 +46,11 @@ func _init(gui: Control, build_menu: Control, station: Station, base_tile_map: T
 	self.room_types = room_types
 
 func start_editing() -> void:
-	is_editing = true
+	state = State.DRAFTING_ROOM
 	selected_room_type = get_room_type_by_id(selected_room_type_id)	
 
 func stop_editing() -> void:
-	is_editing = false
+	state = State.SELECTING_TILE
 	selected_room_type_id = 0 # Deselect
 	build_tile_map.clear_layer(drafting_layer)
 
@@ -59,25 +66,43 @@ func handle_building_input(event: InputEventMouse, offset: Vector2, zoom: Vector
 		on_mouse_motion(event, offset, zoom)
 
 func on_left_mouse_button_press(event: InputEventMouseButton, offset: Vector2, zoom: Vector2, selected_room_type_id: int) -> void:
-	if !is_editing:
-		if !any_invalid:
-			self.selected_room_type_id = selected_room_type_id
-			initial_tile_coords = base_tile_map.local_to_map((event.position / zoom) + offset)
-			start_editing()
-	elif is_editing:
-		if !any_invalid:
-			confirm_room_details()
+	var coords = base_tile_map.local_to_map((event.position / zoom) + offset)
+	match state:
+		State.SELECTING_TILE:
+			if !any_invalid:
+				self.selected_room_type_id = selected_room_type_id
+				initial_tile_coords = coords
+				start_editing()
+		State.DRAFTING_ROOM:
+			if !any_invalid:
+				set_doors()
+		State.SETTING_DOOR:
+			if is_on_room_edge(coords):
+				confirm_room_details()
+			else:
+				print("Door must be on the edge of the room")
 
 func on_right_mouse_button_press(event: InputEventMouseButton) -> void:
-	if is_editing:
+	if state == State.DRAFTING_ROOM:
 		stop_editing()
 		
 func on_mouse_motion(event: InputEvent, offset: Vector2, zoom: Vector2) -> void:
-	if is_editing && !is_confirming:
-		transverse_tile_coords = base_tile_map.local_to_map((event.position / zoom) + offset)
-		draft_room(initial_tile_coords, transverse_tile_coords)
-	elif !is_editing:
-		select_tile(base_tile_map.local_to_map((event.position / zoom) + offset))
+	var coords = base_tile_map.local_to_map((event.position / zoom) + offset)
+	match state:
+		State.SELECTING_TILE:
+			select_tile(coords)
+		State.DRAFTING_ROOM:
+			transverse_tile_coords = coords
+			draft_room(initial_tile_coords, transverse_tile_coords)
+		State.SETTING_DOOR:
+			# Clear the previous door tile from the door_layer
+			draft_room(initial_tile_coords, transverse_tile_coords)
+			# Check if the tile is within the room and on the room's edge
+			if is_on_room_edge(coords):
+				build_tile_map.set_cell(drafting_layer, coords, door_tileset_id, Vector2i(0, 0))
+		State.CONFIRMING_ROOM:
+			pass
+
 
 # -- Selection and drawing functions
 
@@ -135,10 +160,11 @@ func set_room() -> void:
 	gui.update_resource("currency");
 	
 #
-#func set_door() -> void:
+func set_doors() -> void:
+	state = State.SETTING_DOOR
 
 func confirm_room_details() -> void:
-	is_confirming = true
+	state = State.CONFIRMING_ROOM
 	for room_type in room_types:
 		if room_type.id == selected_room_type_id:
 			var room_size = calculate_tile_count(initial_tile_coords, transverse_tile_coords)
@@ -148,13 +174,14 @@ func confirm_room_details() -> void:
 
 func confirm_build() -> void:
 	set_room()
-	is_confirming = false
 	draw_rooms()
 	build_menu.build_mode = false
+	print(rooms, 'current rooms')
+	state = State.SELECTING_TILE
 
 func cancel_build() -> void:
 	stop_editing()
-	is_confirming = false
+	state = State.SELECTING_TILE
 
 func draw_rooms() -> void:
 	# Clear drafting layer
@@ -223,3 +250,14 @@ func check_room_id_exists(room_id: int) -> bool:
 
 func calculate_tile_count(vector1: Vector2, vector2: Vector2) -> int:
 	return abs(vector2.x - vector1.x + 1) * abs(vector2.y - vector1.y + 1)
+	
+func is_on_room_edge(coords: Vector2i) -> bool:
+	var min_x = min(initial_tile_coords.x, transverse_tile_coords.x)
+	var max_x = max(initial_tile_coords.x, transverse_tile_coords.x)
+	var min_y = min(initial_tile_coords.y, transverse_tile_coords.y)
+	var max_y = max(initial_tile_coords.y, transverse_tile_coords.y)
+	var is_x_on_edge = (coords.x == min_x || coords.x == max_x) && coords.y >= min_y && coords.y <= max_y
+	var is_y_on_edge = (coords.y == min_y || coords.y == max_y) && coords.x >= min_x && coords.x <= max_x
+	
+	return is_x_on_edge || is_y_on_edge
+	
