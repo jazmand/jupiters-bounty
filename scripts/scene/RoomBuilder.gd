@@ -48,6 +48,10 @@ func _init(gui: Control, build_menu: Control, station: Station, base_tile_map: T
 func start_editing() -> void:
 	state = State.DRAFTING_ROOM
 	selected_room_type = get_room_type_by_id(selected_room_type_id)	
+	var new_room = Room.new()
+	new_room.id = generate_unique_room_id()
+	new_room.roomTypeId = selected_room_type.id
+	rooms.append(new_room)
 
 func stop_editing() -> void:
 	state = State.SELECTING_TILE
@@ -75,9 +79,10 @@ func on_left_mouse_button_press(event: InputEventMouseButton, offset: Vector2, z
 				start_editing()
 		State.DRAFTING_ROOM:
 			if !any_invalid:
-				set_doors()
+				state = State.SETTING_DOOR
 		State.SETTING_DOOR:
 			if is_on_room_edge(coords):
+				set_doors(coords)
 				confirm_room_details()
 			else:
 				print("Door must be on the edge of the room")
@@ -148,19 +153,13 @@ func draft_room(initial_corner: Vector2i, opposite_corner: Vector2i) -> void:
 			build_tile_map.set_cell(drafting_layer, coords, tileset_id, Vector2i(0, 0))
 
 func set_room() -> void:
-	# Create a new Room instance and add it to the array
-	var new_room = Room.new()
-	new_room.id = generate_unique_room_id()
-	new_room.roomTypeId = selected_room_type.id
-	new_room.topLeft = initial_tile_coords
-	new_room.bottomRight = transverse_tile_coords
-	rooms.append(new_room)
-	# Make deductions for buying rooms 
-	station.currency -= calculate_room_price()
-	gui.update_resource("currency");	
+	var room = rooms[-1]
+	room.topLeft = initial_tile_coords
+	room.bottomRight = transverse_tile_coords
 
-func set_doors() -> void:
-	state = State.SETTING_DOOR
+func set_doors(coords) -> void:
+	var room = rooms[-1]
+	room.doorTiles.append(coords)
 
 func confirm_room_details() -> void:
 	state = State.CONFIRMING_ROOM
@@ -175,11 +174,15 @@ func confirm_build() -> void:
 	set_room()
 	draw_rooms()
 	build_menu.build_mode = false
+	# Make deductions for buying rooms 
+	station.currency -= calculate_room_price()
+	gui.update_resource("currency");	
 	print(rooms, 'current rooms')
 	state = State.SELECTING_TILE
 
 func cancel_build() -> void:
 	stop_editing()
+	rooms.pop_back()
 	state = State.SELECTING_TILE
 
 func draw_rooms() -> void:
@@ -198,6 +201,8 @@ func draw_rooms() -> void:
 				for x in range(min_x, max_x + 1):
 					for y in range(min_y, max_y + 1):
 						build_tile_map.set_cell(building_layer, Vector2(x, y), tileset_id, Vector2i(0, 0))
+		for doorTile in room.doorTiles:
+			build_tile_map.set_cell(building_layer, doorTile, door_tileset_id, Vector2i(0, 0))
 
 # --- Helper functions ---
 
@@ -215,6 +220,10 @@ func check_selection_valid(coords: Vector2i, check_price_and_size: bool = false)
 		
 	# Check if overlapping an existing room
 	elif build_tile_map.get_cell_tile_data(building_layer, coords) is TileData:
+		is_valid = false
+		
+	# Check if blocking any existing doors
+	elif is_blocking_door(coords):
 		is_valid = false
 		
 	# Check if price and size are permissible
@@ -260,4 +269,11 @@ func is_on_room_edge(coords: Vector2i) -> bool:
 	var is_y_on_edge = (coords.y == min_y || coords.y == max_y) && coords.x >= min_x && coords.x <= max_x
 	
 	return is_x_on_edge || is_y_on_edge
+
+func is_blocking_door(coords: Vector2i) -> bool:
+	for room in rooms:
+		for doorTile in room.doorTiles:
+			if (abs(coords.x - doorTile.x) + abs(coords.y - doorTile.y)) == 1:
+				return true
+	return false
 	
