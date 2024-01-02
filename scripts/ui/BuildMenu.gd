@@ -3,7 +3,7 @@
 extends Control
 
 var build_mode = false
-var room_selected = false
+#var room_selected = false
 var selected_room_type_id: int
 
 # @onready var popup = $Popup
@@ -15,8 +15,8 @@ func _ready():
 		var button = Button.new()
 		button.text = room_type.name
 		button.pressed.connect(_on_room_selected.bind(room_type)) # Must "bind" to pass param to a connect callback
-		button.mouse_entered.connect(_on_room_panel_mouse_entered)
-		button.mouse_exited.connect(_on_room_panel_mouse_exited)
+#		button.mouse_entered.connect(_on_room_panel_mouse_entered)
+#		button.mouse_exited.connect(_on_room_panel_mouse_exited)
 		$RoomPanel/HBoxContainer.add_child(button)
 
 func _on_build_button_pressed():
@@ -29,23 +29,28 @@ func _on_build_close_button_pressed():
 	$BuildButton.visible = true
 
 func _on_room_selected(room_type):
-	room_selected = true
+#	room_selected = true
+	build_mode = true
 	selected_room_type_id = room_type.id
+	$RoomPanel.visible = false
+	
 	
 # Need way to clear initial tile when build_mode == false
 
-func _on_room_panel_mouse_entered():
-	build_mode = false
+#func _on_room_panel_mouse_entered():
+#	build_mode = false
 
-func _on_room_panel_mouse_exited():
-	if room_selected == true && $PopupPanel.visible == false:
-		build_mode = true
+#func _on_room_panel_mouse_exited():
+#	if room_selected == true && $PopupPanel.visible == false:
+#		build_mode = true
 		
 func _on_popup_yes_button_pressed():
 	$PopupPanel.visible = false
-	room_selected = false
+#	room_selected = false
+	$RoomPanel.visible = true
 
 func _on_popup_no_button_pressed():
 	# TODO clear room that has been set
 	$PopupPanel.visible = false
-	room_selected = false
+#	room_selected = false
+	$RoomPanel.visible = true

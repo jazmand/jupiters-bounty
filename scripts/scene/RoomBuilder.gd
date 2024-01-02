@@ -157,9 +157,8 @@ func set_room() -> void:
 	rooms.append(new_room)
 	# Make deductions for buying rooms 
 	station.currency -= calculate_room_price()
-	gui.update_resource("currency");
-	
-#
+	gui.update_resource("currency");	
+
 func set_doors() -> void:
 	state = State.SETTING_DOOR
 
