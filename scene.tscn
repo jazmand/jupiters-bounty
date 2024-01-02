@@ -185,9 +185,10 @@ script = ExtResource("2_o2j5r")
 
 [node name="TPoseDummy" type="Sprite2D" parent="."]
 position = Vector2(1528, 1040)
-scale = Vector2(0.8, 0.8)
+scale = Vector2(0.7, 0.7)
 texture = ExtResource("14_8rn0g")
 
 [node name="FlirtyPoseDummy" type="Sprite2D" parent="."]
-position = Vector2(1352, 1024)
+position = Vector2(1344, 448)
+scale = Vector2(0.9, 0.9)
 texture = ExtResource("15_lk8ys")
