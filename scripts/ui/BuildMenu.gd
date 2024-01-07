@@ -2,6 +2,8 @@
 
 extends Control
 
+signal is_building_toggle(building: bool)
+
 var build_mode = false
 #var room_selected = false
 var selected_room_type_id: int
@@ -20,10 +22,12 @@ func _ready():
 		$RoomPanel/HBoxContainer.add_child(button)
 
 func _on_build_button_pressed():
+	is_building_toggle.emit(true)
 	$RoomPanel.visible = true
 	$BuildButton.visible = false
 
 func _on_build_close_button_pressed():
+	is_building_toggle.emit(false)
 	build_mode = false
 	$RoomPanel.visible = false
 	$BuildButton.visible = true

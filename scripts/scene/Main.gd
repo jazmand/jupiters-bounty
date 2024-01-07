@@ -7,6 +7,8 @@ var station: Station = preload("res://assets/station/station_resources.tres")
 var base_tile_map: TileMap
 var build_tile_map: TileMap
 
+@onready var state: StateChart = get_node("StateManager")
+
 var build_menu: Control
 var gui: Control
 var background: Control
@@ -35,6 +37,7 @@ func _ready():
 	
 	# Find UI elements // TODO: Tie is_editing to open/close status of build menu
 	build_menu = $CanvasLayer/GUI/BuildMenu
+	build_menu.is_building_toggle.connect(on_is_building_toggle)
 	gui = $CanvasLayer/GUI
 	background = $Background
 	camera = $Camera2D
@@ -119,4 +122,27 @@ func update_in_game_time():
 		
 	if in_game_time >= one_in_game_day:  # 10 hours * 3600 seconds/hour
 		in_game_time = 5 # Reset
+
+func on_is_building_toggle(building: bool) -> void:
+	var transition = "start_building" if building else "stop_building"
+	$StateManager.send_event(transition)
+
+
+
+func _on_selecting_room_state_entered():
+	pass # Replace with function body.
+func _on_selecting_tile_state_entered():
+	pass # Replace with function body.
+
+
+func _on_drafting_room_state_entered():
+	pass # Replace with function body.
+
+
+func _on_setting_door_state_entered():
+	pass # Replace with function body.
+
+
+func _on_confirming_room_state_entered():
+	pass # Replace with function body.
 
