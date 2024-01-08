@@ -7,7 +7,7 @@ var station: Station = preload("res://assets/station/station_resources.tres")
 var base_tile_map: TileMap
 var build_tile_map: TileMap
 
-@onready var state: StateChart = $StateManager
+@onready var state_manager: StateChart = $StateManager
 
 var build_menu: Control
 var gui: Control
@@ -110,7 +110,7 @@ func _input(event: InputEvent) -> void:
 	# temporary
 	if event is InputEventKey:
 		if event.pressed and event.keycode == KEY_ESCAPE:
-			state.send_event("stop_building")
+			state_manager.send_event("stop_building")
 
 func update_in_game_time():
 	in_game_time += 5 # Add 5 in game seconds every 0.25 real world seconds
@@ -128,7 +128,7 @@ func on_build_menu_action(action: int) -> void:
 			event = "start_building"
 		build_menu.Action.SELECT_ROOM:
 			event = "building_forward"
-	state.send_event(event)
+	state_manager.send_event(event)
 
 func on_room_builder_action(action: int) -> void:
 	var event: String
@@ -139,7 +139,7 @@ func on_room_builder_action(action: int) -> void:
 			event = "building_forward"
 		room_builder.Action.COMPLETE:
 			event = "stop_building"
-	state.send_event(event)
+	state_manager.send_event(event)
 
 func _on_selecting_room_state_entered() -> void:
 	$CanvasLayer/GUI/BuildMenu/RoomPanel.visible = true
