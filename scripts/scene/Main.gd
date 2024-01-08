@@ -110,7 +110,7 @@ func _input(event: InputEvent) -> void:
 	# temporary
 	if event is InputEventKey:
 		if event.pressed and event.keycode == KEY_ESCAPE:
-			$StateManager.send_event("stop_building")
+			state.send_event("stop_building")
 
 func update_in_game_time():
 	in_game_time += 5 # Add 5 in game seconds every 0.25 real world seconds
@@ -128,18 +128,18 @@ func on_build_menu_action(action: int) -> void:
 			event = "start_building"
 		build_menu.Action.SELECT_ROOM:
 			event = "building_forward"
-	$StateManager.send_event(event)
+	state.send_event(event)
 
-func on_room_builder_action(state: int) -> void:
+func on_room_builder_action(action: int) -> void:
 	var event: String
-	match state:
+	match action:
 		room_builder.Action.BACK:
 			event = "building_back"
 		room_builder.Action.FORWARD:
 			event = "building_forward"
 		room_builder.Action.COMPLETE:
 			event = "stop_building"
-	$StateManager.send_event(event)
+	state.send_event(event)
 
 func _on_selecting_room_state_entered() -> void:
 	$CanvasLayer/GUI/BuildMenu/RoomPanel.visible = true
