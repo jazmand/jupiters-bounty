@@ -7,7 +7,7 @@ var station: Station = preload("res://assets/station/station_resources.tres")
 var base_tile_map: TileMap
 var build_tile_map: TileMap
 
-@onready var state: StateChart = get_node("StateManager")
+@onready var state: StateChart = $StateManager
 
 var build_menu: Control
 var gui: Control
@@ -16,7 +16,7 @@ var camera: Camera2D
 
 var room_builder: RoomBuilder
 var room_selector: RoomSelector
-var room_types: Array
+var room_types: Array = []
 var rooms: Array # TODO: Save & load on init
 
 var elapsed_time: int # TODO: Save & load on init
@@ -37,7 +37,7 @@ func _ready():
 	
 	# Find UI elements // TODO: Tie is_editing to open/close status of build menu
 	build_menu = $CanvasLayer/GUI/BuildMenu
-	build_menu.is_building_toggle.connect(on_is_building_toggle)
+	build_menu.build_menu_action.connect(on_build_menu_action)
 	gui = $CanvasLayer/GUI
 	background = $Background
 	camera = $Camera2D
@@ -106,16 +106,19 @@ func load_room_types() -> void:
 # --- Input functions ---
 
 func _input(event: InputEvent) -> void:
+	# temporary
+	if event is InputEventKey:
+		if event.pressed and event.keycode == KEY_ESCAPE:
+			$StateManager.send_event("stop_building")
+			
 	# Check if the event is a mouse event
-	if event is InputEventMouse:
-		var offset = camera.position
-		var zoom = camera.zoom
-		
-		if build_menu.build_mode == true:
-			room_builder.handle_building_input(event, offset, zoom, build_menu.selected_room_type_id)
-		elif build_menu.build_mode == false:
-			room_builder.stop_editing()
-			room_selector.handle_select_input(event, offset, zoom)
+	#if event is InputEventMouse:
+	#	var offset = camera.position
+	#	var zoom = camera.zoom
+	#	
+	#	if build_menu.build_mode == true:
+	#		room_builder.handle_building_input(event, offset, zoom, build_menu.selected_room_type_id)
+			
 
 func update_in_game_time():
 	in_game_time += 5 # Add 5 in game seconds every 0.25 real world seconds
@@ -123,26 +126,80 @@ func update_in_game_time():
 	if in_game_time >= one_in_game_day:  # 10 hours * 3600 seconds/hour
 		in_game_time = 5 # Reset
 
-func on_is_building_toggle(building: bool) -> void:
-	var transition = "start_building" if building else "stop_building"
-	$StateManager.send_event(transition)
+func on_build_menu_action(action: int) -> void:
+	var event: String
+	match action:
+		build_menu.STOP_BUILDING:
+			event = "stop_building"
+		build_menu.START_BUILDING:
+			event = "start_building"
+		build_menu.SELECT_ROOM:
+			event = "building_forward"
+	$StateManager.send_event(event)
 
+func on_room_builder_state(state: int) -> void:
+	var event: String
+	match state:
+		room_builder.BACK:
+			event = "building_back"
+		room_builder.FORWARD:
+			event = "building_forward"
+		room_builder.COMPLETE:
+			event = "stop_building"
+	$StateManager.send_event(event)
 
+func _on_selecting_room_state_entered() -> void:
+	$CanvasLayer/GUI/BuildMenu/RoomPanel.visible = true
 
-func _on_selecting_room_state_entered():
-	pass # Replace with function body.
-func _on_selecting_tile_state_entered():
-	pass # Replace with function body.
+func _on_selecting_room_state_input(event: InputEvent) -> void:
+	var offset = camera.position
+	var zoom = camera.zoom
+	room_selector.handle_select_input(event, offset, zoom)
 
+func _on_selecting_room_state_exited() -> void:
+	$CanvasLayer/GUI/BuildMenu/RoomPanel.visible = false
+	
+func _on_selecting_tile_state_entered() -> void:
+	build_menu.build_mode = true
 
-func _on_drafting_room_state_entered():
-	pass # Replace with function body.
+func _on_selecting_tile_state_input(event: InputEvent):
+	handle_building_input(event)
 
+func _on_drafting_room_state_entered() -> void:
+	room_builder.start_editing()
+		
+func _on_drafting_room_state_input(event: InputEvent):
+	handle_building_input(event)
 
-func _on_setting_door_state_entered():
-	pass # Replace with function body.
+func _on_setting_door_state_entered() -> void:
+	pass
 
+func _on_confirming_room_state_entered() -> void:
+	$CanvasLayer/GUI/BuildMenu/BuildMenu/PopupPanel.visible = true
+	$CanvasLayer/GUI/BuildMenu/BuildMenu/PopupPanel/Label.text = room_builder.popup_message
+	# Connect the buttons to the confirmation functions in the GUI script
+	$CanvasLayer/GUI/BuildMenu/BuildMenu/PopupPanel/YesButton.pressed.connect(build_menu.confirm_build)
+	$CanvasLayer/GUI/BuildMenu/PopupPanel/NoButton.pressed.connect(build_menu.cancel_build)
 
-func _on_confirming_room_state_entered():
-	pass # Replace with function body.
+func _on_confirming_room_state_exited() -> void:
+	$CanvasLayer/GUI/BuildMenu/BuildMenu/PopupPanel.visible = false
+
+func _on_building_state_entered() -> void:
+	$CanvasLayer/GUI/BuildMenu/BuildButton.visible = false
+
+func _on_building_state_exited() -> void:
+	$CanvasLayer/GUI/BuildMenu/BuildButton.visible = true
+	room_builder.stop_editing()
+
+func handle_building_input(event: InputEvent):
+	var offset = camera.position
+	var zoom = camera.zoom
+	if event is InputEventMouseButton:
+		if event.pressed:
+			match event.button_index:
+				1: room_builder.on_left_mouse_button_press(event, offset, zoom, build_menu.selected_room_type_id)
+				2: room_builder.on_right_mouse_button_press(event)
+	elif event is InputEventMouseMotion:
+		room_builder.on_mouse_motion(event, offset, zoom)
+
 

@@ -4,6 +4,8 @@ extends Node2D
 
 class_name RoomBuilder
 
+signal room_builder_action(action: int)
+
 var building_layer: int = 0
 var drafting_layer: int = 1
 
@@ -27,6 +29,10 @@ var build_tile_map: TileMap
 var station: Station
 var rooms: Array
 var room_types: Array
+
+var popup_message: String
+
+enum Action {BACK, FORWARD, COMPLETE}
 
 enum State {
 	SELECTING_TILE,
@@ -167,8 +173,9 @@ func confirm_room_details() -> void:
 		if room_type.id == selected_room_type_id:
 			var room_size = calculate_tile_count(initial_tile_coords, transverse_tile_coords)
 			var room_cost_total = room_type.price * room_size
-			var popup_message = "Build " + room_type.name + " for " + str(room_cost_total)
-			gui.show_popup("confirm_build", popup_message, confirm_build, cancel_build)
+			popup_message = "Build " + room_type.name + " for " + str(room_cost_total)
+			#gui.show_popup("confirm_build", popup_message, confirm_build, cancel_build)
+			room_builder_action.emit(Action.FORWARD)
 
 func confirm_build() -> void:
 	set_room()
@@ -179,6 +186,7 @@ func confirm_build() -> void:
 	gui.update_resource("currency");	
 	print(rooms, 'current rooms')
 	state = State.SELECTING_TILE
+	room_builder_action.emit(Action.COMPLETE)
 
 func cancel_build() -> void:
 	stop_editing()
