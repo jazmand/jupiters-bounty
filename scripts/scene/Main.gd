@@ -35,15 +35,16 @@ func _ready():
 	base_tile_map = $BaseTileMap
 	build_tile_map = $BaseTileMap/BuildTileMap
 	
-	# Find UI elements // TODO: Tie is_editing to open/close status of build menu
+	# Find UI elements
 	build_menu = $CanvasLayer/GUI/BuildMenu
-	build_menu.build_menu_action.connect(on_build_menu_action)
+	build_menu.action_pressed.connect(on_build_menu_action)
 	gui = $CanvasLayer/GUI
 	background = $Background
 	camera = $Camera2D
 	
 	# Create an instance of the RoomBuilder class and pass the TileMap references & rooms array
 	room_builder = RoomBuilder.new(gui, build_menu, station, base_tile_map, build_tile_map, rooms, room_types)
+	room_builder.action_pressed.connect(on_room_builder_action)
 	room_selector = RoomSelector.new(gui, station, build_tile_map, rooms, room_types)
 	
 	delta_time = 0
@@ -110,15 +111,6 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventKey:
 		if event.pressed and event.keycode == KEY_ESCAPE:
 			$StateManager.send_event("stop_building")
-			
-	# Check if the event is a mouse event
-	#if event is InputEventMouse:
-	#	var offset = camera.position
-	#	var zoom = camera.zoom
-	#	
-	#	if build_menu.build_mode == true:
-	#		room_builder.handle_building_input(event, offset, zoom, build_menu.selected_room_type_id)
-			
 
 func update_in_game_time():
 	in_game_time += 5 # Add 5 in game seconds every 0.25 real world seconds
@@ -126,35 +118,31 @@ func update_in_game_time():
 	if in_game_time >= one_in_game_day:  # 10 hours * 3600 seconds/hour
 		in_game_time = 5 # Reset
 
+# TODO: refactor action handlers
 func on_build_menu_action(action: int) -> void:
 	var event: String
 	match action:
-		build_menu.STOP_BUILDING:
+		build_menu.Action.STOP_BUILDING:
 			event = "stop_building"
-		build_menu.START_BUILDING:
+		build_menu.Action.START_BUILDING:
 			event = "start_building"
-		build_menu.SELECT_ROOM:
+		build_menu.Action.SELECT_ROOM:
 			event = "building_forward"
 	$StateManager.send_event(event)
 
-func on_room_builder_state(state: int) -> void:
+func on_room_builder_action(state: int) -> void:
 	var event: String
 	match state:
-		room_builder.BACK:
+		room_builder.Action.BACK:
 			event = "building_back"
-		room_builder.FORWARD:
+		room_builder.Action.FORWARD:
 			event = "building_forward"
-		room_builder.COMPLETE:
+		room_builder.Action.COMPLETE:
 			event = "stop_building"
 	$StateManager.send_event(event)
 
 func _on_selecting_room_state_entered() -> void:
 	$CanvasLayer/GUI/BuildMenu/RoomPanel.visible = true
-
-func _on_selecting_room_state_input(event: InputEvent) -> void:
-	var offset = camera.position
-	var zoom = camera.zoom
-	room_selector.handle_select_input(event, offset, zoom)
 
 func _on_selecting_room_state_exited() -> void:
 	$CanvasLayer/GUI/BuildMenu/RoomPanel.visible = false
@@ -162,27 +150,51 @@ func _on_selecting_room_state_exited() -> void:
 func _on_selecting_tile_state_entered() -> void:
 	build_menu.build_mode = true
 
+# TODO: refactor state input handlers
 func _on_selecting_tile_state_input(event: InputEvent):
-	handle_building_input(event)
+	var offset = camera.position
+	var zoom = camera.zoom
+	if event is InputEventMouseButton:
+		if event.pressed:
+			match event.button_index:
+				1: 
+					room_selector.handle_select_input(event, offset, zoom)
+					room_builder.selecting_tile(event, offset, zoom, build_menu.selected_room_type_id)
+				2: pass
+	elif event is InputEventMouseMotion:
+		room_builder.selecting_tile_motion(event, offset, zoom)
+	
+func _on_drafting_room_state_input(event: InputEvent) -> void:
+	var offset = camera.position
+	var zoom = camera.zoom
+	if event is InputEventMouseButton:
+		if event.pressed:
+			match event.button_index:
+				1: room_builder.drafting_room()
+				2: room_builder.stop_editing()
+	elif event is InputEventMouseMotion:
+		room_builder.drafting_room_motion(event, offset, zoom)
 
-func _on_drafting_room_state_entered() -> void:
-	room_builder.start_editing()
-		
-func _on_drafting_room_state_input(event: InputEvent):
-	handle_building_input(event)
-
-func _on_setting_door_state_entered() -> void:
-	pass
+func _on_setting_door_state_input(event) -> void:
+	var offset = camera.position
+	var zoom = camera.zoom
+	if event is InputEventMouseButton:
+		if event.pressed:
+			match event.button_index:
+				1: room_builder.setting_door(event, offset, zoom)
+				2: pass
+	elif event is InputEventMouseMotion:
+		room_builder.setting_door_motion(event, offset, zoom)
 
 func _on_confirming_room_state_entered() -> void:
-	$CanvasLayer/GUI/BuildMenu/BuildMenu/PopupPanel.visible = true
-	$CanvasLayer/GUI/BuildMenu/BuildMenu/PopupPanel/Label.text = room_builder.popup_message
+	$CanvasLayer/GUI/BuildMenu/PopupPanel.visible = true
+	$CanvasLayer/GUI/BuildMenu/PopupPanel/Label.text = room_builder.popup_message
 	# Connect the buttons to the confirmation functions in the GUI script
-	$CanvasLayer/GUI/BuildMenu/BuildMenu/PopupPanel/YesButton.pressed.connect(build_menu.confirm_build)
-	$CanvasLayer/GUI/BuildMenu/PopupPanel/NoButton.pressed.connect(build_menu.cancel_build)
+	$CanvasLayer/GUI/BuildMenu/PopupPanel/YesButton.pressed.connect(room_builder.confirm_build)
+	$CanvasLayer/GUI/BuildMenu/PopupPanel/NoButton.pressed.connect(room_builder.cancel_build)
 
 func _on_confirming_room_state_exited() -> void:
-	$CanvasLayer/GUI/BuildMenu/BuildMenu/PopupPanel.visible = false
+	$CanvasLayer/GUI/BuildMenu/PopupPanel.visible = false
 
 func _on_building_state_entered() -> void:
 	$CanvasLayer/GUI/BuildMenu/BuildButton.visible = false
@@ -190,16 +202,3 @@ func _on_building_state_entered() -> void:
 func _on_building_state_exited() -> void:
 	$CanvasLayer/GUI/BuildMenu/BuildButton.visible = true
 	room_builder.stop_editing()
-
-func handle_building_input(event: InputEvent):
-	var offset = camera.position
-	var zoom = camera.zoom
-	if event is InputEventMouseButton:
-		if event.pressed:
-			match event.button_index:
-				1: room_builder.on_left_mouse_button_press(event, offset, zoom, build_menu.selected_room_type_id)
-				2: room_builder.on_right_mouse_button_press(event)
-	elif event is InputEventMouseMotion:
-		room_builder.on_mouse_motion(event, offset, zoom)
-
-

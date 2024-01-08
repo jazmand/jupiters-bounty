@@ -4,7 +4,7 @@ extends Node2D
 
 class_name RoomBuilder
 
-signal room_builder_action(action: int)
+signal action_pressed(action: int)
 
 var building_layer: int = 0
 var drafting_layer: int = 1
@@ -34,14 +34,6 @@ var popup_message: String
 
 enum Action {BACK, FORWARD, COMPLETE}
 
-enum State {
-	SELECTING_TILE,
-	DRAFTING_ROOM,
-	SETTING_DOOR,
-	CONFIRMING_ROOM
-}
-var state: int = State.SELECTING_TILE
-
 func _init(gui: Control, build_menu: Control, station: Station, base_tile_map: TileMap, build_tile_map: TileMap, rooms: Array, room_types: Array):
 	self.gui = gui
 	self.build_menu = build_menu
@@ -52,7 +44,6 @@ func _init(gui: Control, build_menu: Control, station: Station, base_tile_map: T
 	self.room_types = room_types
 
 func start_editing() -> void:
-	state = State.DRAFTING_ROOM
 	selected_room_type = get_room_type_by_id(selected_room_type_id)	
 	var new_room = Room.new()
 	new_room.id = generate_unique_room_id()
@@ -60,67 +51,53 @@ func start_editing() -> void:
 	rooms.append(new_room)
 
 func stop_editing() -> void:
-	state = State.SELECTING_TILE
 	selected_room_type_id = 0 # Deselect
 	build_tile_map.clear_layer(drafting_layer)
+	action_pressed.emit(Action.BACK)
 
 # --- Input functions ---
-
-func handle_building_input(event: InputEventMouse, offset: Vector2, zoom: Vector2, selected_room_type_id: int) -> void:
-	if event is InputEventMouseButton:
-		if event.pressed:
-			match event.button_index:
-				1: on_left_mouse_button_press(event, offset, zoom, selected_room_type_id)
-				2: on_right_mouse_button_press(event)
-	elif event is InputEventMouseMotion:
-		on_mouse_motion(event, offset, zoom)
-
-func on_left_mouse_button_press(event: InputEventMouseButton, offset: Vector2, zoom: Vector2, selected_room_type_id: int) -> void:
+func selecting_tile(event: InputEventMouseButton, offset: Vector2, zoom: Vector2, selected_room_type_id: int) -> void:
 	var coords = base_tile_map.local_to_map((event.position / zoom) + offset)
-	match state:
-		State.SELECTING_TILE:
-			if !any_invalid:
-				self.selected_room_type_id = selected_room_type_id
-				initial_tile_coords = coords
-				start_editing()
-		State.DRAFTING_ROOM:
-			if !any_invalid:
-				state = State.SETTING_DOOR
-		State.SETTING_DOOR:
-			if is_on_room_edge(coords):
-				set_doors(coords)
-				confirm_room_details()
-			else:
-				print("Door must be on the edge of the room")
-
-func on_right_mouse_button_press(event: InputEventMouseButton) -> void:
-	if state == State.DRAFTING_ROOM:
-		stop_editing()
+	if !any_invalid:
+		self.selected_room_type_id = selected_room_type_id
+		initial_tile_coords = coords
+		start_editing()
+		action_pressed.emit(Action.FORWARD)
 		
-func on_mouse_motion(event: InputEvent, offset: Vector2, zoom: Vector2) -> void:
-	var coords = base_tile_map.local_to_map((event.position / zoom) + offset)
-	match state:
-		State.SELECTING_TILE:
-			select_tile(coords)
-		State.DRAFTING_ROOM:
-			transverse_tile_coords = coords
-			draft_room(initial_tile_coords, transverse_tile_coords)
-		State.SETTING_DOOR:
-			# Clear the previous door tile from the door_layer
-			draft_room(initial_tile_coords, transverse_tile_coords)
-			# Check if the tile is within the room and on the room's edge
-			if is_on_room_edge(coords):
-				build_tile_map.set_cell(drafting_layer, coords, door_tileset_id, Vector2i(0, 0))
-		State.CONFIRMING_ROOM:
-			pass
 
+func selecting_tile_motion(event: InputEventMouseMotion, offset: Vector2, zoom: Vector2) -> void:
+	var coords = base_tile_map.local_to_map((event.position / zoom) + offset)
+	select_tile(coords)
+
+func drafting_room() -> void:
+	if !any_invalid:
+		action_pressed.emit(Action.FORWARD)
+
+func drafting_room_motion(event: InputEventMouseMotion, offset: Vector2, zoom: Vector2) -> void:
+	transverse_tile_coords = base_tile_map.local_to_map((event.position / zoom) + offset)
+	draft_room(initial_tile_coords, transverse_tile_coords)
+
+func setting_door(event: InputEventMouseButton, offset: Vector2, zoom: Vector2) -> void:
+	var coords = base_tile_map.local_to_map((event.position / zoom) + offset)
+	if is_on_room_edge(coords):
+		set_doors(coords)
+		confirm_room_details()
+	else:
+		print("Door must be on the edge of the room")
+
+func setting_door_motion(event: InputEventMouseMotion, offset: Vector2, zoom: Vector2) -> void:
+	var coords = base_tile_map.local_to_map((event.position / zoom) + offset)
+	# Clear the previous door tile from the door_layer
+	draft_room(initial_tile_coords, transverse_tile_coords)
+	# Check if the tile is within the room and on the room's edge
+	if is_on_room_edge(coords):
+		build_tile_map.set_cell(drafting_layer, coords, door_tileset_id, Vector2i(0, 0))
 
 # -- Selection and drawing functions
 
 func select_tile(coords: Vector2i) -> void:
 	# Clear layer
 	build_tile_map.clear_layer(drafting_layer)
-	
 	# Draw on tile
 	if check_selection_valid(coords):
 		build_tile_map.set_cell(drafting_layer, coords, selection_tileset_id, Vector2i(0, 0))
@@ -168,30 +145,26 @@ func set_doors(coords) -> void:
 	room.doorTiles.append(coords)
 
 func confirm_room_details() -> void:
-	state = State.CONFIRMING_ROOM
 	for room_type in room_types:
 		if room_type.id == selected_room_type_id:
 			var room_size = calculate_tile_count(initial_tile_coords, transverse_tile_coords)
 			var room_cost_total = room_type.price * room_size
 			popup_message = "Build " + room_type.name + " for " + str(room_cost_total)
-			#gui.show_popup("confirm_build", popup_message, confirm_build, cancel_build)
-			room_builder_action.emit(Action.FORWARD)
+			action_pressed.emit(Action.FORWARD)
 
 func confirm_build() -> void:
 	set_room()
 	draw_rooms()
-	build_menu.build_mode = false
 	# Make deductions for buying rooms 
 	station.currency -= calculate_room_price()
 	gui.update_resource("currency");	
 	print(rooms, 'current rooms')
-	state = State.SELECTING_TILE
-	room_builder_action.emit(Action.COMPLETE)
+	action_pressed.emit(Action.COMPLETE)
 
 func cancel_build() -> void:
 	stop_editing()
 	rooms.pop_back()
-	state = State.SELECTING_TILE
+	action_pressed.emit(Action.COMPLETE)
 
 func draw_rooms() -> void:
 	# Clear drafting layer
