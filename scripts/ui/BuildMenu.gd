@@ -11,7 +11,7 @@ enum Action {STOP_BUILDING, START_BUILDING, SELECT_ROOM}
 
 # Called when the node enters the scene tree for the first time
 func _ready():
-	var main_node = await get_tree().root.get_node("Main")
+	var main_node = get_tree().root.get_node("Main")
 	for room_type in main_node.room_types:
 		var button = Button.new()
 		button.text = room_type.name

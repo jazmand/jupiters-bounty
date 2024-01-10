@@ -157,10 +157,11 @@ func _on_selecting_tile_state_input(event: InputEvent):
 	if event is InputEventMouseButton:
 		if event.pressed:
 			match event.button_index:
-				1: 
+				1:
 					room_selector.handle_select_input(event, offset, zoom)
 					room_builder.selecting_tile(event, offset, zoom, build_menu.selected_room_type_id)
-				2: pass
+				2: 
+					pass
 	elif event is InputEventMouseMotion:
 		room_builder.selecting_tile_motion(event, offset, zoom)
 	
@@ -170,8 +171,10 @@ func _on_drafting_room_state_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton:
 		if event.pressed:
 			match event.button_index:
-				1: room_builder.drafting_room()
-				2: room_builder.stop_editing()
+				1: 
+					room_builder.drafting_room()
+				2: 
+					room_builder.stop_editing()
 	elif event is InputEventMouseMotion:
 		room_builder.drafting_room_motion(event, offset, zoom)
 
@@ -181,8 +184,10 @@ func _on_setting_door_state_input(event) -> void:
 	if event is InputEventMouseButton:
 		if event.pressed:
 			match event.button_index:
-				1: room_builder.setting_door(event, offset, zoom)
-				2: pass
+				1: 
+					room_builder.setting_door(event, offset, zoom)
+				2: 
+					pass
 	elif event is InputEventMouseMotion:
 		room_builder.setting_door_motion(event, offset, zoom)
 
