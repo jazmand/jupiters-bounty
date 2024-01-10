@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://dhh5wq2ka1ay8"]
+[gd_scene load_steps=34 format=3 uid="uid://dhh5wq2ka1ay8"]
 
 [ext_resource type="Script" path="res://scripts/scene/Main.gd" id="1_3g4j0"]
 [ext_resource type="Texture2D" uid="uid://dwwc4ti4c1ifx" path="res://assets/backgrounds/jupiter.png" id="2_i0a8p"]
@@ -18,6 +18,7 @@
 [ext_resource type="Texture2D" uid="uid://d0a26f7nbiylj" path="res://assets/sprites/t_pose.png" id="14_8rn0g"]
 [ext_resource type="Texture2D" uid="uid://bpmey73nbq8f1" path="res://assets/sprites/flirty_pose.png" id="15_lk8ys"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="18_o7t7g"]
+[ext_resource type="Script" path="res://BuildingManager.gd" id="18_tjbjw"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="19_8sc5u"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="20_aq14c"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="21_n7j07"]
@@ -205,6 +206,9 @@ position = Vector2(1344, 448)
 scale = Vector2(0.9, 0.9)
 texture = ExtResource("15_lk8ys")
 
+[node name="BuildingManager" type="Node" parent="."]
+script = ExtResource("18_tjbjw")
+
 [node name="StateManager" type="Node" parent="."]
 script = ExtResource("18_o7t7g")
 
@@ -304,13 +308,13 @@ script = ExtResource("21_n7j07")
 to = NodePath("../../SettingDoor")
 event = &"building_back"
 
-[connection signal="state_entered" from="StateManager/GameState/Building" to="." method="_on_building_state_entered"]
-[connection signal="state_exited" from="StateManager/GameState/Building" to="." method="_on_building_state_exited"]
-[connection signal="state_entered" from="StateManager/GameState/Building/SelectingRoom" to="." method="_on_selecting_room_state_entered"]
-[connection signal="state_exited" from="StateManager/GameState/Building/SelectingRoom" to="." method="_on_selecting_room_state_exited"]
-[connection signal="state_entered" from="StateManager/GameState/Building/SelectingTile" to="." method="_on_selecting_tile_state_entered"]
-[connection signal="state_input" from="StateManager/GameState/Building/SelectingTile" to="." method="_on_selecting_tile_state_input"]
-[connection signal="state_input" from="StateManager/GameState/Building/DraftingRoom" to="." method="_on_drafting_room_state_input"]
-[connection signal="state_input" from="StateManager/GameState/Building/SettingDoor" to="." method="_on_setting_door_state_input"]
-[connection signal="state_entered" from="StateManager/GameState/Building/ConfirmingRoom" to="." method="_on_confirming_room_state_entered"]
-[connection signal="state_exited" from="StateManager/GameState/Building/ConfirmingRoom" to="." method="_on_confirming_room_state_exited"]
+[connection signal="state_entered" from="StateManager/GameState/Building" to="BuildingManager" method="_on_building_state_entered"]
+[connection signal="state_exited" from="StateManager/GameState/Building" to="BuildingManager" method="_on_building_state_exited"]
+[connection signal="state_input" from="StateManager/GameState/Building" to="BuildingManager" method="_on_building_state_input"]
+[connection signal="state_entered" from="StateManager/GameState/Building/SelectingRoom" to="BuildingManager" method="_on_selecting_room_state_entered"]
+[connection signal="state_exited" from="StateManager/GameState/Building/SelectingRoom" to="BuildingManager" method="_on_selecting_room_state_exited"]
+[connection signal="state_input" from="StateManager/GameState/Building/SelectingTile" to="BuildingManager" method="_on_selecting_tile_state_input"]
+[connection signal="state_input" from="StateManager/GameState/Building/DraftingRoom" to="BuildingManager" method="_on_drafting_room_state_input"]
+[connection signal="state_input" from="StateManager/GameState/Building/SettingDoor" to="BuildingManager" method="_on_setting_door_state_input"]
+[connection signal="state_entered" from="StateManager/GameState/Building/ConfirmingRoom" to="BuildingManager" method="_on_confirming_room_state_entered"]
+[connection signal="state_exited" from="StateManager/GameState/Building/ConfirmingRoom" to="BuildingManager" method="_on_confirming_room_state_exited"]

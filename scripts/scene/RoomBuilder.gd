@@ -1,8 +1,7 @@
 # RoomBuilder.gd
 
-extends Node2D
-
 class_name RoomBuilder
+extends Node2D
 
 signal action_pressed(action: int)
 

@@ -1,6 +1,5 @@
-extends Node2D
-
 class_name RoomSelector
+extends Node2D
 
 var selected_tile_coords = Vector2i()
 var selected_room: Room
