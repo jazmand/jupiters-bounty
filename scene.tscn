@@ -222,7 +222,7 @@ script = ExtResource("20_aq14c")
 [node name="ToBuilding" type="Node" parent="StateManager/GameState/Default"]
 script = ExtResource("21_n7j07")
 to = NodePath("../../Building/SelectingRoom")
-event = &"start_building"
+event = &"building_start"
 
 [node name="Building" type="Node" parent="StateManager/GameState"]
 script = ExtResource("19_8sc5u")
@@ -234,7 +234,7 @@ script = ExtResource("20_aq14c")
 [node name="ToDefault" type="Node" parent="StateManager/GameState/Building/SelectingRoom"]
 script = ExtResource("21_n7j07")
 to = NodePath("../../../Default")
-event = &"stop_building"
+event = &"building_stop"
 
 [node name="ToSelectingTile" type="Node" parent="StateManager/GameState/Building/SelectingRoom"]
 script = ExtResource("21_n7j07")
@@ -247,7 +247,7 @@ script = ExtResource("20_aq14c")
 [node name="ToDefault" type="Node" parent="StateManager/GameState/Building/SelectingTile"]
 script = ExtResource("21_n7j07")
 to = NodePath("../../../Default")
-event = &"stop_building"
+event = &"building_stop"
 
 [node name="ToSelectingRoom" type="Node" parent="StateManager/GameState/Building/SelectingTile"]
 script = ExtResource("21_n7j07")
@@ -265,7 +265,7 @@ script = ExtResource("20_aq14c")
 [node name="ToDefault" type="Node" parent="StateManager/GameState/Building/DraftingRoom"]
 script = ExtResource("21_n7j07")
 to = NodePath("../../../Default")
-event = &"stop_building"
+event = &"building_stop"
 
 [node name="ToSelectingTile" type="Node" parent="StateManager/GameState/Building/DraftingRoom"]
 script = ExtResource("21_n7j07")
@@ -283,7 +283,7 @@ script = ExtResource("20_aq14c")
 [node name="ToDefault" type="Node" parent="StateManager/GameState/Building/SettingDoor"]
 script = ExtResource("21_n7j07")
 to = NodePath("../../../Default")
-event = &"stop_building"
+event = &"building_stop"
 
 [node name="ToDraftingRoom" type="Node" parent="StateManager/GameState/Building/SettingDoor"]
 script = ExtResource("21_n7j07")
@@ -301,7 +301,7 @@ script = ExtResource("20_aq14c")
 [node name="ToDefault" type="Node" parent="StateManager/GameState/Building/ConfirmingRoom"]
 script = ExtResource("21_n7j07")
 to = NodePath("../../../Default")
-event = &"stop_building"
+event = &"building_stop"
 
 [node name="ToSettingDoor" type="Node" parent="StateManager/GameState/Building/ConfirmingRoom"]
 script = ExtResource("21_n7j07")

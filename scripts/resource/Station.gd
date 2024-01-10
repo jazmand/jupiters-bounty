@@ -1,8 +1,7 @@
 # Station.gd
 
-extends Resource
-
 class_name Station
+extends Resource
 
 @export var id: int
 @export var hydrogen: int

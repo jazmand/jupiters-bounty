@@ -7,7 +7,7 @@ var station: Station = preload("res://assets/station/station_resources.tres")
 var base_tile_map: TileMap
 var build_tile_map: TileMap
 
-var gui: Control
+var gui: GUI
 var background: Control
 var camera: Camera2D
 

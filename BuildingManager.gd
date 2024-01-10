@@ -1,3 +1,6 @@
+# BuildingManager.gd
+
+class_name BuildingManager
 extends Node
 
 var station: Station = preload("res://assets/station/station_resources.tres")
@@ -5,24 +8,28 @@ var station: Station = preload("res://assets/station/station_resources.tres")
 @onready var base_tile_map: TileMap = $"../BaseTileMap"
 @onready var build_tile_map: TileMap = $"../BaseTileMap/BuildTileMap"
 
-@onready var gui: Control = $"../CanvasLayer/GUI"
+@onready var gui: GUI = $"../CanvasLayer/GUI"
 @onready var build_menu: BuildMenu = $"../CanvasLayer/GUI/BuildMenu"
 @onready var background: Control = $"../Background"
-@onready var camera = $"../Camera2D"
+@onready var camera: Camera2D = $"../Camera2D"
 
 @onready var state_manager: StateChart = $"../StateManager"
 
 var room_builder: RoomBuilder
 var room_selector: RoomSelector
-var room_types: Array = []
-var rooms: Array = [] # TODO: Save & load on init
+var room_types: Array[RoomType] = []
+var rooms: Array[Room] = [] # TODO: Save & load on init
+	
+enum StateEvent {BUILDING_STOP, BUILDING_START, BUILDING_BACK, BUILDING_FORWARD}
 
-func _init():
+const Events = [&"building_stop", &"building_start", &"building_back", &"building_forward"]
+
+func _init() -> void:
 	# Load and initialize room types
 	load_room_types()
 
 # Called when the node enters the scene tree for the first time.
-func _ready():
+func _ready() -> void:
 	build_menu.action_pressed.connect(on_build_menu_action)
 	room_builder = RoomBuilder.new(gui, build_menu, station, base_tile_map, build_tile_map, rooms, room_types)
 	room_builder.action_pressed.connect(on_room_builder_action)
@@ -69,28 +76,28 @@ func on_build_menu_action(action: int) -> void:
 	var event: String
 	match action:
 		build_menu.Action.STOP_BUILDING:
-			event = "stop_building"
+			event = Events[StateEvent.BUILDING_STOP]
 		build_menu.Action.START_BUILDING:
-			event = "start_building"
+			event = Events[StateEvent.BUILDING_START]
 		build_menu.Action.SELECT_ROOM:
-			event = "building_forward"
+			event = Events[StateEvent.BUILDING_FORWARD]
 	state_manager.send_event(event)
 
 func on_room_builder_action(action: int) -> void:
 	var event: String
 	match action:
 		room_builder.Action.BACK:
-			event = "building_back"
+			event = Events[StateEvent.BUILDING_BACK]
 		room_builder.Action.FORWARD:
-			event = "building_forward"
+			event = Events[StateEvent.BUILDING_FORWARD]
 		room_builder.Action.COMPLETE:
-			event = "stop_building"
+			event = Events[StateEvent.BUILDING_STOP]
 	state_manager.send_event(event)
 
-func _on_building_state_input(event: InputEvent):
+func _on_building_state_input(event: InputEvent) -> void:
 	if event is InputEventKey:
 		if event.pressed and event.keycode == KEY_ESCAPE:
-			state_manager.send_event("stop_building")
+			state_manager.send_event(Events[StateEvent.BUILDING_STOP])
 
 func _on_selecting_room_state_entered() -> void:
 	build_menu.show_room_panel()
@@ -99,7 +106,7 @@ func _on_selecting_room_state_exited() -> void:
 	build_menu.hide_room_panel()
 
 # TODO: refactor state input handlers
-func _on_selecting_tile_state_input(event: InputEvent):
+func _on_selecting_tile_state_input(event: InputEvent) -> void:
 	var offset = camera.position
 	var zoom = camera.zoom
 	if event is InputEventMouseButton:
@@ -126,7 +133,7 @@ func _on_drafting_room_state_input(event: InputEvent) -> void:
 	elif event is InputEventMouseMotion:
 		room_builder.drafting_room_motion(event, offset, zoom)
 
-func _on_setting_door_state_input(event) -> void:
+func _on_setting_door_state_input(event: InputEvent) -> void:
 	var offset = camera.position
 	var zoom = camera.zoom
 	if event is InputEventMouseButton:
