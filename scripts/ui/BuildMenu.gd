@@ -3,11 +3,11 @@
 class_name BuildMenu
 extends Control
 
-signal action_pressed(action: int)
+signal action_completed(action: int)
 
 var selected_room_type_id: int
 
-enum Action {STOP_BUILDING, START_BUILDING, SELECT_ROOM}
+enum Action {CLOSE, OPEN, SELECT_ROOM}
 
 # Called when the node enters the scene tree for the first time
 func _ready() -> void:
@@ -46,11 +46,11 @@ func connect_popup_no(f: Callable) -> void:
 	$PopupPanel/NoButton.pressed.connect(f)
 
 func _on_build_button_pressed() -> void:
-	action_pressed.emit(Action.START_BUILDING)
+	action_completed.emit(Action.OPEN)
 
 func _on_build_close_button_pressed() -> void:
-	action_pressed.emit(Action.STOP_BUILDING)
+	action_completed.emit(Action.CLOSE)
 
 func _on_room_selected(room_type) -> void:
 	selected_room_type_id = room_type.id
-	action_pressed.emit(Action.SELECT_ROOM)
+	action_completed.emit(Action.SELECT_ROOM)

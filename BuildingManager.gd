@@ -10,7 +10,6 @@ var station: Station = preload("res://assets/station/station_resources.tres")
 
 @onready var gui: GUI = $"../CanvasLayer/GUI"
 @onready var build_menu: BuildMenu = $"../CanvasLayer/GUI/BuildMenu"
-@onready var background: Control = $"../Background"
 @onready var camera: Camera2D = $"../Camera2D"
 
 @onready var state_manager: StateChart = $"../StateManager"
@@ -30,9 +29,9 @@ func _init() -> void:
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	build_menu.action_pressed.connect(on_build_menu_action)
-	room_builder = RoomBuilder.new(gui, build_menu, station, base_tile_map, build_tile_map, rooms, room_types)
-	room_builder.action_pressed.connect(on_room_builder_action)
+	build_menu.action_completed.connect(on_build_menu_action)
+	room_builder = RoomBuilder.new(gui, station, base_tile_map, build_tile_map, rooms, room_types)
+	room_builder.action_completed.connect(on_room_builder_action)
 	room_selector = RoomSelector.new(gui, station, build_tile_map, rooms, room_types)	
 
 func load_room_types() -> void:
@@ -75,9 +74,9 @@ func load_room_types() -> void:
 func on_build_menu_action(action: int) -> void:
 	var event: String
 	match action:
-		build_menu.Action.STOP_BUILDING:
+		build_menu.Action.CLOSE:
 			event = Events[StateEvent.BUILDING_STOP]
-		build_menu.Action.START_BUILDING:
+		build_menu.Action.OPEN:
 			event = Events[StateEvent.BUILDING_START]
 		build_menu.Action.SELECT_ROOM:
 			event = Events[StateEvent.BUILDING_FORWARD]
