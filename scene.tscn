@@ -17,8 +17,8 @@
 [ext_resource type="PackedScene" uid="uid://bcwkugn6v3oy7" path="res://addons/godot_state_charts/utilities/state_chart_debugger.tscn" id="13_g5vrw"]
 [ext_resource type="Texture2D" uid="uid://d0a26f7nbiylj" path="res://assets/sprites/t_pose.png" id="14_8rn0g"]
 [ext_resource type="Texture2D" uid="uid://bpmey73nbq8f1" path="res://assets/sprites/flirty_pose.png" id="15_lk8ys"]
+[ext_resource type="Script" path="res://scripts/scene/BuildingManager.gd" id="18_cy305"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="18_o7t7g"]
-[ext_resource type="Script" path="res://BuildingManager.gd" id="18_tjbjw"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="19_8sc5u"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="20_aq14c"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="21_n7j07"]
@@ -207,7 +207,7 @@ scale = Vector2(0.9, 0.9)
 texture = ExtResource("15_lk8ys")
 
 [node name="BuildingManager" type="Node" parent="."]
-script = ExtResource("18_tjbjw")
+script = ExtResource("18_cy305")
 
 [node name="StateManager" type="Node" parent="."]
 script = ExtResource("18_o7t7g")
