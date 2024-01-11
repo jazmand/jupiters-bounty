@@ -1,18 +1,19 @@
-extends Node2D
+# RoomSelector.gd
 
 class_name RoomSelector
+extends Node2D
 
 var selected_tile_coords = Vector2i()
 var selected_room: Room
 
-var gui : Control
+var gui: GUI
 var station: Station
 var build_tile_map: TileMap
-var rooms: Array
-var room_types: Array
+var rooms: Array[Room]
+var room_types: Array[RoomType]
 
 
-func _init(gui: Control, station: Station, build_tile_map: TileMap, rooms: Array, room_types: Array):
+func _init(gui: Control, station: Station, build_tile_map: TileMap, rooms: Array[Room], room_types: Array[RoomType]):
 	self.gui = gui
 	self.station = station
 	self.build_tile_map = build_tile_map
@@ -43,7 +44,7 @@ func select_room(selected_tile_coords: Vector2i) -> void:
 			var popup_message = "You have selected " + room_details.name + " it's size is " + str(room_details.size) + " and it's power consumption is " + str(room_details.powerConsumption)
 			gui.show_popup("room_details", popup_message, confirm_delete, cancel_delete)
 			
-func get_room_details(room):
+func get_room_details(room: Room) -> Dictionary:
 	# Create a JSON dictionary
 	var room_details = {}
 	for room_type in room_types:

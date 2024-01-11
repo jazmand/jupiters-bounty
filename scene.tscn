@@ -1,4 +1,4 @@
-[gd_scene load_steps=28 format=3 uid="uid://dhh5wq2ka1ay8"]
+[gd_scene load_steps=34 format=3 uid="uid://dhh5wq2ka1ay8"]
 
 [ext_resource type="Script" path="res://scripts/scene/Main.gd" id="1_3g4j0"]
 [ext_resource type="Texture2D" uid="uid://dwwc4ti4c1ifx" path="res://assets/backgrounds/jupiter.png" id="2_i0a8p"]
@@ -14,8 +14,14 @@
 [ext_resource type="Texture2D" uid="uid://b011v7odriiqs" path="res://assets/tilesets/generator_room.png" id="8_snmxr"]
 [ext_resource type="Texture2D" uid="uid://c2p58o2dt13hn" path="res://assets/tilesets/door placeholder.png" id="9_nfm5o"]
 [ext_resource type="Texture2D" uid="uid://k3hf5argnn4k" path="res://assets/tilesets/storage_bay.png" id="9_x6k6u"]
+[ext_resource type="PackedScene" uid="uid://bcwkugn6v3oy7" path="res://addons/godot_state_charts/utilities/state_chart_debugger.tscn" id="13_g5vrw"]
 [ext_resource type="Texture2D" uid="uid://d0a26f7nbiylj" path="res://assets/sprites/t_pose.png" id="14_8rn0g"]
 [ext_resource type="Texture2D" uid="uid://bpmey73nbq8f1" path="res://assets/sprites/flirty_pose.png" id="15_lk8ys"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="18_o7t7g"]
+[ext_resource type="Script" path="res://BuildingManager.gd" id="18_tjbjw"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="19_8sc5u"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="20_aq14c"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="21_n7j07"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_psmxa"]
 texture = ExtResource("5_408k5")
@@ -176,6 +182,13 @@ layer_1/y_sort_origin = 0
 layer_1/z_index = 2
 layer_1/tile_data = PackedInt32Array()
 
+[node name="StateChartDebugger" parent="." instance=ExtResource("13_g5vrw")]
+offset_left = 4.0
+offset_top = 332.0
+offset_right = 555.0
+offset_bottom = 950.0
+initial_node_to_watch = NodePath("../StateManager")
+
 [node name="Camera2D" type="Camera2D" parent="."]
 offset = Vector2(2.08165e-12, 2.08165e-12)
 anchor_mode = 0
@@ -192,3 +205,116 @@ texture = ExtResource("14_8rn0g")
 position = Vector2(1344, 448)
 scale = Vector2(0.9, 0.9)
 texture = ExtResource("15_lk8ys")
+
+[node name="BuildingManager" type="Node" parent="."]
+script = ExtResource("18_tjbjw")
+
+[node name="StateManager" type="Node" parent="."]
+script = ExtResource("18_o7t7g")
+
+[node name="GameState" type="Node" parent="StateManager"]
+script = ExtResource("19_8sc5u")
+initial_state = NodePath("Default")
+
+[node name="Default" type="Node" parent="StateManager/GameState"]
+script = ExtResource("20_aq14c")
+
+[node name="ToBuilding" type="Node" parent="StateManager/GameState/Default"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../Building/SelectingRoom")
+event = &"building_start"
+
+[node name="Building" type="Node" parent="StateManager/GameState"]
+script = ExtResource("19_8sc5u")
+initial_state = NodePath("SelectingRoom")
+
+[node name="SelectingRoom" type="Node" parent="StateManager/GameState/Building"]
+script = ExtResource("20_aq14c")
+
+[node name="ToDefault" type="Node" parent="StateManager/GameState/Building/SelectingRoom"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../../Default")
+event = &"building_stop"
+
+[node name="ToSelectingTile" type="Node" parent="StateManager/GameState/Building/SelectingRoom"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../SelectingTile")
+event = &"building_forward"
+
+[node name="SelectingTile" type="Node" parent="StateManager/GameState/Building"]
+script = ExtResource("20_aq14c")
+
+[node name="ToDefault" type="Node" parent="StateManager/GameState/Building/SelectingTile"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../../Default")
+event = &"building_stop"
+
+[node name="ToSelectingRoom" type="Node" parent="StateManager/GameState/Building/SelectingTile"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../SelectingRoom")
+event = &"building_back"
+
+[node name="ToDraftingRoom" type="Node" parent="StateManager/GameState/Building/SelectingTile"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../DraftingRoom")
+event = &"building_forward"
+
+[node name="DraftingRoom" type="Node" parent="StateManager/GameState/Building"]
+script = ExtResource("20_aq14c")
+
+[node name="ToDefault" type="Node" parent="StateManager/GameState/Building/DraftingRoom"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../../Default")
+event = &"building_stop"
+
+[node name="ToSelectingTile" type="Node" parent="StateManager/GameState/Building/DraftingRoom"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../SelectingTile")
+event = &"building_back"
+
+[node name="ToSettingDoor" type="Node" parent="StateManager/GameState/Building/DraftingRoom"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../SettingDoor")
+event = &"building_forward"
+
+[node name="SettingDoor" type="Node" parent="StateManager/GameState/Building"]
+script = ExtResource("20_aq14c")
+
+[node name="ToDefault" type="Node" parent="StateManager/GameState/Building/SettingDoor"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../../Default")
+event = &"building_stop"
+
+[node name="ToDraftingRoom" type="Node" parent="StateManager/GameState/Building/SettingDoor"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../DraftingRoom")
+event = &"building_back"
+
+[node name="ToConfirmingRoom" type="Node" parent="StateManager/GameState/Building/SettingDoor"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../ConfirmingRoom")
+event = &"building_forward"
+
+[node name="ConfirmingRoom" type="Node" parent="StateManager/GameState/Building"]
+script = ExtResource("20_aq14c")
+
+[node name="ToDefault" type="Node" parent="StateManager/GameState/Building/ConfirmingRoom"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../../Default")
+event = &"building_stop"
+
+[node name="ToSettingDoor" type="Node" parent="StateManager/GameState/Building/ConfirmingRoom"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../SettingDoor")
+event = &"building_back"
+
+[connection signal="state_entered" from="StateManager/GameState/Building" to="BuildingManager" method="_on_building_state_entered"]
+[connection signal="state_exited" from="StateManager/GameState/Building" to="BuildingManager" method="_on_building_state_exited"]
+[connection signal="state_input" from="StateManager/GameState/Building" to="BuildingManager" method="_on_building_state_input"]
+[connection signal="state_entered" from="StateManager/GameState/Building/SelectingRoom" to="BuildingManager" method="_on_selecting_room_state_entered"]
+[connection signal="state_exited" from="StateManager/GameState/Building/SelectingRoom" to="BuildingManager" method="_on_selecting_room_state_exited"]
+[connection signal="state_input" from="StateManager/GameState/Building/SelectingTile" to="BuildingManager" method="_on_selecting_tile_state_input"]
+[connection signal="state_input" from="StateManager/GameState/Building/DraftingRoom" to="BuildingManager" method="_on_drafting_room_state_input"]
+[connection signal="state_input" from="StateManager/GameState/Building/SettingDoor" to="BuildingManager" method="_on_setting_door_state_input"]
+[connection signal="state_entered" from="StateManager/GameState/Building/ConfirmingRoom" to="BuildingManager" method="_on_confirming_room_state_entered"]
+[connection signal="state_exited" from="StateManager/GameState/Building/ConfirmingRoom" to="BuildingManager" method="_on_confirming_room_state_exited"]

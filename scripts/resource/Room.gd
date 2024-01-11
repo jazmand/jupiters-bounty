@@ -1,8 +1,8 @@
 # Room.gd
 
+class_name Room
 extends Resource
 
-class_name Room
 
 @export var id: int
 @export var roomTypeId: int

@@ -1,56 +1,56 @@
 # BuildMenu.gd
 
+class_name BuildMenu
 extends Control
 
-var build_mode = false
-#var room_selected = false
+signal action_completed(action: int)
+
 var selected_room_type_id: int
 
-# @onready var popup = $Popup
+enum Action {CLOSE, OPEN, SELECT_ROOM}
 
 # Called when the node enters the scene tree for the first time
-func _ready():
-	var main_node = get_tree().root.get_node("Main")
-	for room_type in main_node.room_types:
+func _ready() -> void:
+	var building_manager = get_tree().root.get_node("Main/BuildingManager")
+	for room_type in building_manager.room_types:
 		var button = Button.new()
 		button.text = room_type.name
 		button.pressed.connect(_on_room_selected.bind(room_type)) # Must "bind" to pass param to a connect callback
-#		button.mouse_entered.connect(_on_room_panel_mouse_entered)
-#		button.mouse_exited.connect(_on_room_panel_mouse_exited)
 		$RoomPanel/HBoxContainer.add_child(button)
 
-func _on_build_button_pressed():
-	$RoomPanel.visible = true
-	$BuildButton.visible = false
-
-func _on_build_close_button_pressed():
-	build_mode = false
-	$RoomPanel.visible = false
+func show_build_button() -> void:
 	$BuildButton.visible = true
 
-func _on_room_selected(room_type):
-#	room_selected = true
-	build_mode = true
-	selected_room_type_id = room_type.id
+func hide_build_button() -> void:
+	$BuildButton.visible = false
+
+func show_room_panel() -> void:
+	$RoomPanel.visible = true
+
+func hide_room_panel() -> void:
 	$RoomPanel.visible = false
-	
-	
-# Need way to clear initial tile when build_mode == false
 
-#func _on_room_panel_mouse_entered():
-#	build_mode = false
+func show_popup() -> void:
+	$PopupPanel.visible = true
 
-#func _on_room_panel_mouse_exited():
-#	if room_selected == true && $PopupPanel.visible == false:
-#		build_mode = true
-		
-func _on_popup_yes_button_pressed():
+func hide_popup() -> void:
 	$PopupPanel.visible = false
-#	room_selected = false
-	$RoomPanel.visible = true
 
-func _on_popup_no_button_pressed():
-	# TODO clear room that has been set
-	$PopupPanel.visible = false
-#	room_selected = false
-	$RoomPanel.visible = true
+func set_popup_text(text: String) -> void:
+	$PopupPanel/Label.text = text
+	
+func connect_popup_yes(f: Callable) -> void:
+	$PopupPanel/YesButton.pressed.connect(f)
+
+func connect_popup_no(f: Callable) -> void:
+	$PopupPanel/NoButton.pressed.connect(f)
+
+func _on_build_button_pressed() -> void:
+	action_completed.emit(Action.OPEN)
+
+func _on_build_close_button_pressed() -> void:
+	action_completed.emit(Action.CLOSE)
+
+func _on_room_selected(room_type) -> void:
+	selected_room_type_id = room_type.id
+	action_completed.emit(Action.SELECT_ROOM)
