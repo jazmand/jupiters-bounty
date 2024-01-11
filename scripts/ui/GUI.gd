@@ -1,5 +1,6 @@
 # GUI.gd
 
+class_name GUI
 extends Control
 
 # Gets resources from Station.gd with initial values in station_resources.tres

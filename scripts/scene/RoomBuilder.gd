@@ -1,10 +1,9 @@
 # RoomBuilder.gd
 
+class_name RoomBuilder
 extends Node2D
 
-class_name RoomBuilder
-
-signal action_pressed(action: int)
+signal action_completed(action: int)
 
 var building_layer: int = 0
 var drafting_layer: int = 1
@@ -23,7 +22,6 @@ var selected_room_type_id: int = 0
 var selected_room_type: RoomType 
 
 var gui : Control
-var build_menu : Control
 var base_tile_map: TileMap
 var build_tile_map: TileMap
 var station: Station
@@ -34,9 +32,8 @@ var popup_message: String
 
 enum Action {BACK, FORWARD, COMPLETE}
 
-func _init(gui: Control, build_menu: Control, station: Station, base_tile_map: TileMap, build_tile_map: TileMap, rooms: Array, room_types: Array):
+func _init(gui: Control, station: Station, base_tile_map: TileMap, build_tile_map: TileMap, rooms: Array, room_types: Array) -> void:
 	self.gui = gui
-	self.build_menu = build_menu
 	self.station = station
 	self.base_tile_map = base_tile_map
 	self.build_tile_map = build_tile_map
@@ -53,7 +50,7 @@ func start_editing() -> void:
 func stop_editing() -> void:
 	selected_room_type_id = 0 # Deselect
 	build_tile_map.clear_layer(drafting_layer)
-	action_pressed.emit(Action.BACK)
+	action_completed.emit(Action.BACK)
 
 # --- Input functions ---
 func selecting_tile(event: InputEventMouseButton, offset: Vector2, zoom: Vector2, selected_room_type_id: int) -> void:
@@ -62,7 +59,7 @@ func selecting_tile(event: InputEventMouseButton, offset: Vector2, zoom: Vector2
 		self.selected_room_type_id = selected_room_type_id
 		initial_tile_coords = coords
 		start_editing()
-		action_pressed.emit(Action.FORWARD)
+		action_completed.emit(Action.FORWARD)
 		
 
 func selecting_tile_motion(event: InputEventMouseMotion, offset: Vector2, zoom: Vector2) -> void:
@@ -71,7 +68,7 @@ func selecting_tile_motion(event: InputEventMouseMotion, offset: Vector2, zoom: 
 
 func drafting_room() -> void:
 	if !any_invalid:
-		action_pressed.emit(Action.FORWARD)
+		action_completed.emit(Action.FORWARD)
 
 func drafting_room_motion(event: InputEventMouseMotion, offset: Vector2, zoom: Vector2) -> void:
 	transverse_tile_coords = base_tile_map.local_to_map((event.position / zoom) + offset)
@@ -140,7 +137,7 @@ func set_room() -> void:
 	room.topLeft = initial_tile_coords
 	room.bottomRight = transverse_tile_coords
 
-func set_doors(coords) -> void:
+func set_doors(coords: Vector2i) -> void:
 	var room = rooms[-1]
 	room.doorTiles.append(coords)
 
@@ -150,7 +147,7 @@ func confirm_room_details() -> void:
 			var room_size = calculate_tile_count(initial_tile_coords, transverse_tile_coords)
 			var room_cost_total = room_type.price * room_size
 			popup_message = "Build " + room_type.name + " for " + str(room_cost_total)
-			action_pressed.emit(Action.FORWARD)
+			action_completed.emit(Action.FORWARD)
 
 func confirm_build() -> void:
 	set_room()
@@ -159,12 +156,12 @@ func confirm_build() -> void:
 	station.currency -= calculate_room_price()
 	gui.update_resource("currency");	
 	print(rooms, 'current rooms')
-	action_pressed.emit(Action.COMPLETE)
+	action_completed.emit(Action.COMPLETE)
 
 func cancel_build() -> void:
 	stop_editing()
 	rooms.pop_back()
-	action_pressed.emit(Action.COMPLETE)
+	action_completed.emit(Action.COMPLETE)
 
 func draw_rooms() -> void:
 	# Clear drafting layer
@@ -187,7 +184,7 @@ func draw_rooms() -> void:
 
 # --- Helper functions ---
 
-func get_room_type_by_id(id):
+func get_room_type_by_id(id: int):
 	for room_type in room_types:
 		if room_type.id == id:
 			return room_type
@@ -257,4 +254,3 @@ func is_blocking_door(coords: Vector2i) -> bool:
 			if (abs(coords.x - doorTile.x) + abs(coords.y - doorTile.y)) == 1:
 				return true
 	return false
-	
