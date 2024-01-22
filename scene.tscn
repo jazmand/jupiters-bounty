@@ -182,19 +182,19 @@ layer_1/y_sort_origin = 0
 layer_1/z_index = 2
 layer_1/tile_data = PackedInt32Array()
 
-[node name="StateChartDebugger" parent="." instance=ExtResource("13_g5vrw")]
-offset_left = 4.0
-offset_top = 332.0
-offset_right = 555.0
-offset_bottom = 950.0
-initial_node_to_watch = NodePath("../StateManager")
-
 [node name="Camera2D" type="Camera2D" parent="."]
 offset = Vector2(2.08165e-12, 2.08165e-12)
 anchor_mode = 0
 script = ExtResource("2_o2j5r")
 
 [node name="CanvasLayer" parent="." instance=ExtResource("6_4lvgl")]
+
+[node name="StateChartDebugger" parent="CanvasLayer" instance=ExtResource("13_g5vrw")]
+offset_left = 4.0
+offset_top = 332.0
+offset_right = -1528.0
+offset_bottom = -176.0
+initial_node_to_watch = NodePath("../../StateManager")
 
 [node name="TPoseDummy" type="Sprite2D" parent="."]
 position = Vector2(1528, 1040)
