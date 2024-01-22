@@ -221,22 +221,22 @@ script = ExtResource("20_aq14c")
 
 [node name="ToBuilding" type="Node" parent="StateManager/GameState/Default"]
 script = ExtResource("21_n7j07")
-to = NodePath("../../Building/SelectingRoom")
+to = NodePath("../../Building/SelectingRoomtype")
 event = &"building_start"
 
 [node name="Building" type="Node" parent="StateManager/GameState"]
 script = ExtResource("19_8sc5u")
-initial_state = NodePath("SelectingRoom")
+initial_state = NodePath("SelectingRoomtype")
 
-[node name="SelectingRoom" type="Node" parent="StateManager/GameState/Building"]
+[node name="SelectingRoomtype" type="Node" parent="StateManager/GameState/Building"]
 script = ExtResource("20_aq14c")
 
-[node name="ToDefault" type="Node" parent="StateManager/GameState/Building/SelectingRoom"]
+[node name="ToDefault" type="Node" parent="StateManager/GameState/Building/SelectingRoomtype"]
 script = ExtResource("21_n7j07")
 to = NodePath("../../../Default")
 event = &"building_stop"
 
-[node name="ToSelectingTile" type="Node" parent="StateManager/GameState/Building/SelectingRoom"]
+[node name="ToSelectingTile" type="Node" parent="StateManager/GameState/Building/SelectingRoomtype"]
 script = ExtResource("21_n7j07")
 to = NodePath("../../SelectingTile")
 event = &"building_forward"
@@ -249,9 +249,9 @@ script = ExtResource("21_n7j07")
 to = NodePath("../../../Default")
 event = &"building_stop"
 
-[node name="ToSelectingRoom" type="Node" parent="StateManager/GameState/Building/SelectingTile"]
+[node name="ToSelectingRoomtype" type="Node" parent="StateManager/GameState/Building/SelectingTile"]
 script = ExtResource("21_n7j07")
-to = NodePath("../../SelectingRoom")
+to = NodePath("../../SelectingRoomtype")
 event = &"building_back"
 
 [node name="ToDraftingRoom" type="Node" parent="StateManager/GameState/Building/SelectingTile"]
@@ -311,10 +311,11 @@ event = &"building_back"
 [connection signal="state_entered" from="StateManager/GameState/Building" to="BuildingManager" method="_on_building_state_entered"]
 [connection signal="state_exited" from="StateManager/GameState/Building" to="BuildingManager" method="_on_building_state_exited"]
 [connection signal="state_input" from="StateManager/GameState/Building" to="BuildingManager" method="_on_building_state_input"]
-[connection signal="state_entered" from="StateManager/GameState/Building/SelectingRoom" to="BuildingManager" method="_on_selecting_room_state_entered"]
-[connection signal="state_exited" from="StateManager/GameState/Building/SelectingRoom" to="BuildingManager" method="_on_selecting_room_state_exited"]
+[connection signal="state_entered" from="StateManager/GameState/Building/SelectingRoomtype" to="BuildingManager" method="_on_selecting_roomtype_state_entered"]
+[connection signal="state_exited" from="StateManager/GameState/Building/SelectingRoomtype" to="BuildingManager" method="_on_selecting_roomtype_state_exited"]
 [connection signal="state_input" from="StateManager/GameState/Building/SelectingTile" to="BuildingManager" method="_on_selecting_tile_state_input"]
 [connection signal="state_input" from="StateManager/GameState/Building/DraftingRoom" to="BuildingManager" method="_on_drafting_room_state_input"]
 [connection signal="state_input" from="StateManager/GameState/Building/SettingDoor" to="BuildingManager" method="_on_setting_door_state_input"]
 [connection signal="state_entered" from="StateManager/GameState/Building/ConfirmingRoom" to="BuildingManager" method="_on_confirming_room_state_entered"]
 [connection signal="state_exited" from="StateManager/GameState/Building/ConfirmingRoom" to="BuildingManager" method="_on_confirming_room_state_exited"]
+[connection signal="state_input" from="StateManager/GameState/Building/ConfirmingRoom" to="BuildingManager" method="_on_confirming_room_state_input"]
