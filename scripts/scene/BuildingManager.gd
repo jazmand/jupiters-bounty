@@ -78,7 +78,7 @@ func on_build_menu_action(action: int) -> void:
 			event = Events[StateEvent.BUILDING_STOP]
 		build_menu.Action.OPEN:
 			event = Events[StateEvent.BUILDING_START]
-		build_menu.Action.SELECT_ROOM:
+		build_menu.Action.SELECT_ROOMTYPE:
 			event = Events[StateEvent.BUILDING_FORWARD]
 	state_manager.send_event(event)
 

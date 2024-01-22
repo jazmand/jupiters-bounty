@@ -7,7 +7,7 @@ signal action_completed(action: int)
 
 var selected_room_type_id: int
 
-enum Action {CLOSE, OPEN, SELECT_ROOM}
+enum Action {CLOSE, OPEN, SELECT_ROOMTYPE}
 
 # Called when the node enters the scene tree for the first time
 func _ready() -> void:
@@ -53,4 +53,4 @@ func _on_build_close_button_pressed() -> void:
 
 func _on_room_selected(room_type) -> void:
 	selected_room_type_id = room_type.id
-	action_completed.emit(Action.SELECT_ROOM)
+	action_completed.emit(Action.SELECT_ROOMTYPE)
