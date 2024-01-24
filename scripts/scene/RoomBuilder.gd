@@ -15,6 +15,7 @@ var door_tileset_id: int = 4 # TEMPORARY. Door tiles will be included in room ti
 
 var initial_tile_coords = Vector2i()
 var transverse_tile_coords = Vector2i()
+var temp_door_coords: Array[Vector2i] = []
 
 var any_invalid: bool = false
 
@@ -40,25 +41,19 @@ func _init(gui: GUI, station: Station, base_tile_map: TileMap, build_tile_map: T
 	self.rooms = rooms
 	self.room_types = room_types
 
-func start_editing() -> void:
-	selected_room_type = get_room_type_by_id(selected_room_type_id)	
-	var new_room = Room.new()
-	new_room.id = generate_unique_room_id()
-	new_room.roomTypeId = selected_room_type.id
-	rooms.append(new_room)
-
 func stop_editing() -> void:
 	selected_room_type_id = 0 # Deselect
 	build_tile_map.clear_layer(drafting_layer)
 	action_completed.emit(Action.BACK)
 
 # --- Input functions ---
+
 func selecting_tile(event: InputEventMouseButton, offset: Vector2, zoom: Vector2, selected_room_type_id: int) -> void:
 	var coords = base_tile_map.local_to_map((event.position / zoom) + offset)
 	if !any_invalid:
 		self.selected_room_type_id = selected_room_type_id
+		self.selected_room_type = get_room_type_by_id(selected_room_type_id)
 		initial_tile_coords = coords
-		start_editing()
 		action_completed.emit(Action.FORWARD)
 		
 
@@ -75,6 +70,7 @@ func drafting_room_motion(event: InputEventMouseMotion, offset: Vector2, zoom: V
 	draft_room(initial_tile_coords, transverse_tile_coords)
 
 func setting_door(event: InputEventMouseButton, offset: Vector2, zoom: Vector2) -> void:
+	temp_door_coords = []
 	var coords = base_tile_map.local_to_map((event.position / zoom) + offset)
 	if is_on_room_edge(coords):
 		set_doors(coords)
@@ -91,6 +87,9 @@ func setting_door_motion(event: InputEventMouseMotion, offset: Vector2, zoom: Ve
 		build_tile_map.set_cell(drafting_layer, coords, door_tileset_id, Vector2i(0, 0))
 
 # -- Selection and drawing functions
+
+func set_roomtype() -> void:
+	selected_room_type = get_room_type_by_id(selected_room_type_id)	
 
 func select_tile(coords: Vector2i) -> void:
 	# Clear layer
@@ -132,14 +131,8 @@ func draft_room(initial_corner: Vector2i, opposite_corner: Vector2i) -> void:
 				tileset_id = drafting_tileset_id
 			build_tile_map.set_cell(drafting_layer, coords, tileset_id, Vector2i(0, 0))
 
-func set_room() -> void:
-	var room = rooms[-1]
-	room.topLeft = initial_tile_coords
-	room.bottomRight = transverse_tile_coords
-
 func set_doors(coords: Vector2i) -> void:
-	var room = rooms[-1]
-	room.doorTiles.append(coords)
+	temp_door_coords.append(coords)
 
 func confirm_room_details() -> void:
 	for room_type in room_types:
@@ -150,7 +143,7 @@ func confirm_room_details() -> void:
 			action_completed.emit(Action.FORWARD)
 
 func confirm_build() -> void:
-	set_room()
+	save_room()
 	draw_rooms()
 	# Make deductions for buying rooms 
 	station.currency -= calculate_room_price()
@@ -162,6 +155,15 @@ func cancel_build() -> void:
 	stop_editing()
 	rooms.pop_back()
 	action_completed.emit(Action.COMPLETE)
+
+func save_room() -> void:
+	var new_room = Room.new()
+	new_room.id = generate_unique_room_id()
+	new_room.roomTypeId = selected_room_type.id
+	new_room.topLeft = initial_tile_coords
+	new_room.bottomRight = transverse_tile_coords
+	new_room.doorTiles = temp_door_coords
+	rooms.append(new_room)
 
 func draw_rooms() -> void:
 	# Clear drafting layer
@@ -190,19 +192,18 @@ func get_room_type_by_id(id: int):
 			return room_type
 
 func check_selection_valid(coords: Vector2i, check_price_and_size: bool = false) -> bool:
-	var is_valid = true 
 	
 	# Check if outside station bounds
 	if !base_tile_map.get_cell_tile_data(0, coords) is TileData:
-		is_valid = false
+		return false
 		
 	# Check if overlapping an existing room
 	elif build_tile_map.get_cell_tile_data(building_layer, coords) is TileData:
-		is_valid = false
+		return false
 		
 	# Check if blocking any existing doors
 	elif is_blocking_door(coords):
-		is_valid = false
+		return false
 		
 	# Check if price and size are permissible
 	elif check_price_and_size:
@@ -212,16 +213,15 @@ func check_selection_valid(coords: Vector2i, check_price_and_size: bool = false)
 		
 		
 		if (calculate_room_price() >= station.currency):
-			print(calculate_room_price())
-			is_valid = false
+			return false
 			
 		if (tile_count < selected_room_type.minTiles or tile_count > selected_room_type.maxTiles):
-			is_valid = false
+			return false
 			
 		if room_width <= 1 or room_height <=1:
-			is_valid = false
+			return false
 			
-	return is_valid
+	return true
 
 func calculate_room_price() -> int:
 	return selected_room_type.price * calculate_tile_count(initial_tile_coords, transverse_tile_coords)

@@ -30,9 +30,6 @@ func _init() -> void:
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	build_menu.action_completed.connect(on_build_menu_action)
-	# Connect the buttons to the confirmation functions in the GUI script
-	build_menu.connect_popup_yes(room_builder.confirm_build)
-	build_menu.connect_popup_no(room_builder.cancel_build)
 	room_builder = RoomBuilder.new(gui, station, base_tile_map, build_tile_map, rooms, room_types)
 	room_builder.action_completed.connect(on_room_builder_action)
 #	room_selector = RoomSelector.new(gui, station, build_tile_map, rooms, room_types)	
@@ -145,6 +142,9 @@ func _on_setting_door_state_input(event: InputEvent) -> void:
 func _on_confirming_room_state_entered() -> void:
 	build_menu.show_popup()
 	build_menu.set_popup_text(room_builder.popup_message)
+	# Connect the buttons to the confirmation functions in the GUI script
+	build_menu.connect_popup_yes(room_builder.confirm_build)
+	build_menu.connect_popup_no(room_builder.cancel_build)
 
 func _on_confirming_room_state_exited() -> void:
 	build_menu.hide_popup()
