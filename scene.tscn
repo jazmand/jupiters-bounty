@@ -137,7 +137,7 @@ sources/7 = SubResource("TileSetAtlasSource_okf4u")
 sources/8 = SubResource("TileSetAtlasSource_i553p")
 sources/4 = SubResource("TileSetAtlasSource_aa86n")
 
-[node name="Main" type="Node2D"]
+[node name="Main" type="Node"]
 script = ExtResource("1_3g4j0")
 
 [node name="Background" type="ColorRect" parent="."]

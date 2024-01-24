@@ -1,7 +1,7 @@
 # RoomSelector.gd
 
 class_name RoomSelector
-extends Node2D
+extends Node
 
 var selected_tile_coords = Vector2i()
 var selected_room: Room
