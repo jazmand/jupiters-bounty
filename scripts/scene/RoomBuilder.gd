@@ -88,8 +88,8 @@ func setting_door_motion(event: InputEventMouseMotion, offset: Vector2, zoom: Ve
 
 # -- Selection and drawing functions
 
-func set_roomtype() -> void:
-	selected_room_type = get_room_type_by_id(selected_room_type_id)	
+#func set_roomtype() -> void:
+#	selected_room_type = get_room_type_by_id(selected_room_type_id)	
 
 func select_tile(coords: Vector2i) -> void:
 	# Clear layer
