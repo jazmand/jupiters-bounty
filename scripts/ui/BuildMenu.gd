@@ -5,18 +5,10 @@ extends Control
 
 signal action_completed(action: int)
 
-var selected_room_type_id: int
-
 enum Action {CLOSE, OPEN, SELECT_ROOMTYPE}
 
-# Called when the node enters the scene tree for the first time
-func _ready() -> void:
-	var building_manager = get_tree().root.get_node("Main/BuildingManager")
-	for room_type in building_manager.room_types:
-		var button = Button.new()
-		button.text = room_type.name
-		button.pressed.connect(_on_room_selected.bind(room_type)) # Must "bind" to pass param to a connect callback
-		$RoomPanel/HBoxContainer.add_child(button)
+var selected_room_type_id: int
+var room_buttons: Dictionary = {}
 
 func show_build_button() -> void:
 	$BuildButton.visible = true
@@ -24,7 +16,14 @@ func show_build_button() -> void:
 func hide_build_button() -> void:
 	$BuildButton.visible = false
 
-func show_room_panel() -> void:
+func show_room_panel(room_types: Array[RoomType]) -> void:
+	for room_type in room_types:
+		if room_type.name not in room_buttons:
+			room_buttons[room_type.name] = room_type
+			var button = Button.new()
+			button.text = room_type.name
+			button.pressed.connect(_on_room_selected.bind(room_type)) # Must "bind" to pass param to a connect callback
+			$RoomPanel/HBoxContainer.add_child(button)
 	$RoomPanel.visible = true
 
 func hide_room_panel() -> void:

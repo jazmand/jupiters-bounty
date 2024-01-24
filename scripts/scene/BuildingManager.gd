@@ -99,29 +99,25 @@ func _on_building_state_input(event: InputEvent) -> void:
 			state_manager.send_event(Events[StateEvent.BUILDING_STOP])
 
 func _on_selecting_roomtype_state_entered() -> void:
-	build_menu.show_room_panel()
+	build_menu.show_room_panel(room_types)
 
 func _on_selecting_roomtype_state_exited() -> void:
 	build_menu.hide_room_panel()
 
 # TODO: refactor state input handlers
 func _on_selecting_tile_state_input(event: InputEvent) -> void:
-	var offset = camera.position
-	var zoom = camera.zoom
 	if event is InputEventMouseButton:
 		if event.pressed:
 			match event.button_index:
 				1:
 #					room_selector.handle_select_input(event, offset, zoom)
-					room_builder.selecting_tile(event, offset, zoom, build_menu.selected_room_type_id)
+					room_builder.selecting_tile(event, camera.position, camera.zoom, build_menu.selected_room_type_id)
 				2: 
 					state_manager.send_event(Events[StateEvent.BUILDING_BACK])
 	elif event is InputEventMouseMotion:
-		room_builder.selecting_tile_motion(event, offset, zoom)
+		room_builder.selecting_tile_motion(event, camera.position, camera.zoom)
 
 func _on_drafting_room_state_input(event: InputEvent) -> void:
-	var offset = camera.position
-	var zoom = camera.zoom
 	if event is InputEventMouseButton:
 		if event.pressed:
 			match event.button_index:
@@ -130,20 +126,18 @@ func _on_drafting_room_state_input(event: InputEvent) -> void:
 				2: 
 					room_builder.stop_editing()
 	elif event is InputEventMouseMotion:
-		room_builder.drafting_room_motion(event, offset, zoom)
+		room_builder.drafting_room_motion(event, camera.position, camera.zoom)
 
 func _on_setting_door_state_input(event: InputEvent) -> void:
-	var offset = camera.position
-	var zoom = camera.zoom
 	if event is InputEventMouseButton:
 		if event.pressed:
 			match event.button_index:
 				1: 
-					room_builder.setting_door(event, offset, zoom)
+					room_builder.setting_door(event, camera.position, camera.zoom)
 				2: 
 					state_manager.send_event(Events[StateEvent.BUILDING_BACK])
 	elif event is InputEventMouseMotion:
-		room_builder.setting_door_motion(event, offset, zoom)
+		room_builder.setting_door_motion(event, camera.position, camera.zoom)
 
 func _on_confirming_room_state_entered() -> void:
 	build_menu.show_popup()
@@ -156,8 +150,6 @@ func _on_confirming_room_state_exited() -> void:
 	build_menu.hide_popup()
 
 func _on_confirming_room_state_input(event):
-#	var offset = camera.position
-#	var zoom = camera.zoom
 	if event is InputEventMouseButton:
 		if event.pressed:
 			match event.button_index:

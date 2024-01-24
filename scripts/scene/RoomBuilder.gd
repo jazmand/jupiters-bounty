@@ -1,7 +1,7 @@
 # RoomBuilder.gd
 
 class_name RoomBuilder
-extends Node2D
+extends Node
 
 signal action_completed(action: int)
 
@@ -21,18 +21,18 @@ var any_invalid: bool = false
 var selected_room_type_id: int = 0
 var selected_room_type: RoomType 
 
-var gui : Control
+var gui: GUI
 var base_tile_map: TileMap
 var build_tile_map: TileMap
 var station: Station
-var rooms: Array
-var room_types: Array
+var rooms: Array[Room]
+var room_types: Array[RoomType]
 
 var popup_message: String
 
 enum Action {BACK, FORWARD, COMPLETE}
 
-func _init(gui: Control, station: Station, base_tile_map: TileMap, build_tile_map: TileMap, rooms: Array, room_types: Array) -> void:
+func _init(gui: GUI, station: Station, base_tile_map: TileMap, build_tile_map: TileMap, rooms: Array[Room], room_types: Array[RoomType]) -> void:
 	self.gui = gui
 	self.station = station
 	self.base_tile_map = base_tile_map
