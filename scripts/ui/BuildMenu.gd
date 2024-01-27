@@ -7,7 +7,7 @@ signal action_completed(action: int)
 
 enum Action {CLOSE, OPEN, SELECT_ROOMTYPE}
 
-var selected_room_type_id: int
+var selected_room_type: RoomType
 var room_buttons: Dictionary = {}
 
 func show_build_button() -> void:
@@ -51,5 +51,5 @@ func _on_build_close_button_pressed() -> void:
 	action_completed.emit(Action.CLOSE)
 
 func _on_room_selected(room_type) -> void:
-	selected_room_type_id = room_type.id
+	selected_room_type = room_type
 	action_completed.emit(Action.SELECT_ROOMTYPE)

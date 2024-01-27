@@ -264,4 +264,3 @@ text = "  No  "
 [connection signal="mouse_entered" from="GUI/BuildMenu/RoomPanel/BuildCloseButton" to="GUI/BuildMenu" method="_on_room_panel_mouse_entered"]
 [connection signal="mouse_exited" from="GUI/BuildMenu/RoomPanel/BuildCloseButton" to="GUI/BuildMenu" method="_on_room_panel_mouse_exited"]
 [connection signal="pressed" from="GUI/BuildMenu/RoomPanel/BuildCloseButton" to="GUI/BuildMenu" method="_on_build_close_button_pressed"]
-[connection signal="pressed" from="GUI/BuildMenu/PopupPanel/NoButton" to="GUI/BuildMenu" method="_on_popup_no_button_pressed"]
