@@ -15,7 +15,6 @@ var station: Station = preload("res://assets/station/station_resources.tres")
 @onready var state_manager: StateChart = $"../StateManager"
 
 var room_builder: RoomBuilder
-#var room_selector: RoomSelector
 var room_types: Array[RoomType] = []
 var rooms: Array[Room] = [] # TODO: Save & load on init
 	
@@ -32,7 +31,9 @@ func _ready() -> void:
 	build_menu.action_completed.connect(on_build_menu_action)
 	room_builder = RoomBuilder.new(gui, station, base_tile_map, build_tile_map, rooms, room_types)
 	room_builder.action_completed.connect(on_room_builder_action)
-#	room_selector = RoomSelector.new(gui, station, build_tile_map, rooms, room_types)	
+	# Connect the buttons to the confirmation functions in the GUI script
+	build_menu.connect_popup_yes(room_builder.confirm_build)
+	build_menu.connect_popup_no(room_builder.cancel_build)
 
 func load_room_types() -> void:
 	var room_types_folder = "res://assets/room_type/"
@@ -110,10 +111,9 @@ func _on_selecting_tile_state_input(event: InputEvent) -> void:
 		if event.pressed:
 			match event.button_index:
 				1:
-#					room_selector.handle_select_input(event, offset, zoom)
-					room_builder.selecting_tile(event, camera.position, camera.zoom, build_menu.selected_room_type_id)
+					room_builder.selecting_tile(event, camera.position, camera.zoom, build_menu.selected_room_type)
 				2: 
-					state_manager.send_event(Events[StateEvent.BUILDING_BACK])
+					room_builder.clear_selected_roomtype()
 	elif event is InputEventMouseMotion:
 		room_builder.selecting_tile_motion(event, camera.position, camera.zoom)
 
@@ -124,7 +124,8 @@ func _on_drafting_room_state_input(event: InputEvent) -> void:
 				1: 
 					room_builder.drafting_room()
 				2: 
-					room_builder.stop_editing()
+					room_builder.stop_drafting()
+					room_builder.selecting_tile_motion(event, camera.position, camera.zoom)
 	elif event is InputEventMouseMotion:
 		room_builder.drafting_room_motion(event, camera.position, camera.zoom)
 
@@ -142,9 +143,6 @@ func _on_setting_door_state_input(event: InputEvent) -> void:
 func _on_confirming_room_state_entered() -> void:
 	build_menu.show_popup()
 	build_menu.set_popup_text(room_builder.popup_message)
-	# Connect the buttons to the confirmation functions in the GUI script
-	build_menu.connect_popup_yes(room_builder.confirm_build)
-	build_menu.connect_popup_no(room_builder.cancel_build)
 
 func _on_confirming_room_state_exited() -> void:
 	build_menu.hide_popup()
@@ -163,5 +161,5 @@ func _on_building_state_entered() -> void:
 
 func _on_building_state_exited() -> void:
 	build_menu.show_build_button()
-	room_builder.stop_editing()
+	room_builder.stop_drafting()
 
