@@ -50,6 +50,6 @@ func _on_build_button_pressed() -> void:
 func _on_build_close_button_pressed() -> void:
 	action_completed.emit(Action.CLOSE)
 
-func _on_room_selected(room_type) -> void:
+func _on_room_selected(room_type: RoomType) -> void:
 	selected_room_type = room_type
 	action_completed.emit(Action.SELECT_ROOMTYPE)

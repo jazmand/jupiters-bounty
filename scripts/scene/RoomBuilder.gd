@@ -32,13 +32,13 @@ var popup_message: String
 
 enum Action {BACK, FORWARD, COMPLETE}
 
-func _init(gui: GUI, station: Station, base_tile_map: TileMap, build_tile_map: TileMap, rooms: Array[Room], room_types: Array[RoomType]) -> void:
-	self.gui = gui
-	self.station = station
-	self.base_tile_map = base_tile_map
-	self.build_tile_map = build_tile_map
-	self.rooms = rooms
-	self.room_types = room_types
+func _init(gui_node: GUI, station_node: Station, base_tile_map_node: TileMap, build_tile_map_node: TileMap, rooms_arr: Array[Room], room_types_arr: Array[RoomType]) -> void:
+	gui = gui_node
+	station = station_node
+	base_tile_map = base_tile_map_node
+	build_tile_map = build_tile_map_node
+	rooms = rooms_arr
+	room_types = room_types_arr
 
 func clear_selected_roomtype() -> void:
 	selected_room_type = null # Deselect
@@ -50,10 +50,10 @@ func stop_drafting() -> void:
 
 # --- Input functions ---
 
-func selecting_tile(event: InputEventMouseButton, offset: Vector2, zoom: Vector2, selected_room_type: RoomType) -> void:
+func selecting_tile(event: InputEventMouseButton, offset: Vector2, zoom: Vector2, current_room_type: RoomType) -> void:
 	var coords = base_tile_map.local_to_map((event.position / zoom) + offset)
 	if !any_invalid:
-		self.selected_room_type = selected_room_type
+		selected_room_type = current_room_type
 		initial_tile_coords = coords
 		action_completed.emit(Action.FORWARD)
 		
@@ -225,7 +225,7 @@ func generate_unique_room_id() -> int:
 	return unique_id
 
 func check_room_id_exists(room_id: int) -> bool:
-	return room_id in rooms
+	return rooms.any(func(room: Room): return room.id == room_id)
 
 func calculate_tile_count(vector1: Vector2, vector2: Vector2) -> int:
 	return (abs(vector2.x - vector1.x) + 1) * (abs(vector2.y - vector1.y) + 1)

@@ -313,6 +313,7 @@ event = &"building_back"
 [connection signal="state_input" from="StateManager/GameState/Building" to="BuildingManager" method="_on_building_state_input"]
 [connection signal="state_entered" from="StateManager/GameState/Building/SelectingRoomtype" to="BuildingManager" method="_on_selecting_roomtype_state_entered"]
 [connection signal="state_exited" from="StateManager/GameState/Building/SelectingRoomtype" to="BuildingManager" method="_on_selecting_roomtype_state_exited"]
+[connection signal="state_input" from="StateManager/GameState/Building/SelectingRoomtype" to="BuildingManager" method="_on_selecting_roomtype_state_input"]
 [connection signal="state_input" from="StateManager/GameState/Building/SelectingTile" to="BuildingManager" method="_on_selecting_tile_state_input"]
 [connection signal="state_input" from="StateManager/GameState/Building/DraftingRoom" to="BuildingManager" method="_on_drafting_room_state_input"]
 [connection signal="state_input" from="StateManager/GameState/Building/SettingDoor" to="BuildingManager" method="_on_setting_door_state_input"]

@@ -46,7 +46,7 @@ func update_clock(in_game_time) -> void:
 	var minutes = int((in_game_time % 3600) / 60)
 	$Clock/Time.text = str(hours).pad_zeros(2) + ":" + str(minutes).pad_zeros(2)
 
-func show_popup(popup_type: String, popup_message: String, accept_function: Callable, decline_function: Callable) -> void:
+func show_popup(_popup_type: String, popup_message: String, accept_function: Callable, decline_function: Callable) -> void:
 #	if popup_type == "confirm_build":
 		$BuildMenu/PopupPanel.visible = true
 		$BuildMenu/PopupPanel/Label.text = popup_message

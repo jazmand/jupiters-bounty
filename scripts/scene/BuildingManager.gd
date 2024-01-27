@@ -102,6 +102,11 @@ func _on_building_state_input(event: InputEvent) -> void:
 func _on_selecting_roomtype_state_entered() -> void:
 	build_menu.show_room_panel(room_types)
 
+func _on_selecting_roomtype_state_input(event: InputEvent):
+	if event is InputEventMouseButton:
+		if event.pressed and event.button_index == 2:
+			state_manager.send_event(Events[StateEvent.BUILDING_STOP])
+
 func _on_selecting_roomtype_state_exited() -> void:
 	build_menu.hide_room_panel()
 
@@ -162,4 +167,3 @@ func _on_building_state_entered() -> void:
 func _on_building_state_exited() -> void:
 	build_menu.show_build_button()
 	room_builder.stop_drafting()
-
