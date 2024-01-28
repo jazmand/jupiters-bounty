@@ -17,6 +17,7 @@ func _ready() -> void:
 
 func actor_setup():
 	await get_tree().physics_frame
+	print("target: ", target.global_position)
 	set_movement_target(target.global_position)
 
 func set_movement_target(movement_target: Vector2) -> void:
@@ -43,6 +44,6 @@ func _on_walking_state_physics_processing(delta: float) -> void:
 
 
 func _on_timer_timeout():
-	if !navigation_agent.is_target_reachable() or (abs(target.global_position.x - global_position.x) < 50 and abs(target.global_position.x - global_position.x) < 50):
+	if !navigation_agent.is_target_reachable() or (abs(target.global_position.x - global_position.x) < 200 and abs(target.global_position.y - global_position.y) < 200):
 		randomise_target_position()
 	set_movement_target(target.global_position)
