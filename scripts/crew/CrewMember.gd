@@ -1,41 +1,48 @@
 class_name CrewMember
 extends CharacterBody2D
 
-@export var speed: int = 10
-@export var target: Vector2 = Vector2(0.0, 0.0)
+@export var speed: int = 200
+@export var acceleration: int = 5
+@export var target: Node2D
 
-@onready var navigation_agent: NavigationAgent2D = $NavigationAgent2D
-@onready var timer: Timer = $Timer
 @onready var state_manager: StateChart = $CrewStateManager
+@onready var navigation_agent: NavigationAgent2D = $Navigation/NavigationAgent2D
+@onready var navigation_timer: Timer = $Navigation/Timer
 
 func _ready() -> void:
-	timer.timeout.connect(update_state)
-	# These values need to be adjusted for the actor's speed
-	# and the navigation layout.
+	navigation_timer.timeout.connect(_on_timer_timeout)
 	navigation_agent.path_desired_distance = 4.0
 	navigation_agent.target_desired_distance = 4.0
+	call_deferred("actor_setup")
 
+func actor_setup():
+	await get_tree().physics_frame
+	set_movement_target(target.global_position)
 
 func set_movement_target(movement_target: Vector2) -> void:
 	navigation_agent.target_position = movement_target
 
-func update_state() -> void:
-	state_manager.send_event("crew_transition")
-	set_movement_target(target)
+func randomise_target_position() -> void:
+	target.position = Vector2(randf_range(0.0, 4000.0), randf_range(0, 2000.0))
+	set_movement_target(target.position)
 	while !navigation_agent.is_target_reachable():
-		target = Vector2(randf_range(0.0, 4000.0), randf_range(0, 2000.0))
-		set_movement_target(target)
+		target.position = Vector2(randf_range(0.0, 4000.0), randf_range(0, 2000.0))
+		set_movement_target(target.position)
 
-func _on_walking_state_physics_processing(_delta) -> void:
+func _on_walking_state_physics_processing(delta: float) -> void:
 	if navigation_agent.is_navigation_finished():
+		print("finished navigation")
+		randomise_target_position()
+		print("new target: ", target.position)
 		return
 
-	var current_agent_position: Vector2 = global_position
-	var next_path_position: Vector2 = navigation_agent.get_next_path_position()
+	var direction: Vector2 = (navigation_agent.get_next_path_position() - global_position).normalized()
+	velocity = velocity.lerp(direction * speed, acceleration * delta)
 
-	var new_velocity: Vector2 = next_path_position - current_agent_position
-	new_velocity = new_velocity.normalized()
-	new_velocity = new_velocity * speed
-
-	velocity = new_velocity
 	move_and_slide()
+
+
+func _on_timer_timeout():
+	if !navigation_agent.is_target_reachable() or (abs(target.global_position.x - global_position.x) < 50 and abs(target.global_position.x - global_position.x) < 50):
+		randomise_target_position()
+	set_movement_target(target.global_position)
