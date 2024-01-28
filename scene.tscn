@@ -467,8 +467,6 @@ collision_layer = 2
 motion_mode = 1
 wall_min_slide_angle = 0.0
 safe_margin = 1.564
-speed = 250
-acceleration = 7
 target = NodePath("../Marker2D")
 
 [node name="Marker2D" type="Marker2D" parent="."]

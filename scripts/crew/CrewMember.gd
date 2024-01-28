@@ -1,8 +1,8 @@
 class_name CrewMember
 extends CharacterBody2D
 
-@export var speed: int = 200
-@export var acceleration: int = 5
+@export var speed: int = 250
+@export var acceleration: int = 6
 @export var target: Node2D
 
 @onready var state_manager: StateChart = $CrewStateManager
