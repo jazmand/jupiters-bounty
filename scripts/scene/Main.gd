@@ -20,8 +20,8 @@ var room_cost_total: int
 
 func _ready():
 	# Find the TileMap nodes
-	base_tile_map = $BaseTileMap
-	build_tile_map = $BaseTileMap/BuildTileMap
+	base_tile_map = $NavigationRegion2D/BaseTileMap
+	build_tile_map = $NavigationRegion2D/BaseTileMap/BuildTileMap
 	
 	# Find UI elements
 	gui = $CanvasLayer/GUI

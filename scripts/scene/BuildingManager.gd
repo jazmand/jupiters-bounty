@@ -5,8 +5,8 @@ extends Node
 
 var station: Station = preload("res://assets/station/station_resources.tres")
 
-@onready var base_tile_map: TileMap = $"../BaseTileMap"
-@onready var build_tile_map: TileMap = $"../BaseTileMap/BuildTileMap"
+@onready var base_tile_map: TileMap = $"../NavigationRegion2D/BaseTileMap"
+@onready var build_tile_map: TileMap = $"../NavigationRegion2D/BaseTileMap/BuildTileMap"
 
 @onready var gui: GUI = $"../CanvasLayer/GUI"
 @onready var build_menu: BuildMenu = $"../CanvasLayer/GUI/BuildMenu"
