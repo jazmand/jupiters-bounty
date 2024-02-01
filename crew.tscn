@@ -1,0 +1,44 @@
+[gd_scene load_steps=7 format=3 uid="uid://6ddc1y0q3bhc"]
+
+[ext_resource type="Script" path="res://scripts/crew/CrewMember.gd" id="1_rgjpg"]
+[ext_resource type="Texture2D" uid="uid://bpmey73nbq8f1" path="res://assets/sprites/flirty_pose.png" id="2_xtpk0"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="3_pcxuy"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="4_en38c"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="5_me8bf"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_q1j0h"]
+size = Vector2(133, 336)
+
+[node name="Crew" type="CharacterBody2D"]
+script = ExtResource("1_rgjpg")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(1, -10)
+shape = SubResource("RectangleShape2D_q1j0h")
+metadata/_edit_lock_ = true
+
+[node name="FlirtyPoseDummy" type="Sprite2D" parent="."]
+scale = Vector2(0.9, 0.9)
+texture = ExtResource("2_xtpk0")
+metadata/_edit_lock_ = true
+
+[node name="CrewStateManager" type="Node" parent="."]
+script = ExtResource("3_pcxuy")
+
+[node name="CrewState" type="Node" parent="CrewStateManager"]
+script = ExtResource("4_en38c")
+initial_state = NodePath("Walking")
+
+[node name="Walking" type="Node" parent="CrewStateManager/CrewState"]
+script = ExtResource("5_me8bf")
+
+[node name="Navigation" type="Node2D" parent="."]
+
+[node name="NavigationAgent2D" type="NavigationAgent2D" parent="Navigation"]
+debug_enabled = true
+
+[node name="Timer" type="Timer" parent="Navigation"]
+wait_time = 0.1
+autostart = true
+
+[connection signal="state_physics_processing" from="CrewStateManager/CrewState/Walking" to="." method="_on_walking_state_physics_processing"]
