@@ -12,6 +12,7 @@
 [ext_resource type="Texture2D" uid="uid://bin8xqkuxyohw" path="res://assets/tilesets/drafting_new.png" id="6_jemiv"]
 [ext_resource type="Texture2D" uid="uid://dw0d3bcfauhf2" path="res://assets/tilesets/crew_quarters.png" id="7_ypvsj"]
 [ext_resource type="Texture2D" uid="uid://b011v7odriiqs" path="res://assets/tilesets/generator_room.png" id="8_snmxr"]
+[ext_resource type="Texture2D" uid="uid://0tk4wi3k6763" path="res://assets/tilesets/mock_room_tileset.png" id="9_jca0f"]
 [ext_resource type="Texture2D" uid="uid://c2p58o2dt13hn" path="res://assets/tilesets/door placeholder.png" id="9_nfm5o"]
 [ext_resource type="Texture2D" uid="uid://k3hf5argnn4k" path="res://assets/tilesets/storage_bay.png" id="9_x6k6u"]
 [ext_resource type="PackedScene" uid="uid://bcwkugn6v3oy7" path="res://addons/godot_state_charts/utilities/state_chart_debugger.tscn" id="13_g5vrw"]
@@ -256,7 +257,21 @@ texture_region_size = Vector2i(512, 512)
 0:0/0 = 0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ulgmx"]
+texture = ExtResource("9_jca0f")
 texture_region_size = Vector2i(512, 512)
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+2:1/0 = 0
+3:1/0 = 0
+0:2/0 = 0
+1:2/0 = 0
+2:2/0 = 0
+3:2/0 = 0
+0:3/0 = 0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_aa86n"]
 texture = ExtResource("9_nfm5o")

@@ -7,6 +7,6 @@ script = ExtResource("1_o3hpo")
 id = 0
 hydrogen = 500
 power = 70
-currency = 1000
+currency = 3000
 crew = 2
 time = 0

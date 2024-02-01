@@ -11,6 +11,7 @@ var drafting_layer: int = 1
 var selection_tileset_id: int = 0
 var drafting_tileset_id: int = 1
 var invalid_tileset_id: int = 2
+var mock_room_tileset_id: int = 3
 var door_tileset_id: int = 4 # TEMPORARY. Door tiles will be included in room tilesets.
 
 var initial_tile_coords = Vector2i()
@@ -73,7 +74,7 @@ func drafting_room_motion(event: InputEventMouseMotion, offset: Vector2, zoom: V
 func setting_door(event: InputEventMouseButton, offset: Vector2, zoom: Vector2) -> void:
 	temp_door_coords = []
 	var coords = base_tile_map.local_to_map((event.position / zoom) + offset)
-	if is_on_room_edge(coords):
+	if is_on_room_edge_and_not_corner(coords):
 		set_doors(coords)
 		confirm_room_details()
 	else:
@@ -84,7 +85,7 @@ func setting_door_motion(event: InputEventMouseMotion, offset: Vector2, zoom: Ve
 	# Clear the previous door tile from the door_layer
 	draft_room(initial_tile_coords, transverse_tile_coords)
 	# Check if the tile is within the room and on the room's edge
-	if is_on_room_edge(coords):
+	if is_on_room_edge_and_not_corner(coords):
 		build_tile_map.set_cell(drafting_layer, coords, door_tileset_id, Vector2i(0, 0))
 
 # -- Selection and drawing functions
@@ -166,21 +167,43 @@ func save_room() -> void:
 func draw_rooms() -> void:
 	# Clear drafting layer
 	build_tile_map.clear_layer(drafting_layer)
-	
 	for room in rooms:
-		var min_x = min(room.topLeft.x, room.bottomRight.x)
-		var max_x = max(room.topLeft.x, room.bottomRight.x) + 1
-		var min_y = min(room.topLeft.y, room.bottomRight.y)
-		var max_y = max(room.topLeft.y, room.bottomRight.y) + 1
-		for room_type in room_types:
-			if (room_type.id == room.roomTypeId):
-				var tileset_id = room_type.tilesetId
-				# Iterate over the tiles within the room's boundaries and set them on the building layer
-				for x in range(min_x, max_x):
-					for y in range(min_y, max_y):
-						build_tile_map.set_cell(building_layer, Vector2(x, y), tileset_id, Vector2i(0, 0))
-		for doorTile in room.doorTiles:
-			build_tile_map.set_cell(building_layer, doorTile, door_tileset_id, Vector2i(0, 0))
+		draw_room(room)
+			
+func draw_room(room) -> void:
+	var min_x = min(room.topLeft.x, room.bottomRight.x)
+	var max_x = max(room.topLeft.x, room.bottomRight.x) + 1
+	var min_y = min(room.topLeft.y, room.bottomRight.y)
+	var max_y = max(room.topLeft.y, room.bottomRight.y) + 1
+	
+	var tileset_mapper = {
+	Vector2i(min_x, min_y): Vector2i(2, 0), # north corner
+	Vector2i(min_x, max_y - 1): Vector2i(0, 3), # west corner
+	Vector2i(max_x - 1, max_y - 1): Vector2i(3, 1), # south corner
+	Vector2i(max_x - 1, min_y): Vector2i(1, 0), # east corner
+	}
+	# Add mappings for a range of y values between min_y and max_y - 1
+	for y in range(min_y + 1, max_y - 1):
+		tileset_mapper[Vector2i(min_x, y)] = Vector2i(1, 1) # north west
+		tileset_mapper[Vector2i(max_x - 1, y)] = Vector2i(0, 2) # south east
+	# Add mappings for a range of x values between min_x and max_x - 1
+	for x in range(min_x + 1, max_x - 1):
+		tileset_mapper[Vector2i(x, min_y)] = Vector2i(3, 0) # north east
+		tileset_mapper[Vector2i(x, max_y - 1)] = Vector2i(2, 2) # south west
+	
+	for room_type in room_types:
+		if (room_type.id == room.roomTypeId):
+#			var tileset_id = room_type.tilesetId
+			var tileset_id = mock_room_tileset_id # TEMPORARY
+			# Iterate over the tiles within the room's boundaries and set them on the building layer
+			for x in range(min_x, max_x):
+				for y in range(min_y, max_y):
+					var tileset_coords = Vector2i(0, 0)
+					if tileset_mapper.has(Vector2i(x, y)):
+						tileset_coords = tileset_mapper[Vector2i(x, y)]
+					build_tile_map.set_cell(building_layer, Vector2(x, y), tileset_id, tileset_coords)
+	for doorTile in room.doorTiles:
+		build_tile_map.set_cell(building_layer, doorTile, door_tileset_id, Vector2i(0, 0))
 
 # --- Helper functions ---
 
@@ -230,15 +253,17 @@ func check_room_id_exists(room_id: int) -> bool:
 func calculate_tile_count(vector1: Vector2, vector2: Vector2) -> int:
 	return (abs(vector2.x - vector1.x) + 1) * (abs(vector2.y - vector1.y) + 1)
 	
-func is_on_room_edge(coords: Vector2i) -> bool:
+func is_on_room_edge_and_not_corner(coords: Vector2i) -> bool:
 	var min_x = min(initial_tile_coords.x, transverse_tile_coords.x)
 	var max_x = max(initial_tile_coords.x, transverse_tile_coords.x)
 	var min_y = min(initial_tile_coords.y, transverse_tile_coords.y)
 	var max_y = max(initial_tile_coords.y, transverse_tile_coords.y)
+	
 	var is_x_on_edge = (coords.x == min_x || coords.x == max_x) && coords.y >= min_y && coords.y <= max_y
 	var is_y_on_edge = (coords.y == min_y || coords.y == max_y) && coords.x >= min_x && coords.x <= max_x
+	var is_on_corner = (coords.x == min_x || coords.x == max_x) && (coords.y == min_y || coords.y == max_y)
 	
-	return is_x_on_edge || is_y_on_edge
+	return !is_on_corner && (is_x_on_edge || is_y_on_edge)
 
 func is_blocking_door(coords: Vector2i) -> bool:
 	for room in rooms:
