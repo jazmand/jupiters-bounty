@@ -1,4 +1,4 @@
-[gd_scene load_steps=36 format=3 uid="uid://dhh5wq2ka1ay8"]
+[gd_scene load_steps=35 format=3 uid="uid://dhh5wq2ka1ay8"]
 
 [ext_resource type="Script" path="res://scripts/scene/Main.gd" id="1_3g4j0"]
 [ext_resource type="Texture2D" uid="uid://dwwc4ti4c1ifx" path="res://assets/backgrounds/jupiter.png" id="2_i0a8p"]
@@ -16,8 +16,6 @@
 [ext_resource type="Texture2D" uid="uid://c2p58o2dt13hn" path="res://assets/tilesets/door placeholder.png" id="9_nfm5o"]
 [ext_resource type="Texture2D" uid="uid://k3hf5argnn4k" path="res://assets/tilesets/storage_bay.png" id="9_x6k6u"]
 [ext_resource type="PackedScene" uid="uid://bcwkugn6v3oy7" path="res://addons/godot_state_charts/utilities/state_chart_debugger.tscn" id="13_g5vrw"]
-[ext_resource type="Texture2D" uid="uid://d0a26f7nbiylj" path="res://assets/sprites/t_pose.png" id="14_8rn0g"]
-[ext_resource type="Texture2D" uid="uid://bpmey73nbq8f1" path="res://assets/sprites/flirty_pose.png" id="15_lk8ys"]
 [ext_resource type="Script" path="res://scripts/scene/BuildingManager.gd" id="18_cy305"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="18_o7t7g"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="19_8sc5u"]
@@ -26,9 +24,9 @@
 [ext_resource type="PackedScene" uid="uid://6ddc1y0q3bhc" path="res://crew.tscn" id="23_v05om"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_jelv3"]
-vertices = PackedVector2Array(2046, 141, 3598, 1037, 2561, 1029, 2054, 725, 2032, 1929, 2043, 1324, 492, 1009, 1545, 1024)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Array(2, 1, 4, 5), PackedInt32Array(5, 4, 6, 7), PackedInt32Array(7, 6, 0, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(492, 1009, 2046, 141, 3598, 1037, 2032, 1929), PackedVector2Array(1545, 1024, 2043, 1324, 2561, 1029, 2054, 725)])
+vertices = PackedVector2Array(4607, 2496, 7167, 2488, 4095, 4256, 4095, 2792, 4095, 728, 4095, 2192, 1023, 2488, 3583, 2488)
+polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Array(4, 1, 0, 5), PackedInt32Array(3, 2, 6, 7), PackedInt32Array(7, 6, 4, 5)])
+outlines = Array[PackedVector2Array]([PackedVector2Array(1023, 2488, 4095, 728, 7167, 2488, 4095, 4256), PackedVector2Array(3583, 2488, 4095, 2792, 4607, 2496, 4095, 2192)])
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_psmxa"]
 texture = ExtResource("5_408k5")
@@ -310,16 +308,16 @@ sources/4 = SubResource("TileSetAtlasSource_aa86n")
 script = ExtResource("1_3g4j0")
 
 [node name="Background" type="ColorRect" parent="."]
-offset_left = -280.0
-offset_top = -256.0
-offset_right = 2200.0
-offset_bottom = 1640.0
+offset_left = -416.0
+offset_top = -448.0
+offset_right = 10760.0
+offset_bottom = 6792.0
 color = Color(0, 0, 0, 1)
 script = ExtResource("2_w13bo")
 
 [node name="Jupiter" type="Sprite2D" parent="Background"]
-position = Vector2(1242, 2432)
-scale = Vector2(2, 2)
+position = Vector2(3000, 4000)
+scale = Vector2(3, 3)
 texture = ExtResource("2_i0a8p")
 
 [node name="JupiterOverlay" type="Sprite2D" parent="Background/Jupiter"]
@@ -328,16 +326,18 @@ scale = Vector2(1.003, 1.003)
 texture = ExtResource("3_6bejq")
 
 [node name="NavigationRegion2D" type="NavigationRegion2D" parent="."]
+position = Vector2(1, 0)
 navigation_polygon = SubResource("NavigationPolygon_jelv3")
 
 [node name="BaseTileMap" type="TileMap" parent="NavigationRegion2D"]
 y_sort_enabled = true
 position = Vector2(-1, 0)
+scale = Vector2(1, 0.994733)
 tile_set = SubResource("TileSet_yt465")
 format = 2
 layer_0/name = "Base layer"
 layer_0/y_sort_enabled = true
-layer_0/tile_data = PackedInt32Array(-262141, 196608, 3, 196611, 327680, 3, -262134, 131072, 3, 196618, 262144, 3, -262135, 262144, 4, 131075, 327680, 4, 131082, 196608, 4, 196617, 65536, 4, -196605, 0, 4, -262140, 131072, 4, -196598, 393216, 3, 196612, 458752, 3, -131069, 196608, 5, 3, 196608, 5, -65533, 458752, 4, 65539, 458752, 4, -262136, 393216, 4, -262138, 393216, 4, -262139, 131072, 5, -262137, 131072, 5, 65546, 327680, 0, -65526, 327680, 0, 10, 327680, 1, -131062, 327680, 1, 196616, 65536, 5, 196614, 65536, 5, 196615, 327680, 5, 196613, 327680, 5, 6, 65536, 6, -65529, 262144, 6, 7, 196608, 6, -65530, 131072, 6, 65542, 393216, 5, 65543, 393216, 5, -131066, 393216, 5, -131065, 393216, 5, -196601, 458752, 5, -196602, 458752, 5, 131079, 0, 6, 131078, 0, 6, -196599, 131072, 2, -196603, 131072, 2, -196604, 196608, 2, -196600, 196608, 2, 131076, 327680, 2, 131080, 327680, 2, 131081, 262144, 2, 131077, 262144, 2, 65540, 458752, 2, 4, 458752, 2, -65532, 458752, 2, -131068, 458752, 2, 65544, 458752, 2, 8, 458752, 2, -65528, 458752, 2, -131064, 458752, 2, 65545, 0, 3, 9, 0, 3, -65527, 0, 3, -131063, 0, 3, -131067, 0, 3, -65531, 0, 3, 5, 0, 3, 65541, 0, 3)
+layer_0/tile_data = PackedInt32Array(-393207, 196608, 3, -327671, 0, 4, -393206, 131072, 4, -262135, 196608, 5, -196599, 458752, 4, -65527, 458752, 4, 196617, 458752, 4, 327689, 458752, 4, -393204, 393216, 4, -393202, 393216, 4, 65545, 0, 0, 9, 0, 1, -131063, 196608, 5, 131081, 196608, 5, 262153, 196608, 5, -393205, 131072, 5, -393203, 131072, 5, -393199, 131072, 5, -393198, 393216, 4, -393197, 131072, 5, -393196, 393216, 4, -393194, 131072, 3, -393195, 262144, 4, -327658, 393216, 3, 393225, 327680, 4, 458761, 327680, 3, 458762, 458752, 3, -393201, 131072, 1, -393200, 131072, 0, 458763, 327680, 5, 458765, 327680, 5, 458769, 327680, 5, 458771, 327680, 5, 458770, 65536, 5, 458772, 65536, 5, 458766, 65536, 5, 458764, 65536, 5, 458768, 393216, 0, 458767, 393216, 1, 458774, 262144, 3, 458773, 65536, 4, 393238, 196608, 4, 262166, 262144, 5, 131094, 262144, 5, -131050, 262144, 5, -262122, 262144, 5, 327702, 0, 5, 196630, 0, 5, -65514, 0, 5, -196586, 0, 5, 22, 262144, 1, 65558, 262144, 0, -327670, 458752, 5, -327659, 458752, 5, -262123, 393216, 5, -196587, 393216, 5, 327701, 393216, 5, 262165, 393216, 5, 393237, 0, 6, 393226, 0, 6, 327690, 393216, 5, 262154, 393216, 5, -262134, 393216, 5, -196598, 393216, 5, 196629, 458752, 5, 196618, 458752, 5, -131062, 0, 6, -131051, 0, 6, 65552, 196608, 6, 16, 262144, 6, 15, 131072, 6, 65551, 65536, 6, 131082, 327680, 2, 393227, 327680, 2, -65526, 196608, 2, -327669, 196608, 2, -327660, 131072, 2, -65515, 131072, 2, 131093, 262144, 2, 393236, 262144, 2, 393235, 65536, 3, 393234, 65536, 3, 393233, 65536, 3, 393232, 65536, 3, 393231, 65536, 3, 393230, 65536, 3, 393229, 65536, 3, 393228, 65536, 3, 327700, 0, 3, 262164, 0, 3, 196628, 0, 3, 65557, 0, 3, 21, 0, 3, -262124, 0, 3, -196588, 0, 3, -131052, 0, 3, -327661, 393216, 2, -327662, 393216, 2, -327663, 393216, 2, -327664, 393216, 2, -327665, 393216, 2, -327666, 393216, 2, -327667, 393216, 2, -327668, 393216, 2, -262133, 458752, 2, -196597, 458752, 2, -131061, 458752, 2, 10, 458752, 2, 65546, 458752, 2, 196619, 458752, 2, 262155, 458752, 2, 327691, 458752, 2, -65525, 65536, 2, 65547, 65536, 2, -65516, 65536, 2, 65556, 65536, 2, 20, 0, 2, 131092, 0, 2, 11, 0, 2, 131083, 0, 2, 131087, 393216, 5, 131088, 393216, 5, -65521, 393216, 5, -65520, 393216, 5, 65553, 458752, 5, 65550, 458752, 5, 17, 0, 6, 14, 0, 6, 131089, 196608, 2, 131086, 131072, 2, -65522, 262144, 2, -65519, 327680, 2, 65549, 0, 3, 13, 0, 3, 196623, 393216, 2, 196624, 393216, 2, 65554, 458752, 2, 18, 458752, 2, -131057, 65536, 3, -131056, 65536, 3, -262132, 0, 2, -196595, 0, 2, -262130, 0, 2, -196593, 0, 2, -262128, 0, 2, -196591, 0, 2, -262126, 0, 2, -196589, 0, 2, -131054, 0, 2, -65517, 0, 2, 65555, 65536, 2, 196627, 0, 2, 131090, 0, 2, 196625, 0, 2, 262162, 0, 2, 327699, 0, 2, 327697, 0, 2, 262160, 0, 2, 327695, 0, 2, 262158, 0, 2, 327693, 0, 2, 262156, 65536, 2, 196621, 0, 2, 131084, 0, 2, 12, 0, 2, -131060, 0, 2, -65523, 0, 2, -131058, 0, 2, 262163, 65536, 2, 196626, 65536, 2, 327698, 65536, 2, 262161, 65536, 2, 327696, 65536, 2, 262159, 65536, 2, 327694, 65536, 2, 196622, 65536, 2, 131085, 65536, 2, 262157, 65536, 2, 196620, 65536, 2, 327692, 65536, 2, 65548, 65536, 2, -65524, 65536, 2, -131059, 65536, 2, -196596, 65536, 2, -262131, 65536, 2, -196594, 65536, 2, -262129, 65536, 2, -196592, 65536, 2, -131055, 65536, 2, -65518, 65536, 2, 19, 65536, 2, 131091, 65536, 2, -131053, 65536, 2, -196590, 65536, 2, -262127, 65536, 2, -262125, 65536, 2)
 
 [node name="BuildTileMap" type="TileMap" parent="NavigationRegion2D/BaseTileMap"]
 y_sort_enabled = true
@@ -357,7 +357,9 @@ layer_1/tile_data = PackedInt32Array()
 [node name="Camera2D" type="Camera2D" parent="."]
 offset = Vector2(2.08165e-12, 2.08165e-12)
 anchor_mode = 0
-zoom = Vector2(0.75, 0.75)
+zoom = Vector2(0.2, 0.2)
+position_smoothing_enabled = true
+position_smoothing_speed = 10.0
 script = ExtResource("2_o2j5r")
 
 [node name="CanvasLayer" parent="." instance=ExtResource("6_4lvgl")]
@@ -368,16 +370,6 @@ offset_top = 332.0
 offset_right = -1528.0
 offset_bottom = -176.0
 initial_node_to_watch = NodePath("../../StateManager")
-
-[node name="TPoseDummy" type="Sprite2D" parent="."]
-position = Vector2(1528, 1040)
-scale = Vector2(0.7, 0.7)
-texture = ExtResource("14_8rn0g")
-
-[node name="FlirtyPoseDummy" type="Sprite2D" parent="."]
-position = Vector2(1344, 448)
-scale = Vector2(0.9, 0.9)
-texture = ExtResource("15_lk8ys")
 
 [node name="BuildingManager" type="Node" parent="."]
 script = ExtResource("18_cy305")
@@ -482,7 +474,7 @@ to = NodePath("../../SettingDoor")
 event = &"building_back"
 
 [node name="Crew" parent="." node_paths=PackedStringArray("target") instance=ExtResource("23_v05om")]
-position = Vector2(899, 894)
+position = Vector2(2560, 2208)
 collision_layer = 2
 motion_mode = 1
 wall_min_slide_angle = 0.0
