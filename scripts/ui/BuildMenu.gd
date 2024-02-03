@@ -33,10 +33,10 @@ func hide_room_panel() -> void:
 	room_panel.hide()
 
 func _on_build_button_pressed() -> void:
-	action_completed.emit(Action.OPEN)
+	action_completed.emit(Action.OPEN, null)
 
 func _on_build_close_button_pressed() -> void:
-	action_completed.emit(Action.CLOSE)
+	action_completed.emit(Action.CLOSE, null)
 
 func _on_room_selected(room_type: RoomType) -> void:
 	action_completed.emit(Action.SELECT_ROOMTYPE, room_type)
