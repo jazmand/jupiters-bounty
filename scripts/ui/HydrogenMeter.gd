@@ -3,7 +3,7 @@ extends Sprite2D
 
 @onready var fluid: ProgressBar = $HydrogenMeterFluid
 
-func _ready():
+func _ready() -> void:
 	# Animate hydrogen progress bar to initially start from 0
 	fluid.value = 0
 	update(Global.station.hydrogen)
