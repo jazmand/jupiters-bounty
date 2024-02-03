@@ -20,6 +20,10 @@ config/icon="res://assets/sprites/flirty_pose.png"
 StationEvent="*res://scripts/autoload/StationEvent.gd"
 Global="*res://scripts/autoload/Global.gd"
 
+[debug]
+
+gdscript/warnings/integer_division=0
+
 [display]
 
 window/size/viewport_width=1920

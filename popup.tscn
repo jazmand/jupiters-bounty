@@ -10,8 +10,7 @@ subpixel_positioning = 0
 font = SubResource("SystemFont_1dxa0")
 font_size = 25
 
-[node name="Popup" type="Panel"]
-visible = false
+[node name="GUIPopup" type="Panel"]
 offset_left = 214.0
 offset_top = 677.0
 offset_right = 865.0

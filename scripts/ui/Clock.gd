@@ -14,8 +14,8 @@ func _ready() -> void:
 	StationEvent.time_updated.connect(update)
 
 func update(in_game_time: int) -> void:
-	hours = floori(in_game_time / SECONDS_PER_HOUR)
-	minutes = floori((in_game_time % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE)
+	hours = in_game_time / SECONDS_PER_HOUR
+	minutes = (in_game_time % SECONDS_PER_HOUR) / SECONDS_PER_MINUTE
 	time.text = format_time()
 
 func format_time() -> String:
