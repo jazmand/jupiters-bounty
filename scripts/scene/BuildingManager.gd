@@ -3,8 +3,6 @@
 class_name BuildingManager
 extends Node
 
-var station: Station = preload("res://assets/station/station_resources.tres")
-
 @onready var base_tile_map: TileMap = $"../NavigationRegion2D/BaseTileMap"
 @onready var build_tile_map: TileMap = $"../NavigationRegion2D/BaseTileMap/BuildTileMap"
 
@@ -29,7 +27,7 @@ func _init() -> void:
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
 	build_menu.action_completed.connect(on_build_menu_action)
-	room_builder = RoomBuilder.new(gui, station, base_tile_map, build_tile_map, rooms, room_types)
+	room_builder = RoomBuilder.new(gui, base_tile_map, build_tile_map, room_types)
 	room_builder.action_completed.connect(on_room_builder_action)
 	# Connect the buttons to the confirmation functions in the GUI script
 	build_menu.connect_popup_yes(room_builder.confirm_build)

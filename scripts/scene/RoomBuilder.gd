@@ -25,20 +25,16 @@ var selected_room_type: RoomType
 var gui: GUI
 var base_tile_map: TileMap
 var build_tile_map: TileMap
-var station: Station
-var rooms: Array[Room]
 var room_types: Array[RoomType]
 
 var popup_message: String
 
 enum Action {BACK, FORWARD, COMPLETE}
 
-func _init(gui_node: GUI, station_node: Station, base_tile_map_node: TileMap, build_tile_map_node: TileMap, rooms_arr: Array[Room], room_types_arr: Array[RoomType]) -> void:
+func _init(gui_node: GUI, base_tile_map_node: TileMap, build_tile_map_node: TileMap, room_types_arr: Array[RoomType]) -> void:
 	gui = gui_node
-	station = station_node
 	base_tile_map = base_tile_map_node
 	build_tile_map = build_tile_map_node
-	rooms = rooms_arr
 	room_types = room_types_arr
 
 func clear_selected_roomtype() -> void:
@@ -145,14 +141,14 @@ func confirm_build() -> void:
 	save_room()
 	draw_rooms()
 	# Make deductions for buying rooms 
-	station.currency -= calculate_room_price()
+	Global.station.currency -= calculate_room_price()
 	gui.update_resource("currency");	
-	print(rooms, 'current rooms')
+	print(Global.station.rooms, 'current rooms')
 	action_completed.emit(Action.COMPLETE)
 
 func cancel_build() -> void:
 	stop_drafting()
-	rooms.pop_back()
+	Global.station.rooms.pop_back()
 	action_completed.emit(Action.COMPLETE)
 
 func save_room() -> void:
@@ -162,12 +158,12 @@ func save_room() -> void:
 	new_room.topLeft = initial_tile_coords
 	new_room.bottomRight = transverse_tile_coords
 	new_room.doorTiles = temp_door_coords
-	rooms.append(new_room)
+	Global.station.rooms.append(new_room)
 
 func draw_rooms() -> void:
 	# Clear drafting layer
 	build_tile_map.clear_layer(drafting_layer)
-	for room in rooms:
+	for room in Global.station.rooms:
 		draw_room(room)
 			
 func draw_room(room) -> void:
@@ -227,7 +223,7 @@ func check_selection_valid(coords: Vector2i, check_price_and_size: bool = false)
 		var room_width = abs(transverse_tile_coords.x - initial_tile_coords.x) + 1
 		var room_height = abs(transverse_tile_coords.y - initial_tile_coords.y) + 1
 		
-		if (calculate_room_price() >= station.currency):
+		if (calculate_room_price() >= Global.station.currency):
 			return false
 			
 		if (tile_count < selected_room_type.minTiles or tile_count > selected_room_type.maxTiles):
@@ -242,13 +238,13 @@ func calculate_room_price() -> int:
 	return selected_room_type.price * calculate_tile_count(initial_tile_coords, transverse_tile_coords)
 
 func generate_unique_room_id() -> int:
-	var unique_id = rooms.size() + 1
+	var unique_id = Global.station.rooms.size() + 1
 	while check_room_id_exists(unique_id):
 		unique_id += 1
 	return unique_id
 
 func check_room_id_exists(room_id: int) -> bool:
-	return rooms.any(func(room: Room): return room.id == room_id)
+	return Global.station.rooms.any(func(room: Room): return room.id == room_id)
 
 func calculate_tile_count(vector1: Vector2, vector2: Vector2) -> int:
 	return (abs(vector2.x - vector1.x) + 1) * (abs(vector2.y - vector1.y) + 1)
@@ -266,7 +262,7 @@ func is_on_room_edge_and_not_corner(coords: Vector2i) -> bool:
 	return !is_on_corner && (is_x_on_edge || is_y_on_edge)
 
 func is_blocking_door(coords: Vector2i) -> bool:
-	for room in rooms:
+	for room in Global.station.rooms:
 		for doorTile in room.doorTiles:
 			if (abs(coords.x - doorTile.x) + abs(coords.y - doorTile.y)) == 1:
 				return true
