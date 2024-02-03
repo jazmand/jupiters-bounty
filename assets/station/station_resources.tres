@@ -8,6 +8,6 @@ id = 0
 hydrogen = 500
 power = 70
 currency = 3000
-crew = 1
+crew = 0
 rooms = Array[Resource("res://scripts/resource/Room.gd")]([])
 time = 0

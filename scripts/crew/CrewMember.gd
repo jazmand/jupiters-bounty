@@ -10,6 +10,7 @@ extends CharacterBody2D
 @onready var navigation_timer: Timer = $Navigation/Timer
 
 func _ready() -> void:
+	Global.station.crew += 1
 	navigation_timer.timeout.connect(_on_timer_timeout)
 	navigation_agent.path_desired_distance = 4.0
 	navigation_agent.target_desired_distance = 4.0
