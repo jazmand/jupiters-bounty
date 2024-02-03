@@ -3,7 +3,7 @@
 class_name BuildMenu
 extends Control
 
-signal action_completed(action: int)
+signal action_completed(action: int, room_type: RoomType)
 
 enum Action {CLOSE, OPEN, SELECT_ROOMTYPE}
 
@@ -11,7 +11,6 @@ enum Action {CLOSE, OPEN, SELECT_ROOMTYPE}
 @onready var room_panel: Panel = $RoomPanel
 @onready var rooms_container: HBoxContainer = $RoomPanel/HBoxContainer
 
-var selected_room_type: RoomType
 var room_buttons: Dictionary = {}
 
 func show_build_button() -> void:
@@ -40,5 +39,4 @@ func _on_build_close_button_pressed() -> void:
 	action_completed.emit(Action.CLOSE)
 
 func _on_room_selected(room_type: RoomType) -> void:
-	selected_room_type = room_type
-	action_completed.emit(Action.SELECT_ROOMTYPE)
+	action_completed.emit(Action.SELECT_ROOMTYPE, room_type)

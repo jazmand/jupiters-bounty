@@ -13,6 +13,7 @@ extends Node
 
 var room_builder: RoomBuilder
 var room_types: Array[RoomType] = []
+var selected_roomtype: RoomType = null
 
 var popup: GUIPopup
 	
@@ -69,7 +70,7 @@ func load_room_types() -> void:
 		room_type_files.list_dir_end()
 
 # TODO: refactor action handlers
-func on_build_menu_action(action: int) -> void:
+func on_build_menu_action(action: int, clicked_roomtype: RoomType) -> void:
 	var event: String
 	match action:
 		gui.build_menu.Action.CLOSE:
@@ -77,6 +78,7 @@ func on_build_menu_action(action: int) -> void:
 		gui.build_menu.Action.OPEN:
 			event = Events[StateEvent.BUILDING_START]
 		gui.build_menu.Action.SELECT_ROOMTYPE:
+			selected_roomtype = clicked_roomtype
 			event = Events[StateEvent.BUILDING_FORWARD]
 	state_manager.send_event(event)
 
@@ -113,7 +115,7 @@ func _on_selecting_tile_state_input(event: InputEvent) -> void:
 		if event.pressed:
 			match event.button_index:
 				1:
-					room_builder.selecting_tile(event, camera.position, camera.zoom, gui.build_menu.selected_room_type)
+					room_builder.selecting_tile(event, camera.position, camera.zoom, selected_roomtype)
 				2: 
 					room_builder.clear_selected_roomtype()
 	elif event is InputEventMouseMotion:
@@ -161,5 +163,6 @@ func _on_building_state_entered() -> void:
 	gui.build_menu.hide_build_button()
 
 func _on_building_state_exited() -> void:
+	selected_roomtype = null
 	gui.build_menu.show_build_button()
 	room_builder.stop_drafting()

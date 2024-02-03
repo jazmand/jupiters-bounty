@@ -4,14 +4,11 @@ extends Node
 
 @onready var background: Control = $Background
 
-var in_game_time: int
-var one_in_game_day: int
+var in_game_time: int = 7200 # Start at 02:00
+var one_in_game_day: int = 36000 # 10 in game hours per in game day
 var delta_time: float = 0.0
 
 func _ready():
-	one_in_game_day = 36000 # 10 in game hours per in game day
-	in_game_time = 7200 # Start at 02:00
-		
 	update_in_game_time()
 	background.rotate_jupiter(in_game_time, one_in_game_day)
 
