@@ -1,0 +1,54 @@
+[gd_scene load_steps=4 format=3 uid="uid://e75w5sbaxrt"]
+
+[ext_resource type="Script" path="res://scripts/popup/GUIPopup.gd" id="1_n0axi"]
+
+[sub_resource type="SystemFont" id="SystemFont_1dxa0"]
+font_names = PackedStringArray("Cascadia Code")
+subpixel_positioning = 0
+
+[sub_resource type="LabelSettings" id="LabelSettings_ahsq4"]
+font = SubResource("SystemFont_1dxa0")
+font_size = 25
+
+[node name="Popup" type="Panel"]
+visible = false
+offset_left = 214.0
+offset_top = 677.0
+offset_right = 865.0
+offset_bottom = 884.0
+script = ExtResource("1_n0axi")
+
+[node name="HBoxContainer" type="BoxContainer" parent="."]
+layout_mode = 0
+offset_left = 17.0
+offset_top = 167.0
+offset_right = 631.0
+offset_bottom = 202.0
+alignment = 1
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 0
+offset_left = 53.0
+offset_top = 83.0
+offset_right = 608.0
+offset_bottom = 128.0
+text = "Build {{room_type}} for {{currency}}?"
+label_settings = SubResource("LabelSettings_ahsq4")
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="YesButton" type="Button" parent="."]
+layout_mode = 2
+offset_left = 277.0
+offset_top = 167.0
+offset_right = 320.0
+offset_bottom = 202.0
+text = " Yes "
+
+[node name="NoButton" type="Button" parent="."]
+layout_mode = 2
+offset_left = 324.0
+offset_top = 167.0
+offset_right = 371.0
+offset_bottom = 202.0
+text = "  No  "
