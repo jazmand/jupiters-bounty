@@ -1,7 +1,7 @@
 [gd_scene load_steps=27 format=3 uid="uid://cpi6duyqx08ba"]
 
+[ext_resource type="Script" path="res://scripts/ui/GUI.gd" id="1_8pxxd"]
 [ext_resource type="Script" path="res://scripts/ui/GUIManager.gd" id="1_ekuro"]
-[ext_resource type="Script" path="res://GUI.gd" id="1_l0hdc"]
 [ext_resource type="Texture2D" uid="uid://bg5gnnxbufgam" path="res://assets/GUI/power-meter.png" id="2_m17qj"]
 [ext_resource type="Texture2D" uid="uid://12wi58pijmfg" path="res://assets/GUI/view-screen.png" id="2_rdfey"]
 [ext_resource type="Script" path="res://scripts/ui/StationInfo.gd" id="3_7tjv2"]
@@ -52,7 +52,7 @@ font_size = 40
 shadow_color = Color(0.156863, 0.156863, 0.156863, 0.698039)
 
 [node name="GUI" type="CanvasLayer"]
-script = ExtResource("1_l0hdc")
+script = ExtResource("1_8pxxd")
 
 [node name="GUIManager" type="Control" parent="."]
 layout_mode = 3
