@@ -9,5 +9,5 @@ hydrogen = 500
 power = 70
 currency = 3000
 crew = 0
-rooms = Array[Resource("res://scripts/resource/Room.gd")]([])
+rooms = Array[Resource("scripts/resource/Room.gd")]([])
 time = 0

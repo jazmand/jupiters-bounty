@@ -357,9 +357,13 @@ layer_1/tile_data = PackedInt32Array()
 [node name="Camera2D" type="Camera2D" parent="."]
 offset = Vector2(2.08165e-12, 2.08165e-12)
 anchor_mode = 0
-zoom = Vector2(0.2, 0.2)
+zoom = Vector2(0.25, 0.25)
+limit_left = 0
+limit_top = 0
+limit_right = 10000
+limit_bottom = 5000
 position_smoothing_enabled = true
-position_smoothing_speed = 10.0
+position_smoothing_speed = 8.0
 script = ExtResource("2_o2j5r")
 
 [node name="CanvasLayer" parent="." instance=ExtResource("6_4lvgl")]
