@@ -364,12 +364,14 @@ script = ExtResource("2_o2j5r")
 [node name="BuildingManager" type="Node" parent="."]
 script = ExtResource("18_cy305")
 
-[node name="StateChartDebugger" parent="." instance=ExtResource("13_g5vrw")]
-offset_left = 4.0
-offset_top = 332.0
-offset_right = -1528.0
-offset_bottom = -176.0
-initial_node_to_watch = NodePath("../StateManager")
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="StateChartDebugger" parent="CanvasLayer" instance=ExtResource("13_g5vrw")]
+offset_left = 13.0
+offset_top = 313.0
+offset_right = -1531.0
+offset_bottom = -168.0
+initial_node_to_watch = NodePath("../../StateManager")
 
 [node name="StateManager" type="Node" parent="."]
 script = ExtResource("18_o7t7g")
