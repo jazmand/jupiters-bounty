@@ -7,7 +7,7 @@ func _ready() -> void:
 	# Animate hydrogen progress bar to initially start from 0
 	fluid.value = 0
 	update(Global.station.hydrogen)
-	StationEvent.hydrogen_updated.connect(update)
+	Global.station.hydrogen_updated.connect(update)
 
 func update(hydrogen: int) -> void:
 	animate_progress_bar(fluid.value, hydrogen)

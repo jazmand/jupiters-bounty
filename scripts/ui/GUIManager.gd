@@ -1,11 +1,7 @@
-# GUI.gd
-
-class_name GUI
+class_name GUIManager
 extends Control
 
 const popup_scene: PackedScene = preload("res://popup.tscn")
-
-@onready var build_menu: BuildMenu = $BuildMenu
 
 func new_popup(popup_message: String, default_visible: bool, accept_function: Callable, decline_function: Callable) -> GUIPopup:
 	var popup: GUIPopup = popup_scene.instantiate()

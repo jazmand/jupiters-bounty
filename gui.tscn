@@ -1,6 +1,7 @@
-[gd_scene load_steps=26 format=3 uid="uid://cpi6duyqx08ba"]
+[gd_scene load_steps=27 format=3 uid="uid://cpi6duyqx08ba"]
 
-[ext_resource type="Script" path="res://scripts/ui/GUI.gd" id="1_yc0k1"]
+[ext_resource type="Script" path="res://scripts/ui/GUIManager.gd" id="1_ekuro"]
+[ext_resource type="Script" path="res://GUI.gd" id="1_l0hdc"]
 [ext_resource type="Texture2D" uid="uid://bg5gnnxbufgam" path="res://assets/GUI/power-meter.png" id="2_m17qj"]
 [ext_resource type="Texture2D" uid="uid://12wi58pijmfg" path="res://assets/GUI/view-screen.png" id="2_rdfey"]
 [ext_resource type="Script" path="res://scripts/ui/StationInfo.gd" id="3_7tjv2"]
@@ -50,23 +51,24 @@ font = SubResource("SystemFont_lvsnc")
 font_size = 40
 shadow_color = Color(0.156863, 0.156863, 0.156863, 0.698039)
 
-[node name="CanvasLayer" type="CanvasLayer"]
+[node name="GUI" type="CanvasLayer"]
+script = ExtResource("1_l0hdc")
 
-[node name="GUI" type="Control" parent="."]
+[node name="GUIManager" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_yc0k1")
+script = ExtResource("1_ekuro")
 
-[node name="ViewScreen" type="Sprite2D" parent="GUI"]
+[node name="ViewScreen" type="Sprite2D" parent="GUIManager"]
 position = Vector2(1622, 83)
 scale = Vector2(0.3, 0.3)
 texture = ExtResource("2_rdfey")
 
-[node name="StationInfo" type="VBoxContainer" parent="GUI"]
+[node name="StationInfo" type="VBoxContainer" parent="GUIManager"]
 layout_mode = 0
 offset_left = 1424.0
 offset_top = 58.0
@@ -75,42 +77,42 @@ offset_bottom = 114.0
 alignment = 1
 script = ExtResource("3_7tjv2")
 
-[node name="Currency" type="Label" parent="GUI/StationInfo"]
+[node name="Currency" type="Label" parent="GUIManager/StationInfo"]
 layout_mode = 2
 text = "Currency:"
 label_settings = SubResource("LabelSettings_kdcap")
 
-[node name="Crew" type="Label" parent="GUI/StationInfo"]
+[node name="Crew" type="Label" parent="GUIManager/StationInfo"]
 layout_mode = 2
 text = "Crew:"
 label_settings = SubResource("LabelSettings_2rnhy")
 
-[node name="PowerMeter" type="Sprite2D" parent="GUI"]
+[node name="PowerMeter" type="Sprite2D" parent="GUIManager"]
 position = Vector2(1735, 920)
 scale = Vector2(0.3, 0.3)
 texture = ExtResource("2_m17qj")
 script = ExtResource("5_0bhts")
 
-[node name="Dial" type="Sprite2D" parent="GUI/PowerMeter"]
+[node name="Dial" type="Sprite2D" parent="GUIManager/PowerMeter"]
 position = Vector2(103, -74.001)
 rotation = -0.0296706
 scale = Vector2(0.3, 0.3)
 texture = ExtResource("3_gxdii")
 offset = Vector2(2.08165e-12, -200)
 
-[node name="PowerMeterLightBurst" type="Sprite2D" parent="GUI/PowerMeter"]
+[node name="PowerMeterLightBurst" type="Sprite2D" parent="GUIManager/PowerMeter"]
 modulate = Color(1, 1, 0.843137, 1)
 position = Vector2(-278.334, -133.332)
 scale = Vector2(0.3, 0.3)
 texture = ExtResource("12_3fce4")
 
-[node name="Filament" type="Sprite2D" parent="GUI/PowerMeter/PowerMeterLightBurst"]
+[node name="Filament" type="Sprite2D" parent="GUIManager/PowerMeter/PowerMeterLightBurst"]
 z_index = -1
 position = Vector2(-22.207, 0.00390625)
 scale = Vector2(0.7, 0.7)
 texture = ExtResource("4_uuqsp")
 
-[node name="HydrogenMeter" type="Sprite2D" parent="GUI"]
+[node name="HydrogenMeter" type="Sprite2D" parent="GUIManager"]
 top_level = true
 clip_children = 1
 position = Vector2(1856, 498)
@@ -119,14 +121,14 @@ scale = Vector2(0.275, 0.275)
 texture = ExtResource("11_5oy5m")
 script = ExtResource("10_yv1ak")
 
-[node name="HydrogenMeterOverlay" type="Sprite2D" parent="GUI/HydrogenMeter"]
+[node name="HydrogenMeterOverlay" type="Sprite2D" parent="GUIManager/HydrogenMeter"]
 top_level = true
 position = Vector2(1856, 498)
 rotation = -1.5708
 scale = Vector2(0.275, 0.275)
 texture = ExtResource("11_5oy5m")
 
-[node name="HydrogenMeterFluid" type="ProgressBar" parent="GUI/HydrogenMeter"]
+[node name="HydrogenMeterFluid" type="ProgressBar" parent="GUIManager/HydrogenMeter"]
 show_behind_parent = true
 offset_left = -989.09
 offset_top = -356.368
@@ -136,13 +138,13 @@ theme_override_styles/fill = SubResource("StyleBoxFlat_wegjk")
 max_value = 1000.0
 show_percentage = false
 
-[node name="Clock" type="Sprite2D" parent="GUI"]
+[node name="Clock" type="Sprite2D" parent="GUIManager"]
 position = Vector2(226, 155)
 scale = Vector2(0.3, 0.3)
 texture = ExtResource("9_a20wn")
 script = ExtResource("12_nuort")
 
-[node name="PaperBack" type="Sprite2D" parent="GUI/Clock"]
+[node name="PaperBack" type="Sprite2D" parent="GUIManager/Clock"]
 modulate = Color(0.529412, 0.529412, 0.529412, 1)
 z_index = -1
 position = Vector2(282.971, 57.9713)
@@ -150,25 +152,25 @@ rotation = -6.28319
 scale = Vector2(1.35663, 1.35663)
 texture = ExtResource("8_sr1my")
 
-[node name="JupiterMotif" type="Sprite2D" parent="GUI/Clock/PaperBack"]
+[node name="JupiterMotif" type="Sprite2D" parent="GUIManager/Clock/PaperBack"]
 self_modulate = Color(1, 1, 1, 0.431373)
 position = Vector2(42.8571, 0)
 scale = Vector2(0.43, 0.43)
 texture = ExtResource("9_g1jby")
 
-[node name="Sun-motif" type="Sprite2D" parent="GUI/Clock/PaperBack"]
+[node name="Sun-motif" type="Sprite2D" parent="GUIManager/Clock/PaperBack"]
 self_modulate = Color(1, 0.862745, 0.588235, 0.431373)
 position = Vector2(-185.715, 0.000244141)
 scale = Vector2(0.4, 0.4)
 texture = ExtResource("10_xnxf8")
 
-[node name="Time" type="Label" parent="GUI/Clock"]
+[node name="Time" type="Label" parent="GUIManager/Clock"]
 offset_left = 120.0
 offset_right = 260.0
 offset_bottom = 60.0
 label_settings = SubResource("LabelSettings_e4e6q")
 
-[node name="BuildMenu" type="Control" parent="GUI"]
+[node name="BuildMenu" type="Control" parent="GUIManager"]
 layout_mode = 3
 anchors_preset = 0
 offset_left = 8.0
@@ -177,7 +179,7 @@ offset_right = 48.0
 offset_bottom = 1072.0
 script = ExtResource("13_v3skq")
 
-[node name="BuildButton" type="Button" parent="GUI/BuildMenu"]
+[node name="BuildButton" type="Button" parent="GUIManager/BuildMenu"]
 layout_mode = 0
 offset_left = 6.0
 offset_top = -64.0
@@ -188,14 +190,14 @@ action_mode = 0
 icon = ExtResource("5_cbcuv")
 flat = true
 
-[node name="RoomPanel" type="Panel" parent="GUI/BuildMenu"]
+[node name="RoomPanel" type="Panel" parent="GUIManager/BuildMenu"]
 visible = false
 layout_mode = 0
 offset_top = -57.0
 offset_right = 1071.0
 offset_bottom = 41.0
 
-[node name="BuildCloseButton" type="Button" parent="GUI/BuildMenu/RoomPanel"]
+[node name="BuildCloseButton" type="Button" parent="GUIManager/BuildMenu/RoomPanel"]
 layout_mode = 0
 offset_left = 1046.0
 offset_top = 4.0
@@ -206,7 +208,7 @@ action_mode = 0
 icon = ExtResource("6_nem4v")
 flat = true
 
-[node name="HBoxContainer" type="HBoxContainer" parent="GUI/BuildMenu/RoomPanel"]
+[node name="HBoxContainer" type="HBoxContainer" parent="GUIManager/BuildMenu/RoomPanel"]
 layout_mode = 0
 offset_left = 54.0
 offset_top = 1.0
@@ -214,5 +216,5 @@ offset_right = 1031.0
 offset_bottom = 96.0
 alignment = 1
 
-[connection signal="pressed" from="GUI/BuildMenu/BuildButton" to="GUI/BuildMenu" method="_on_build_button_pressed"]
-[connection signal="pressed" from="GUI/BuildMenu/RoomPanel/BuildCloseButton" to="GUI/BuildMenu" method="_on_build_close_button_pressed"]
+[connection signal="pressed" from="GUIManager/BuildMenu/BuildButton" to="GUIManager/BuildMenu" method="_on_build_button_pressed"]
+[connection signal="pressed" from="GUIManager/BuildMenu/RoomPanel/BuildCloseButton" to="GUIManager/BuildMenu" method="_on_build_close_button_pressed"]

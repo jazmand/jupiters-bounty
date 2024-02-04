@@ -1,4 +1,4 @@
-[gd_scene load_steps=35 format=3 uid="uid://dhh5wq2ka1ay8"]
+[gd_scene load_steps=34 format=3 uid="uid://dhh5wq2ka1ay8"]
 
 [ext_resource type="Script" path="res://scripts/scene/Main.gd" id="1_3g4j0"]
 [ext_resource type="Texture2D" uid="uid://dwwc4ti4c1ifx" path="res://assets/backgrounds/jupiter.png" id="2_i0a8p"]
@@ -8,7 +8,6 @@
 [ext_resource type="Texture2D" uid="uid://btciaqokhqxrk" path="res://assets/tilesets/base_tileset.png" id="5_408k5"]
 [ext_resource type="Texture2D" uid="uid://di1gw67qnf5nt" path="res://assets/tilesets/select_new.png" id="5_ehm63"]
 [ext_resource type="Texture2D" uid="uid://dihqbub138rkb" path="res://assets/tilesets/invalid_new.png" id="5_y3eoa"]
-[ext_resource type="PackedScene" uid="uid://cpi6duyqx08ba" path="res://gui.tscn" id="6_4lvgl"]
 [ext_resource type="Texture2D" uid="uid://bin8xqkuxyohw" path="res://assets/tilesets/drafting_new.png" id="6_jemiv"]
 [ext_resource type="Texture2D" uid="uid://dw0d3bcfauhf2" path="res://assets/tilesets/crew_quarters.png" id="7_ypvsj"]
 [ext_resource type="Texture2D" uid="uid://b011v7odriiqs" path="res://assets/tilesets/generator_room.png" id="8_snmxr"]
@@ -362,17 +361,15 @@ position_smoothing_enabled = true
 position_smoothing_speed = 10.0
 script = ExtResource("2_o2j5r")
 
-[node name="CanvasLayer" parent="." instance=ExtResource("6_4lvgl")]
+[node name="BuildingManager" type="Node" parent="."]
+script = ExtResource("18_cy305")
 
-[node name="StateChartDebugger" parent="CanvasLayer" instance=ExtResource("13_g5vrw")]
+[node name="StateChartDebugger" parent="." instance=ExtResource("13_g5vrw")]
 offset_left = 4.0
 offset_top = 332.0
 offset_right = -1528.0
 offset_bottom = -176.0
-initial_node_to_watch = NodePath("../../StateManager")
-
-[node name="BuildingManager" type="Node" parent="."]
-script = ExtResource("18_cy305")
+initial_node_to_watch = NodePath("../StateManager")
 
 [node name="StateManager" type="Node" parent="."]
 script = ExtResource("18_o7t7g")
