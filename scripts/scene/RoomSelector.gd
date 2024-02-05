@@ -6,7 +6,7 @@ extends Node
 var selected_tile_coords = Vector2i()
 var selected_room: Room
 
-var gui: GUI
+var gui: Control
 var station: Station
 var build_tile_map: TileMap
 var rooms: Array[Room]

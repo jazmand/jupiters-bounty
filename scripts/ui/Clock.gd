@@ -8,7 +8,7 @@ const SECONDS_PER_MINUTE: int = 60
 
 func _ready() -> void:
 	update(Global.station.time)
-	StationEvent.time_updated.connect(update)
+	Global.station.time_updated.connect(update)
 
 func update(in_game_time: int) -> void:
 	var hours = int(in_game_time / SECONDS_PER_HOUR)

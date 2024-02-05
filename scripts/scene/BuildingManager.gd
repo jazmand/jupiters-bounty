@@ -6,7 +6,6 @@ extends Node
 @onready var base_tile_map: TileMap = $"../NavigationRegion2D/BaseTileMap"
 @onready var build_tile_map: TileMap = $"../NavigationRegion2D/BaseTileMap/BuildTileMap"
 
-@onready var gui: GUI = $"../CanvasLayer/GUI"
 @onready var camera: Camera2D = $"../Camera2D"
 
 @onready var state_manager: StateChart = $"../StateManager"
@@ -30,8 +29,8 @@ func _ready() -> void:
 	room_builder = RoomBuilder.new(base_tile_map, build_tile_map, room_types)
 	room_builder.action_completed.connect(on_room_builder_action)
 	# Connect the buttons to the confirmation functions in the GUI script
-	gui.build_menu.action_completed.connect(on_build_menu_action)
-	popup = gui.new_popup(room_builder.popup_message, false, room_builder.confirm_build, room_builder.cancel_build)
+	GUI.build_menu.action_completed.connect(on_build_menu_action)
+	popup = GUI.manager.new_popup(room_builder.popup_message, false, room_builder.confirm_build, room_builder.cancel_build)
 
 func load_room_types() -> void:
 	var room_types_folder = "res://assets/room_type/"
@@ -73,11 +72,11 @@ func load_room_types() -> void:
 func on_build_menu_action(action: int, clicked_roomtype: RoomType) -> void:
 	var event: String
 	match action:
-		gui.build_menu.Action.CLOSE:
+		GUI.build_menu.Action.CLOSE:
 			event = Events[StateEvent.BUILDING_STOP]
-		gui.build_menu.Action.OPEN:
+		GUI.build_menu.Action.OPEN:
 			event = Events[StateEvent.BUILDING_START]
-		gui.build_menu.Action.SELECT_ROOMTYPE:
+		GUI.build_menu.Action.SELECT_ROOMTYPE:
 			selected_roomtype = clicked_roomtype
 			event = Events[StateEvent.BUILDING_FORWARD]
 	state_manager.send_event(event)
@@ -99,7 +98,7 @@ func _on_building_state_input(event: InputEvent) -> void:
 			state_manager.send_event(Events[StateEvent.BUILDING_STOP])
 
 func _on_selecting_roomtype_state_entered() -> void:
-	gui.build_menu.show_room_panel(room_types)
+	GUI.build_menu.show_room_panel(room_types)
 
 func _on_selecting_roomtype_state_input(event: InputEvent):
 	if event is InputEventMouseButton:
@@ -107,7 +106,7 @@ func _on_selecting_roomtype_state_input(event: InputEvent):
 			state_manager.send_event(Events[StateEvent.BUILDING_STOP])
 
 func _on_selecting_roomtype_state_exited() -> void:
-	gui.build_menu.hide_room_panel()
+	GUI.build_menu.hide_room_panel()
 
 # TODO: refactor state input handlers
 func _on_selecting_tile_state_input(event: InputEvent) -> void:
@@ -160,9 +159,9 @@ func _on_confirming_room_state_input(event):
 					state_manager.send_event(Events[StateEvent.BUILDING_BACK])
 
 func _on_building_state_entered() -> void:
-	gui.build_menu.hide_build_button()
+	GUI.build_menu.hide_build_button()
 
 func _on_building_state_exited() -> void:
 	selected_roomtype = null
-	gui.build_menu.show_build_button()
+	GUI.build_menu.show_build_button()
 	room_builder.stop_drafting()
