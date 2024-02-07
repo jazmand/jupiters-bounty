@@ -24,6 +24,21 @@ tracks/0/keys = {
 "values": [2]
 }
 
+[sub_resource type="Animation" id="Animation_wfjsr"]
+resource_name = "idle_down_left"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [1]
+}
+
 [sub_resource type="Animation" id="Animation_35s25"]
 resource_name = "idle_down_right"
 tracks/0/type = "value"
@@ -39,6 +54,21 @@ tracks/0/keys = {
 "values": [3]
 }
 
+[sub_resource type="Animation" id="Animation_sbygp"]
+resource_name = "idle_left"
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+
 [sub_resource type="Animation" id="Animation_cuwvj"]
 resource_name = "idle_right"
 tracks/0/type = "value"
@@ -52,21 +82,6 @@ tracks/0/keys = {
 "transitions": PackedFloat32Array(1),
 "update": 1,
 "values": [4]
-}
-
-[sub_resource type="Animation" id="Animation_4emcy"]
-resource_name = "idle_up_right"
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath(".:frame")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [5]
 }
 
 [sub_resource type="Animation" id="Animation_4ebcw"]
@@ -99,8 +114,8 @@ tracks/0/keys = {
 "values": [7]
 }
 
-[sub_resource type="Animation" id="Animation_sbygp"]
-resource_name = "idle_left"
+[sub_resource type="Animation" id="Animation_4emcy"]
+resource_name = "idle_up_right"
 tracks/0/type = "value"
 tracks/0/imported = false
 tracks/0/enabled = true
@@ -111,22 +126,7 @@ tracks/0/keys = {
 "times": PackedFloat32Array(0),
 "transitions": PackedFloat32Array(1),
 "update": 1,
-"values": [0]
-}
-
-[sub_resource type="Animation" id="Animation_wfjsr"]
-resource_name = "idle_down_left"
-tracks/0/type = "value"
-tracks/0/imported = false
-tracks/0/enabled = true
-tracks/0/path = NodePath(".:frame")
-tracks/0/interp = 1
-tracks/0/loop_wrap = true
-tracks/0/keys = {
-"times": PackedFloat32Array(0),
-"transitions": PackedFloat32Array(1),
-"update": 1,
-"values": [1]
+"values": [5]
 }
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_lynlg"]
@@ -195,7 +195,7 @@ metadata/_edit_lock_ = true
 scale = Vector2(0.9, 0.9)
 texture = ExtResource("2_uo5jt")
 hframes = 8
-frame = 1
+frame = 2
 metadata/_edit_lock_ = true
 
 [node name="CrewStateManager" type="Node" parent="."]
@@ -227,6 +227,6 @@ libraries = {
 tree_root = SubResource("AnimationNodeBlendSpace2D_eo31q")
 anim_player = NodePath("../AnimationPlayer")
 active = true
-parameters/blend_position = Vector2(2.08165e-12, 2.08165e-12)
+parameters/blend_position = Vector2(-0.99403, 0.982571)
 
 [connection signal="state_physics_processing" from="CrewStateManager/CrewState/Walking" to="." method="_on_walking_state_physics_processing"]
