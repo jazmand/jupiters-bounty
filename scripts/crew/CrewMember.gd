@@ -10,6 +10,8 @@ extends CharacterBody2D
 @onready var navigation_timer: Timer = $Navigation/Timer
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
 
+var current_animation = ''
+
 func _ready() -> void:
 	Global.station.crew += 1
 	navigation_timer.timeout.connect(_on_timer_timeout)
@@ -44,31 +46,30 @@ func _on_walking_state_physics_processing(delta: float) -> void:
 	velocity = velocity.lerp(direction * speed, acceleration * delta)
 	
 	var angle = rad_to_deg(direction.angle())
-	print(angle)
+	var rounded_angle = str(round(angle / 45) * 45)
 
+#	if animation_name != current_animation:
+#		animation_player.play(animation_name)
+#		current_animation = animation_name
+#
 	if angle >= 22.5 and angle < 67.5:
-		animation_player.play('idle_down_right')
+		current_animation = 'walk_down_right'
 	elif angle >= 67.5 and angle < 112.5:
-		animation_player.play('idle_down')
+		current_animation = 'walk_down'
 	elif angle >= 112.5 and angle < 157.5:
-		animation_player.play('idle_down_left')
-	elif angle >=  157.5 and angle < 180 or angle >= -180 and angle < -147.5:
-		animation_player.play('idle_left')
-	elif angle <= -12.5 and angle > -57.5:
-		animation_player.play('idle_up_right')
-	elif angle <= -57.5 and angle > -102.5:
-		animation_player.play('idle_up')
-	elif angle <= -102.5 and angle > -147.5:
-		animation_player.play('idle_up_left')
+		current_animation = 'walk_down_left'
+	elif angle >=  157.5 and angle < 180 or angle >= -180 and angle < -157.5:
+		current_animation = 'walk_left'
+	elif angle <= -22.5 and angle > -67.5:
+		current_animation = 'walk_up_right'
+	elif angle <= -67.5 and angle > -112.5:
+		current_animation = 'walk_up'
+	elif angle <= -112.5 and angle > -157.5:
+		current_animation = 'walk_up_left'
 	else:
-		animation_player.play('idle_right')
+		current_animation = 'walk_right'
 		
-#	if rad_to_deg(direction.angle() < 0):
-#		animation_player.play('idle_down_right')
-#	else:
-#		animation_player.play('idle_up_right')
-
-	
+	animation_player.play(current_animation)
 	move_and_slide()
 
 
