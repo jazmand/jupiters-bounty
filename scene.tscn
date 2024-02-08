@@ -26,6 +26,7 @@
 vertices = PackedVector2Array(4607, 2496, 7167, 2488, 4095, 4256, 4095, 2792, 4095, 728, 4095, 2192, 1023, 2488, 3583, 2488)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3), PackedInt32Array(4, 1, 0, 5), PackedInt32Array(3, 2, 6, 7), PackedInt32Array(7, 6, 4, 5)])
 outlines = Array[PackedVector2Array]([PackedVector2Array(1023, 2488, 4095, 728, 7167, 2488, 4095, 4256), PackedVector2Array(3583, 2488, 4095, 2792, 4607, 2496, 4095, 2192)])
+source_geometry_group_name = &"navigation_polygon_source_group"
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_psmxa"]
 texture = ExtResource("5_408k5")
@@ -346,10 +347,7 @@ layer_0/name = "Draft layer"
 layer_0/y_sort_enabled = true
 layer_0/z_index = 1
 layer_1/name = "Build layer"
-layer_1/enabled = true
-layer_1/modulate = Color(1, 1, 1, 1)
 layer_1/y_sort_enabled = true
-layer_1/y_sort_origin = 0
 layer_1/z_index = 2
 layer_1/tile_data = PackedInt32Array()
 
