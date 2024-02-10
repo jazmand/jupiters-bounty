@@ -390,6 +390,10 @@ script = ExtResource("21_n7j07")
 to = NodePath("../../Building/SelectingRoomtype")
 event = &"building_start"
 
+[node name="ToEditing" type="Node" parent="StateManager/GameState/Default"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../Editing")
+
 [node name="Building" type="Node" parent="StateManager/GameState"]
 script = ExtResource("19_8sc5u")
 initial_state = NodePath("SelectingRoomtype")
@@ -473,6 +477,17 @@ event = &"building_stop"
 script = ExtResource("21_n7j07")
 to = NodePath("../../SettingDoor")
 event = &"building_back"
+
+[node name="Editing" type="Node" parent="StateManager/GameState"]
+script = ExtResource("19_8sc5u")
+initial_state = NodePath("DeletingRoom")
+
+[node name="DeletingRoom" type="Node" parent="StateManager/GameState/Editing"]
+script = ExtResource("20_aq14c")
+
+[node name="ToDefault" type="Node" parent="StateManager/GameState/Editing/DeletingRoom"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../../Default")
 
 [node name="Crew" parent="." node_paths=PackedStringArray("target") instance=ExtResource("23_v05om")]
 position = Vector2(2560, 2208)
