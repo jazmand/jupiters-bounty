@@ -8,7 +8,7 @@
 [ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="5_me8bf"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_q1j0h"]
-size = Vector2(133, 336)
+size = Vector2(133, 116)
 
 [sub_resource type="Animation" id="Animation_fqiqv"]
 resource_name = "idle_down"
@@ -318,7 +318,7 @@ blend_point_7/pos = Vector2(-1, -1)
 script = ExtResource("1_rgjpg")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(1, -10)
+position = Vector2(1, 100)
 shape = SubResource("RectangleShape2D_q1j0h")
 metadata/_edit_lock_ = true
 
