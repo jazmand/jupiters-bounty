@@ -3,7 +3,6 @@
 class_name BuildingManager
 extends Node
 
-@onready var navigation_region: NavigationRegion2D = $"../NavigationRegion2D"
 @onready var base_tile_map: TileMap = $"../BaseTileMap"
 @onready var build_tile_map: TileMap = $"../BaseTileMap/BuildTileMap"
 

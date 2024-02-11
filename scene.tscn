@@ -536,6 +536,7 @@ to = NodePath("../../SettingDoor")
 event = &"building_back"
 
 [node name="Crew" parent="." instance=ExtResource("23_v05om")]
+
 z_index = 2
 position = Vector2(2560, 2208)
 collision_layer = 2
