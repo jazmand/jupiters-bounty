@@ -78,6 +78,9 @@ func _on_walking_state_physics_processing(delta: float) -> void:
 		return
 		
 	velocity = velocity.lerp(current_direction.normalized() * speed, acceleration * delta)
+	#var collision = move_and_collide(velocity * delta)
+	#if collision:
+		#velocity = velocity.bounce(collision.get_normal())
 	move_and_slide()
 
 

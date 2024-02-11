@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://6ddc1y0q3bhc"]
+[gd_scene load_steps=34 format=3 uid="uid://6ddc1y0q3bhc"]
 
 [ext_resource type="Script" path="res://scripts/crew/CrewMember.gd" id="1_rgjpg"]
 [ext_resource type="Texture2D" uid="uid://dhxmp0xpmlnfc" path="res://assets/sprites/idle_agatha.png" id="2_uo5jt"]
@@ -7,8 +7,8 @@
 [ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="4_en38c"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="5_me8bf"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_q1j0h"]
-size = Vector2(133, 116)
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_ercuq"]
+size = Vector2(114, 78)
 
 [sub_resource type="Animation" id="Animation_fqiqv"]
 resource_name = "idle_down"
@@ -253,8 +253,12 @@ tracks/0/keys = {
 "values": [60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71]
 }
 
+[sub_resource type="Animation" id="Animation_8m754"]
+length = 0.001
+
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_lynlg"]
 _data = {
+"RESET": SubResource("Animation_8m754"),
 "idle_down": SubResource("Animation_fqiqv"),
 "idle_down_left": SubResource("Animation_wfjsr"),
 "idle_down_right": SubResource("Animation_35s25"),
@@ -316,11 +320,12 @@ blend_point_7/pos = Vector2(-1, -1)
 
 [node name="Crew" type="CharacterBody2D"]
 z_index = 3
+motion_mode = 1
 script = ExtResource("1_rgjpg")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
-position = Vector2(1, 100)
-shape = SubResource("RectangleShape2D_q1j0h")
+position = Vector2(9, 119)
+shape = SubResource("RectangleShape2D_ercuq")
 metadata/_edit_lock_ = true
 
 [node name="AgathaIdle" type="Sprite2D" parent="."]
@@ -335,7 +340,7 @@ metadata/_edit_lock_ = true
 texture = ExtResource("3_yufvr")
 hframes = 12
 vframes = 8
-frame = 60
+frame = 9
 
 [node name="CrewStateManager" type="Node" parent="."]
 script = ExtResource("3_pcxuy")
@@ -350,10 +355,12 @@ script = ExtResource("5_me8bf")
 [node name="Navigation" type="Node2D" parent="."]
 
 [node name="NavigationAgent2D" type="NavigationAgent2D" parent="Navigation"]
+path_max_distance = 200.0
+path_postprocessing = 1
 debug_enabled = true
 
 [node name="Timer" type="Timer" parent="Navigation"]
-wait_time = 0.5
+wait_time = 0.3
 autostart = true
 
 [node name="AnimationPlayer" type="AnimationPlayer" parent="."]
