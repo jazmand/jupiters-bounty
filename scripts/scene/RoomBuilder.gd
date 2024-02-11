@@ -22,7 +22,6 @@ var any_invalid: bool = false
 
 var selected_room_type: RoomType 
 
-var navigation_region: NavigationRegion2D
 var base_tile_map: TileMap
 var build_tile_map: TileMap
 var room_types: Array[RoomType]
@@ -31,8 +30,7 @@ var popup_message: String = ""
 
 enum Action {BACK, FORWARD, COMPLETE}
 
-func _init(navigation_region_node: NavigationRegion2D, base_tile_map_node: TileMap, build_tile_map_node: TileMap, room_types_arr: Array[RoomType]) -> void:
-	navigation_region = navigation_region_node
+func _init(base_tile_map_node: TileMap, build_tile_map_node: TileMap, room_types_arr: Array[RoomType]) -> void:
 	base_tile_map = base_tile_map_node
 	build_tile_map = build_tile_map_node
 	room_types = room_types_arr
