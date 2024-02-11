@@ -362,6 +362,10 @@ libraries = {
 }
 
 [node name="AnimationTree" type="AnimationTree" parent="."]
+root_node = NodePath("../AgathaWalk")
+libraries = {
+"": SubResource("AnimationLibrary_lynlg")
+}
 tree_root = SubResource("AnimationNodeBlendSpace2D_eo31q")
 anim_player = NodePath("../AnimationPlayer")
 parameters/blend_position = Vector2(-0.99403, 0.982571)

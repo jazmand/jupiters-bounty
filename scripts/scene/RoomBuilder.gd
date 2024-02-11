@@ -22,6 +22,7 @@ var any_invalid: bool = false
 
 var selected_room_type: RoomType 
 
+var navigation_region: NavigationRegion2D
 var base_tile_map: TileMap
 var build_tile_map: TileMap
 var room_types: Array[RoomType]
@@ -30,7 +31,8 @@ var popup_message: String = ""
 
 enum Action {BACK, FORWARD, COMPLETE}
 
-func _init(base_tile_map_node: TileMap, build_tile_map_node: TileMap, room_types_arr: Array[RoomType]) -> void:
+func _init(navigation_region_node: NavigationRegion2D, base_tile_map_node: TileMap, build_tile_map_node: TileMap, room_types_arr: Array[RoomType]) -> void:
+	navigation_region = navigation_region_node
 	base_tile_map = base_tile_map_node
 	build_tile_map = build_tile_map_node
 	room_types = room_types_arr
@@ -140,7 +142,7 @@ func confirm_build() -> void:
 	draw_rooms()
 	# Make deductions for buying rooms 
 	Global.station.currency -= calculate_room_price()
-	print(Global.station.rooms, 'current rooms')
+	#print(Global.station.rooms, 'current rooms')
 	action_completed.emit(Action.COMPLETE)
 
 func cancel_build() -> void:
@@ -162,7 +164,8 @@ func draw_rooms() -> void:
 	build_tile_map.clear_layer(drafting_layer)
 	for room in Global.station.rooms:
 		draw_room(room)
-			
+		add_collision_boundary(room)
+		
 func draw_room(room) -> void:
 	var min_x = min(room.topLeft.x, room.bottomRight.x)
 	var max_x = max(room.topLeft.x, room.bottomRight.x) + 1
@@ -197,6 +200,20 @@ func draw_room(room) -> void:
 					build_tile_map.set_cell(building_layer, Vector2(x, y), tileset_id, tileset_coords)
 	for doorTile in room.doorTiles:
 		build_tile_map.set_cell(building_layer, doorTile, door_tileset_id, Vector2i(0, 0))
+
+func add_collision_boundary(room) -> void:
+	var new_collision_boundary = NavigationPolygon.new()
+	var room_perimeter = get_room_perimeter_points(room)
+	new_collision_boundary.add_outline(room_perimeter)
+	print(new_collision_boundary)
+	#print(navigation_region.navigation_polygon)
+	#navigation_region.navigation_polygon = new_collision_boundary
+
+#new_navigation_mesh.vertices = new_vertices
+#var new_polygon_indices = PackedInt32Array([0, 1, 2, 3])
+#new_navigation_mesh.add_polygon(new_polygon_indices)
+#$NavigationRegion2D.navigation_polygon = new_navigation_mesh
+
 
 # --- Helper functions ---
 
@@ -264,3 +281,25 @@ func is_blocking_door(coords: Vector2i) -> bool:
 			if (abs(coords.x - doorTile.x) + abs(coords.y - doorTile.y)) == 1:
 				return true
 	return false
+	
+func get_room_perimeter_points(room: Room) -> PackedVector2Array:
+	var points = PackedVector2Array()
+	var min_x = min(room.topLeft.x, room.bottomRight.x)
+	var max_x = max(room.topLeft.x, room.bottomRight.x) +  1
+	var min_y = min(room.topLeft.y, room.bottomRight.y)
+	var max_y = max(room.topLeft.y, room.bottomRight.y) +  1
+	
+	for x in range(min_x, max_x):
+		for y in range(min_y, max_y):
+			var coords = Vector2(x, y)
+			if is_border_tile(coords, room) and not is_door_tile(coords, room):
+				#print(coords,'coords')
+				points.append(coords)
+				
+	return points
+
+func is_border_tile(coords: Vector2i, room: Room) -> bool:
+	return coords.x == room.topLeft.x or coords.x == room.bottomRight.x or coords.y == room.topLeft.y or coords.y == room.bottomRight.y
+
+func is_door_tile(coords: Vector2i, room: Room) -> bool:
+	return room.doorTiles.find(coords) != -1
