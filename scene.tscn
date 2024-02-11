@@ -1,4 +1,4 @@
-[gd_scene load_steps=34 format=3 uid="uid://dhh5wq2ka1ay8"]
+[gd_scene load_steps=35 format=3 uid="uid://dhh5wq2ka1ay8"]
 
 [ext_resource type="Script" path="res://scripts/scene/Main.gd" id="1_3g4j0"]
 [ext_resource type="Texture2D" uid="uid://dwwc4ti4c1ifx" path="res://assets/backgrounds/jupiter.png" id="2_i0a8p"]
@@ -15,6 +15,7 @@
 [ext_resource type="Texture2D" uid="uid://c2p58o2dt13hn" path="res://assets/tilesets/door placeholder.png" id="9_nfm5o"]
 [ext_resource type="Texture2D" uid="uid://k3hf5argnn4k" path="res://assets/tilesets/storage_bay.png" id="9_x6k6u"]
 [ext_resource type="PackedScene" uid="uid://bcwkugn6v3oy7" path="res://addons/godot_state_charts/utilities/state_chart_debugger.tscn" id="13_g5vrw"]
+[ext_resource type="Script" path="res://scripts/scene/EditingManager.gd" id="16_50vy2"]
 [ext_resource type="Script" path="res://scripts/scene/BuildingManager.gd" id="18_cy305"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="18_o7t7g"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="19_8sc5u"]
@@ -366,6 +367,9 @@ script = ExtResource("2_o2j5r")
 [node name="BuildingManager" type="Node" parent="."]
 script = ExtResource("18_cy305")
 
+[node name="EditingManager" type="Node" parent="."]
+script = ExtResource("16_50vy2")
+
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 
 [node name="StateChartDebugger" parent="CanvasLayer" instance=ExtResource("13_g5vrw")]
@@ -514,3 +518,9 @@ gizmo_extents = 1.0
 [connection signal="state_entered" from="StateManager/GameState/Building/ConfirmingRoom" to="BuildingManager" method="_on_confirming_room_state_entered"]
 [connection signal="state_exited" from="StateManager/GameState/Building/ConfirmingRoom" to="BuildingManager" method="_on_confirming_room_state_exited"]
 [connection signal="state_input" from="StateManager/GameState/Building/ConfirmingRoom" to="BuildingManager" method="_on_confirming_room_state_input"]
+[connection signal="state_entered" from="StateManager/GameState/Editing" to="EditingManager" method="_on_editing_state_entered"]
+[connection signal="state_exited" from="StateManager/GameState/Editing" to="EditingManager" method="_on_editing_state_exited"]
+[connection signal="state_input" from="StateManager/GameState/Editing" to="EditingManager" method="_on_editing_state_input"]
+[connection signal="state_entered" from="StateManager/GameState/Editing/DeletingRoom" to="EditingManager" method="_on_deleting_room_state_entered"]
+[connection signal="state_exited" from="StateManager/GameState/Editing/DeletingRoom" to="EditingManager" method="_on_editing_state_exited"]
+[connection signal="state_input" from="StateManager/GameState/Editing/DeletingRoom" to="EditingManager" method="_on_deleting_room_state_input"]
