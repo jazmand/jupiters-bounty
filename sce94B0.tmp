@@ -493,7 +493,7 @@ script = ExtResource("20_aq14c")
 [node name="ToDefault" type="Node" parent="StateManager/GameState/Editing/DeletingRoom"]
 script = ExtResource("21_n7j07")
 to = NodePath("../../../Default")
-event = &"editing_stop"
+event = &"building_stop"
 
 [node name="Crew" parent="." node_paths=PackedStringArray("target") instance=ExtResource("23_v05om")]
 position = Vector2(2560, 2208)
@@ -524,5 +524,5 @@ gizmo_extents = 1.0
 [connection signal="state_exited" from="StateManager/GameState/Editing" to="EditingManager" method="_on_editing_state_exited"]
 [connection signal="state_input" from="StateManager/GameState/Editing" to="EditingManager" method="_on_editing_state_input"]
 [connection signal="state_entered" from="StateManager/GameState/Editing/DeletingRoom" to="EditingManager" method="_on_deleting_room_state_entered"]
-[connection signal="state_exited" from="StateManager/GameState/Editing/DeletingRoom" to="EditingManager" method="_on_deleting_room_state_exited"]
+[connection signal="state_exited" from="StateManager/GameState/Editing/DeletingRoom" to="EditingManager" method="_on_editing_state_exited"]
 [connection signal="state_input" from="StateManager/GameState/Editing/DeletingRoom" to="EditingManager" method="_on_deleting_room_state_input"]

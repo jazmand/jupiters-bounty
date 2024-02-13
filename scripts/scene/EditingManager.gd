@@ -12,7 +12,6 @@ extends Node
 
 var room_editor: RoomEditor
 var room_types: Array[RoomType] = []
-var rooms: Array[Room] = []
 var selected_roomtype: RoomType = null
 
 var popup: GUIPopup
@@ -27,10 +26,16 @@ func _init() -> void:
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	room_editor = RoomEditor.new(build_tile_map, rooms, room_types)
+	room_editor = RoomEditor.new(build_tile_map, Global.station.rooms, room_types)
 	room_editor.action_completed.connect(on_room_editor_action)
 	# Connect the buttons to the confirmation functions in the GUI script
 	popup = GUI.manager.new_popup(room_editor.popup_message, false, room_editor.confirm_delete, room_editor.cancel_delete)
+	
+func _input(event):
+	if event is InputEventMouseButton:
+		if event.pressed:
+			match event.button_index:
+				1: room_editor.handle_select_input(event, camera.offset, camera.zoom);
 
 func load_room_types() -> void:
 	var room_types_folder = "res://assets/room_type/"
@@ -71,6 +76,8 @@ func load_room_types() -> void:
 func on_room_editor_action(action: int) -> void:
 	var event: String
 	match action:
+		room_editor.Action.START:
+			event = Events[StateEvent.EDITING_START]
 		room_editor.Action.BACK:
 			event = Events[StateEvent.EDITING_BACK]
 		room_editor.Action.FORWARD:
@@ -79,17 +86,16 @@ func on_room_editor_action(action: int) -> void:
 			event = Events[StateEvent.EDITING_STOP]
 	state_manager.send_event(event)
 
-func _on_editing_state_input(event: InputEvent) -> void:
-	if event is InputEventKey:
-		if event.pressed and event.keycode == KEY_ESCAPE:
-			state_manager.send_event(Events[StateEvent.EDITING_STOP])
-
 func _on_editing_state_entered() -> void:
 	pass
 
 func _on_editing_state_exited() -> void:
 	pass
 	
+func _on_editing_state_input(event: InputEvent) -> void:
+	if event is InputEventKey:
+		if event.pressed and event.keycode == KEY_ESCAPE:
+			state_manager.send_event(Events[StateEvent.EDITING_STOP])
 	
 func _on_deleting_room_state_entered() -> void:
 	popup.set_text(room_editor.popup_message).show()
@@ -101,7 +107,7 @@ func _on_deleting_room_state_input(event):
 	if event is InputEventMouseButton:
 		if event.pressed:
 			match event.button_index:
-				1: 
+				1:
 					pass
 				2: 
 					state_manager.send_event(Events[StateEvent.EDITING_BACK])
