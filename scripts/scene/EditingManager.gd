@@ -10,6 +10,8 @@ extends Node
 
 @onready var state_manager: StateChart = $"../StateManager"
 
+@onready var building_manager = get_parent().get_node("BuildingManager")
+
 var room_editor: RoomEditor
 var room_types: Array[RoomType] = []
 var selected_roomtype: RoomType = null
@@ -26,7 +28,7 @@ func _init() -> void:
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	room_editor = RoomEditor.new(build_tile_map, Global.station.rooms, room_types)
+	room_editor = RoomEditor.new(build_tile_map, Global.station.rooms, room_types, building_manager.room_builder)
 	room_editor.action_completed.connect(on_room_editor_action)
 	# Connect the buttons to the confirmation functions in the GUI script
 	popup = GUI.manager.new_popup(room_editor.popup_message, false, room_editor.confirm_delete, room_editor.cancel_delete)
@@ -110,4 +112,4 @@ func _on_deleting_room_state_input(event):
 				1:
 					pass
 				2: 
-					state_manager.send_event(Events[StateEvent.EDITING_BACK])
+					state_manager.send_event(Events[StateEvent.EDITING_STOP])

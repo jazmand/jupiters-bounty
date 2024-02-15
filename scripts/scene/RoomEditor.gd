@@ -5,8 +5,6 @@ extends Node
 
 signal action_completed(action: int)
 
-var room_builder: RoomBuilder
-
 var selected_tile_coords = Vector2i()
 var selected_room: Room
 var building_layer: int = 0
@@ -14,15 +12,17 @@ var building_layer: int = 0
 var build_tile_map: TileMap
 var rooms: Array[Room]
 var room_types: Array[RoomType]
+var room_builder: RoomBuilder
 
 var popup_message: String = ""
 
 enum Action {START, BACK, FORWARD, COMPLETE}
 
-func _init(build_tile_map: TileMap, rooms: Array[Room], room_types: Array[RoomType]):
+func _init(build_tile_map: TileMap, rooms: Array[Room], room_types: Array[RoomType], room_builder: RoomBuilder):
 	self.build_tile_map = build_tile_map
 	self.rooms = rooms
 	self.room_types = room_types
+	self.room_builder = room_builder
 
 func handle_select_input(event: InputEventMouse, offset: Vector2, zoom: Vector2) -> void:
 	if event is InputEventMouseButton:
@@ -63,16 +63,9 @@ func delete_room(room_id: int) -> void:
 		if room["id"] == room_id:
 			Global.station.rooms.erase(room)
 
-func draw_rooms() -> void:
-	# Clear drafting layer
-	build_tile_map.clear_layer(building_layer)
-	for room in Global.station.rooms:
-		room_builder.draw_room(room)
-
 func confirm_delete() -> void:
 	delete_room(selected_room.id)
-	print(Global.station.rooms)
-	draw_rooms()
+	room_builder.draw_rooms()
 	action_completed.emit(Action.COMPLETE)
 
 func cancel_delete() -> void:
