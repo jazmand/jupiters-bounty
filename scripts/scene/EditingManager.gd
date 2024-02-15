@@ -3,8 +3,8 @@
 class_name EditingManager
 extends Node
 
-@onready var base_tile_map: TileMap = $"../NavigationRegion2D/BaseTileMap"
-@onready var build_tile_map: TileMap = $"../NavigationRegion2D/BaseTileMap/BuildTileMap"
+@onready var base_tile_map: TileMap = $"../BaseTileMap"
+@onready var build_tile_map: TileMap = $"../BaseTileMap/BuildTileMap"
 
 @onready var camera: Camera2D = $"../Camera2D"
 
