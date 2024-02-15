@@ -1,24 +1,28 @@
-# RoomSelector.gd
+# RoomEditor.gd
 
-class_name RoomSelector
+class_name RoomEditor
 extends Node
+
+signal action_completed(action: int)
 
 var selected_tile_coords = Vector2i()
 var selected_room: Room
+var building_layer: int = 0
 
-var gui: Control
-var station: Station
 var build_tile_map: TileMap
 var rooms: Array[Room]
 var room_types: Array[RoomType]
+var room_builder: RoomBuilder
 
+var popup_message: String = ""
 
-func _init(gui: Control, station: Station, build_tile_map: TileMap, rooms: Array[Room], room_types: Array[RoomType]):
-	self.gui = gui
-	self.station = station
+enum Action {START, BACK, FORWARD, COMPLETE}
+
+func _init(build_tile_map: TileMap, rooms: Array[Room], room_types: Array[RoomType], room_builder: RoomBuilder):
 	self.build_tile_map = build_tile_map
 	self.rooms = rooms
 	self.room_types = room_types
+	self.room_builder = room_builder
 
 func handle_select_input(event: InputEventMouse, offset: Vector2, zoom: Vector2) -> void:
 	if event is InputEventMouseButton:
@@ -41,8 +45,8 @@ func select_room(selected_tile_coords: Vector2i) -> void:
 			# The selected_tile_coords is within the room's range
 			selected_room = room
 			var room_details = get_room_details(room)
-			var popup_message = "You have selected " + room_details.name + " it's size is " + str(room_details.size) + " and it's power consumption is " + str(room_details.powerConsumption)
-			gui.show_popup("room_details", popup_message, confirm_delete, cancel_delete)
+			popup_message = "You have selected " + room_details.name + " it's size is " + str(room_details.size) + " and it's power consumption is " + str(room_details.powerConsumption)
+			action_completed.emit(Action.START)
 			
 func get_room_details(room: Room) -> Dictionary:
 	# Create a JSON dictionary
@@ -53,12 +57,19 @@ func get_room_details(room: Room) -> Dictionary:
 			room_details.size = calculate_tile_count(room.topLeft, room.bottomRight)
 			room_details.powerConsumption = room_type.powerConsumption * room_details.size
 	return room_details
+	
+func delete_room(room_id: int) -> void:
+	for room in Global.station.rooms:
+		if room["id"] == room_id:
+			Global.station.rooms.erase(room)
 
 func confirm_delete() -> void:
-	pass
+	delete_room(selected_room.id)
+	room_builder.draw_rooms()
+	action_completed.emit(Action.COMPLETE)
 
 func cancel_delete() -> void:
-	pass
+	action_completed.emit(Action.COMPLETE)
 
 func calculate_tile_count(vector1: Vector2, vector2: Vector2) -> int:
 	var difference_x = abs(vector2.x - vector1.x) + 1 

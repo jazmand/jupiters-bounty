@@ -160,6 +160,7 @@ func save_room() -> void:
 func draw_rooms() -> void:
 	# Clear drafting layer
 	build_tile_map.clear_layer(drafting_layer)
+	build_tile_map.clear_layer(building_layer)
 	for room in Global.station.rooms:
 		draw_room(room)
 		
