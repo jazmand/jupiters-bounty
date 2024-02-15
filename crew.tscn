@@ -10,6 +10,9 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ercuq"]
 size = Vector2(114, 78)
 
+[sub_resource type="Animation" id="Animation_8m754"]
+length = 0.001
+
 [sub_resource type="Animation" id="Animation_fqiqv"]
 resource_name = "idle_down"
 length = 1.2
@@ -252,9 +255,6 @@ tracks/0/keys = {
 "update": 1,
 "values": [60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71]
 }
-
-[sub_resource type="Animation" id="Animation_8m754"]
-length = 0.001
 
 [sub_resource type="AnimationLibrary" id="AnimationLibrary_lynlg"]
 _data = {
