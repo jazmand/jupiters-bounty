@@ -1,3 +1,5 @@
+# GUIManager.gd
+
 class_name GUIManager
 extends Control
 
