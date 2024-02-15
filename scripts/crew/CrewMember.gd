@@ -14,15 +14,15 @@ const Direction = {
 
 @export var speed: int = 250
 @export var acceleration: int = 6
-@export var target: Node2D
 
 @onready var state_manager: StateChart = $CrewStateManager
 @onready var navigation_agent: NavigationAgent2D = $Navigation/NavigationAgent2D
 @onready var navigation_timer: Timer = $Navigation/Timer
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
 
-var current_animation = ''
+var target = Vector2(0, 0)
 var current_direction = Vector2(0, 0)
+var current_animation = ''
 
 func _ready() -> void:
 	Global.station.crew += 1
@@ -33,8 +33,8 @@ func _ready() -> void:
 
 func actor_setup():
 	await get_tree().physics_frame
-	print("target: ", target.global_position)
-	set_movement_target(target.global_position)
+	print("target: ", target)
+	set_movement_target(target)
 
 func set_movement_target(movement_target: Vector2) -> void:
 	navigation_agent.target_position = movement_target
@@ -66,25 +66,28 @@ func set_current_animation() -> void:
 
 
 func randomise_target_position() -> void:
-	target.position = Vector2(randf_range(2500.0, 6500.0), randf_range(1500.0, 3000.0))
-	set_movement_target(target.position)
+	target = Vector2(randf_range(2500.0, 6500.0), randf_range(1500.0, 3000.0))
+	set_movement_target(target)
 	while !navigation_agent.is_target_reachable():
-		target.position = Vector2(randf_range(2500.0, 6500.0), randf_range(1500.0, 3000.0))
-		set_movement_target(target.position)
+		target = Vector2(randf_range(2500.0, 6500.0), randf_range(1500.0, 3000.0))
+		set_movement_target(target)
 
 func _on_walking_state_physics_processing(delta: float) -> void:
 	if navigation_agent.is_navigation_finished():
 		randomise_target_position()
 		return
 		
-	velocity = velocity.lerp(current_direction * speed, acceleration * delta)
+	velocity = velocity.lerp(current_direction.normalized() * speed, acceleration * delta)
+	#var collision = move_and_collide(velocity * delta)
+	#if collision:
+		#velocity = velocity.bounce(collision.get_normal())
 	move_and_slide()
 
 
 func _on_timer_timeout():
-	if !navigation_agent.is_target_reachable() or (abs(target.global_position.x - global_position.x) < 200 and abs(target.global_position.y - global_position.y) < 200):
+	if !navigation_agent.is_target_reachable() or (abs(target.x - global_position.x) < 200 and abs(target.y - global_position.y) < 200):
 		randomise_target_position()
-	set_movement_target(target.global_position)
+	set_movement_target(target)
 	set_rounded_direction()
 	set_current_animation()
 	animation_player.play(current_animation)

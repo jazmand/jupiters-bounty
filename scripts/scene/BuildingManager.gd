@@ -3,8 +3,9 @@
 class_name BuildingManager
 extends Node
 
-@onready var base_tile_map: TileMap = $"../NavigationRegion2D/BaseTileMap"
-@onready var build_tile_map: TileMap = $"../NavigationRegion2D/BaseTileMap/BuildTileMap"
+@onready var nav_reg: NavigationRegion2D = $"../NavigationRegion2D"
+@onready var base_tile_map: TileMap = $"../BaseTileMap"
+@onready var build_tile_map: TileMap = $"../BaseTileMap/BuildTileMap"
 
 @onready var camera: Camera2D = $"../Camera2D"
 
@@ -90,6 +91,7 @@ func on_room_builder_action(action: int) -> void:
 			event = Events[StateEvent.BUILDING_FORWARD]
 		room_builder.Action.COMPLETE:
 			event = Events[StateEvent.BUILDING_STOP]
+			nav_reg.bake_navigation_polygon()
 	state_manager.send_event(event)
 
 func _on_building_state_input(event: InputEvent) -> void:

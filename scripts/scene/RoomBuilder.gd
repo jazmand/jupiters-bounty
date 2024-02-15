@@ -140,7 +140,7 @@ func confirm_build() -> void:
 	draw_rooms()
 	# Make deductions for buying rooms 
 	Global.station.currency -= calculate_room_price()
-	print(Global.station.rooms, 'current rooms')
+	#print(Global.station.rooms, 'current rooms')
 	action_completed.emit(Action.COMPLETE)
 
 func cancel_build() -> void:
@@ -163,7 +163,7 @@ func draw_rooms() -> void:
 	build_tile_map.clear_layer(building_layer)
 	for room in Global.station.rooms:
 		draw_room(room)
-			
+		
 func draw_room(room) -> void:
 	var min_x = min(room.topLeft.x, room.bottomRight.x)
 	var max_x = max(room.topLeft.x, room.bottomRight.x) + 1
@@ -185,6 +185,7 @@ func draw_room(room) -> void:
 		tileset_mapper[Vector2i(x, min_y)] = Vector2i(3, 0) # north east
 		tileset_mapper[Vector2i(x, max_y - 1)] = Vector2i(2, 2) # south west
 	
+	
 	for room_type in room_types:
 		if (room_type.id == room.roomTypeId):
 #			var tileset_id = room_type.tilesetId
@@ -196,8 +197,16 @@ func draw_room(room) -> void:
 					if tileset_mapper.has(Vector2i(x, y)):
 						tileset_coords = tileset_mapper[Vector2i(x, y)]
 					build_tile_map.set_cell(building_layer, Vector2(x, y), tileset_id, tileset_coords)
-	for doorTile in room.doorTiles:
-		build_tile_map.set_cell(building_layer, doorTile, door_tileset_id, Vector2i(0, 0))
+			for doorTile in room.doorTiles:
+				if doorTile.x == min_x:
+					build_tile_map.set_cell(building_layer, doorTile, tileset_id, Vector2(2, 1))
+				elif doorTile.x == max_x - 1:
+					build_tile_map.set_cell(building_layer, doorTile, tileset_id, Vector2(1, 2))
+				elif doorTile.y == min_y:
+					build_tile_map.set_cell(building_layer, doorTile, tileset_id, Vector2(0, 1)) 
+				elif doorTile.y == max_y - 1:
+					build_tile_map.set_cell(building_layer, doorTile, tileset_id, Vector2(3, 2))
+
 
 # --- Helper functions ---
 
@@ -265,3 +274,4 @@ func is_blocking_door(coords: Vector2i) -> bool:
 			if (abs(coords.x - doorTile.x) + abs(coords.y - doorTile.y)) == 1:
 				return true
 	return false
+	
