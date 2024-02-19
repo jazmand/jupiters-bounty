@@ -1,4 +1,4 @@
-[gd_scene load_steps=34 format=3 uid="uid://6ddc1y0q3bhc"]
+[gd_scene load_steps=25 format=3 uid="uid://6ddc1y0q3bhc"]
 
 [ext_resource type="Script" path="res://scripts/crew/CrewMember.gd" id="1_rgjpg"]
 [ext_resource type="Texture2D" uid="uid://dhxmp0xpmlnfc" path="res://assets/sprites/idle_agatha.png" id="2_uo5jt"]
@@ -276,48 +276,6 @@ _data = {
 "walk_up_right": SubResource("Animation_i03w8")
 }
 
-[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_fgiq8"]
-animation = &"idle_left"
-
-[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_mvmyt"]
-animation = &"idle_right"
-
-[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_q5glq"]
-animation = &"idle_up"
-
-[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_tvvjp"]
-animation = &"idle_down"
-
-[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_edwlh"]
-animation = &"idle_down_right"
-
-[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_0xoe8"]
-animation = &"idle_up_right"
-
-[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_webnq"]
-animation = &"idle_up_left"
-
-[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_8538n"]
-animation = &"idle_down_left"
-
-[sub_resource type="AnimationNodeBlendSpace2D" id="AnimationNodeBlendSpace2D_eo31q"]
-blend_point_0/node = SubResource("AnimationNodeAnimation_fgiq8")
-blend_point_0/pos = Vector2(-1, 0)
-blend_point_1/node = SubResource("AnimationNodeAnimation_mvmyt")
-blend_point_1/pos = Vector2(1, 0)
-blend_point_2/node = SubResource("AnimationNodeAnimation_q5glq")
-blend_point_2/pos = Vector2(0, 1)
-blend_point_3/node = SubResource("AnimationNodeAnimation_tvvjp")
-blend_point_3/pos = Vector2(0, -1)
-blend_point_4/node = SubResource("AnimationNodeAnimation_edwlh")
-blend_point_4/pos = Vector2(1, -1)
-blend_point_5/node = SubResource("AnimationNodeAnimation_0xoe8")
-blend_point_5/pos = Vector2(1, 1)
-blend_point_6/node = SubResource("AnimationNodeAnimation_webnq")
-blend_point_6/pos = Vector2(-1, 1)
-blend_point_7/node = SubResource("AnimationNodeAnimation_8538n")
-blend_point_7/pos = Vector2(-1, -1)
-
 [node name="Crew" type="CharacterBody2D"]
 z_index = 3
 motion_mode = 1
@@ -368,14 +326,5 @@ root_node = NodePath("../AgathaWalk")
 libraries = {
 "": SubResource("AnimationLibrary_lynlg")
 }
-
-[node name="AnimationTree" type="AnimationTree" parent="."]
-root_node = NodePath("../AgathaWalk")
-libraries = {
-"": SubResource("AnimationLibrary_lynlg")
-}
-tree_root = SubResource("AnimationNodeBlendSpace2D_eo31q")
-anim_player = NodePath("../AnimationPlayer")
-parameters/blend_position = Vector2(-0.99403, 0.982571)
 
 [connection signal="state_physics_processing" from="CrewStateManager/CrewState/Walking" to="." method="_on_walking_state_physics_processing"]

@@ -12,7 +12,7 @@ var delta_time: float = 0.0
 func _ready():
 	update_in_game_time()
 	background.rotate_jupiter(in_game_time, one_in_game_day)
-	for i in range(3):
+	for i in range(1):
 		manager.new_crew_member()
 
 func _process(delta):
