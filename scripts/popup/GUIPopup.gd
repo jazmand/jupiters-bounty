@@ -1,3 +1,5 @@
+# GUIPopup.gd
+
 class_name GUIPopup
 extends Panel
 

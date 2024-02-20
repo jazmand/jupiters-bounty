@@ -2,7 +2,8 @@
 
 extends Node
 
-@onready var background: Control = $Background
+@onready var manager: GameManager = $GameManager
+@onready var background: Control = $GameManager/Background
 
 var in_game_time: int = 7200 # Start at 02:00
 var one_in_game_day: int = 36000 # 10 in game hours per in game day
@@ -11,6 +12,8 @@ var delta_time: float = 0.0
 func _ready():
 	update_in_game_time()
 	background.rotate_jupiter(in_game_time, one_in_game_day)
+	for i in range(1):
+		manager.new_crew_member()
 
 func _process(delta):
 	delta_time += delta

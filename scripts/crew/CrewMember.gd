@@ -1,3 +1,5 @@
+# CrewMember.gd
+
 class_name CrewMember
 extends CharacterBody2D
 
