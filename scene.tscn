@@ -1,4 +1,4 @@
-[gd_scene load_steps=38 format=3 uid="uid://dhh5wq2ka1ay8"]
+[gd_scene load_steps=37 format=3 uid="uid://dhh5wq2ka1ay8"]
 
 [ext_resource type="Script" path="res://scripts/scene/Main.gd" id="1_3g4j0"]
 [ext_resource type="Texture2D" uid="uid://dwwc4ti4c1ifx" path="res://assets/backgrounds/jupiter.png" id="2_i0a8p"]
@@ -22,7 +22,6 @@
 [ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="19_8sc5u"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="20_aq14c"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="21_n7j07"]
-[ext_resource type="PackedScene" uid="uid://6ddc1y0q3bhc" path="res://crew.tscn" id="23_v05om"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_psmxa"]
 texture = ExtResource("5_408k5")
@@ -587,13 +586,6 @@ script = ExtResource("20_aq14c")
 script = ExtResource("21_n7j07")
 to = NodePath("../../../Default")
 event = &"editing_stop"
-
-[node name="Crew" parent="GameManager" instance=ExtResource("23_v05om")]
-z_index = 2
-position = Vector2(2560, 2208)
-collision_layer = 2
-wall_min_slide_angle = 0.0
-safe_margin = 1.564
 
 [connection signal="state_entered" from="GameManager/StateManager/GameState/Building" to="GameManager/BuildingManager" method="_on_building_state_entered"]
 [connection signal="state_exited" from="GameManager/StateManager/GameState/Building" to="GameManager/BuildingManager" method="_on_building_state_exited"]
