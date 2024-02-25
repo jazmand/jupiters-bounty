@@ -33,11 +33,6 @@ func _ready() -> void:
 	# Connect the buttons to the confirmation functions in the GUI script
 	popup = GUI.manager.new_popup(room_editor.popup_message, false, room_editor.confirm_delete, room_editor.cancel_delete)
 	
-func _input(event):
-	if event is InputEventMouseButton:
-		if event.pressed:
-			match event.button_index:
-				1: room_editor.handle_select_input(event, camera.offset, camera.zoom);
 
 func load_room_types() -> void:
 	var room_types_folder = "res://assets/room_type/"
@@ -98,6 +93,10 @@ func _on_editing_state_input(event: InputEvent) -> void:
 	if event is InputEventKey:
 		if event.pressed and event.keycode == KEY_ESCAPE:
 			state_manager.send_event(Events[StateEvent.EDITING_STOP])
+	elif event is InputEventMouseButton:
+		if event.pressed:
+			match event.button_index:
+				1: room_editor.handle_select_input(event, camera.offset, camera.zoom);
 	
 func _on_deleting_room_state_entered() -> void:
 	popup.set_text(room_editor.popup_message).show()

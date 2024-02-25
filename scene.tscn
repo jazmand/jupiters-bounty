@@ -405,6 +405,7 @@ offset_left = -416.0
 offset_top = -448.0
 offset_right = 10760.0
 offset_bottom = 6792.0
+mouse_filter = 2
 color = Color(0, 0, 0, 1)
 script = ExtResource("2_w13bo")
 
@@ -491,6 +492,11 @@ event = &"building_start"
 script = ExtResource("21_n7j07")
 to = NodePath("../../Editing/DeletingRoom")
 event = &"editing_start"
+
+[node name="ToCrew" type="Node" parent="GameManager/StateManager/GameState/Default"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../Crew")
+event = &"crew"
 
 [node name="Building" type="Node" parent="GameManager/StateManager/GameState"]
 script = ExtResource("19_8sc5u")
@@ -588,6 +594,18 @@ script = ExtResource("21_n7j07")
 to = NodePath("../../../Default")
 event = &"editing_stop"
 
+[node name="Crew" type="Node" parent="GameManager/StateManager/GameState"]
+script = ExtResource("19_8sc5u")
+initial_state = NodePath("SelectingRoom")
+
+[node name="SelectingRoom" type="Node" parent="GameManager/StateManager/GameState/Crew"]
+script = ExtResource("20_aq14c")
+
+[node name="ToDefault" type="Node" parent="GameManager/StateManager/GameState/Crew/SelectingRoom"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../../Default")
+event = &"assigned"
+
 [connection signal="state_entered" from="GameManager/StateManager/GameState/Building" to="GameManager/BuildingManager" method="_on_building_state_entered"]
 [connection signal="state_exited" from="GameManager/StateManager/GameState/Building" to="GameManager/BuildingManager" method="_on_building_state_exited"]
 [connection signal="state_input" from="GameManager/StateManager/GameState/Building" to="GameManager/BuildingManager" method="_on_building_state_input"]
@@ -606,3 +624,4 @@ event = &"editing_stop"
 [connection signal="state_entered" from="GameManager/StateManager/GameState/Editing/DeletingRoom" to="GameManager/EditingManager" method="_on_deleting_room_state_entered"]
 [connection signal="state_exited" from="GameManager/StateManager/GameState/Editing/DeletingRoom" to="GameManager/EditingManager" method="_on_deleting_room_state_exited"]
 [connection signal="state_input" from="GameManager/StateManager/GameState/Editing/DeletingRoom" to="GameManager/EditingManager" method="_on_deleting_room_state_input"]
+[connection signal="state_input" from="GameManager/StateManager/GameState/Crew/SelectingRoom" to="GameManager" method="_on_selecting_room_state_input"]
