@@ -9,9 +9,9 @@ const Direction = {
 	RIGHT = Vector2(1, 0),
 	DOWN_RIGHT = Vector2(1, 1),
 	DOWN = Vector2(0, 1),
-	DOWN_LEFT = Vector2( - 1, 1),
-	LEFT = Vector2( - 1, 0),
-	UP_LEFT = Vector2( - 1, -1)
+	DOWN_LEFT = Vector2(-1, 1),
+	LEFT = Vector2(-1, 0),
+	UP_LEFT = Vector2(-1, -1)
 }
 
 @export var speed: int = 250
