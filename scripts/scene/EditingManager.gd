@@ -93,6 +93,7 @@ func _on_editing_state_input(event: InputEvent) -> void:
 	if event is InputEventKey:
 		if event.pressed and event.keycode == KEY_ESCAPE:
 			state_manager.send_event(Events[StateEvent.EDITING_STOP])
+	# SEE COMMENT -> handle_select_input
 	elif event is InputEventMouseButton:
 		if event.pressed:
 			match event.button_index:

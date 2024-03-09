@@ -24,6 +24,7 @@ func _init(build_tile_map: TileMap, rooms: Array[Room], room_types: Array[RoomTy
 	self.room_types = room_types
 	self.room_builder = room_builder
 
+# TODO: Do we need this? The function checks for left click, but is called after checking for left click.
 func handle_select_input(event: InputEventMouse, offset: Vector2, zoom: Vector2) -> void:
 	if event is InputEventMouseButton:
 		if event.pressed:
