@@ -13,6 +13,9 @@ enum Action {CLOSE, OPEN, SELECT_ROOMTYPE}
 
 var room_buttons: Dictionary = {}
 
+func _ready() -> void:
+	Global.station.currency_updated.connect(on_currency_updated)
+
 func show_build_button() -> void:
 	build_button.show()
 
@@ -40,3 +43,15 @@ func _on_build_close_button_pressed() -> void:
 
 func _on_room_selected(room_type: RoomType) -> void:
 	action_completed.emit(Action.SELECT_ROOMTYPE, room_type)
+
+func on_currency_updated(currency: int) -> void:
+	var children: Array[Node] = rooms_container.get_children()
+	for child in children:
+		if child is Button and room_buttons.has(child.text):
+			var room: RoomType = room_buttons.get(child.text)
+			var button: Button = child as Button
+			if (room.price * room.minTiles) > currency:
+				button.disabled = true
+			else:
+				button.disabled = false
+	
