@@ -52,6 +52,7 @@ font_size = 40
 shadow_color = Color(0.156863, 0.156863, 0.156863, 0.698039)
 
 [node name="GUI" type="CanvasLayer"]
+layer = 0
 script = ExtResource("1_8pxxd")
 
 [node name="GUIManager" type="Control" parent="."]
@@ -61,6 +62,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+mouse_filter = 1
 script = ExtResource("1_ekuro")
 
 [node name="ViewScreen" type="Sprite2D" parent="GUIManager"]
@@ -177,6 +179,7 @@ offset_left = 8.0
 offset_top = 1032.0
 offset_right = 48.0
 offset_bottom = 1072.0
+mouse_filter = 1
 script = ExtResource("13_v3skq")
 
 [node name="BuildButton" type="Button" parent="GUIManager/BuildMenu"]

@@ -13,22 +13,18 @@ var build_tile_map: TileMap
 var rooms: Array[Room]
 var room_types: Array[RoomType]
 var room_builder: RoomBuilder
+var nav_region: NavigationRegion2D
 
 var popup_message: String = ""
 
 enum Action {START, BACK, FORWARD, COMPLETE}
 
-func _init(build_tile_map: TileMap, rooms: Array[Room], room_types: Array[RoomType], room_builder: RoomBuilder):
+func _init(build_tile_map: TileMap, rooms: Array[Room], room_types: Array[RoomType], room_builder: RoomBuilder, navigation_region: NavigationRegion2D):
 	self.build_tile_map = build_tile_map
 	self.rooms = rooms
 	self.room_types = room_types
 	self.room_builder = room_builder
-
-func handle_select_input(event: InputEventMouse, offset: Vector2, zoom: Vector2) -> void:
-	if event is InputEventMouseButton:
-		if event.pressed:
-			match event.button_index:
-				1: on_left_mouse_button_press(event, offset, zoom)
+	self.nav_region = navigation_region
 
 func on_left_mouse_button_press(event: InputEvent, offset: Vector2, zoom: Vector2) -> void:
 	selected_tile_coords = build_tile_map.local_to_map((event.position / zoom) + offset)
@@ -66,6 +62,7 @@ func delete_room(room_id: int) -> void:
 func confirm_delete() -> void:
 	delete_room(selected_room.id)
 	room_builder.draw_rooms()
+	nav_region.bake_navigation_polygon()
 	action_completed.emit(Action.COMPLETE)
 
 func cancel_delete() -> void:

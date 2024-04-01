@@ -3,6 +3,7 @@
 class_name EditingManager
 extends Node
 
+@onready var nav_region: NavigationRegion2D = $"../NavigationRegion2D"
 @onready var base_tile_map: TileMap = $"../BaseTileMap"
 @onready var build_tile_map: TileMap = $"../BaseTileMap/BuildTileMap"
 
@@ -10,7 +11,7 @@ extends Node
 
 @onready var state_manager: StateChart = $"../StateManager"
 
-@onready var building_manager = get_parent().get_node("BuildingManager")
+@onready var building_manager: BuildingManager = $"../BuildingManager"
 
 var room_editor: RoomEditor
 var room_types: Array[RoomType] = []
@@ -28,16 +29,16 @@ func _init() -> void:
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	room_editor = RoomEditor.new(build_tile_map, Global.station.rooms, room_types, building_manager.room_builder)
+	room_editor = RoomEditor.new(build_tile_map, Global.station.rooms, room_types, building_manager.room_builder, nav_region)
 	room_editor.action_completed.connect(on_room_editor_action)
 	# Connect the buttons to the confirmation functions in the GUI script
 	popup = GUI.manager.new_popup(room_editor.popup_message, false, room_editor.confirm_delete, room_editor.cancel_delete)
-	
-func _input(event):
+
+func _on_default_state_input(event: InputEvent):
 	if event is InputEventMouseButton:
 		if event.pressed:
 			match event.button_index:
-				1: room_editor.handle_select_input(event, camera.offset, camera.zoom);
+				1: room_editor.on_left_mouse_button_press(event, camera.offset, camera.zoom)
 
 func load_room_types() -> void:
 	var room_types_folder = "res://assets/room_type/"
@@ -98,7 +99,7 @@ func _on_editing_state_input(event: InputEvent) -> void:
 	if event is InputEventKey:
 		if event.pressed and event.keycode == KEY_ESCAPE:
 			state_manager.send_event(Events[StateEvent.EDITING_STOP])
-	
+
 func _on_deleting_room_state_entered() -> void:
 	popup.set_text(room_editor.popup_message).show()
 
@@ -113,3 +114,4 @@ func _on_deleting_room_state_input(event):
 					pass
 				2: 
 					state_manager.send_event(Events[StateEvent.EDITING_STOP])
+
