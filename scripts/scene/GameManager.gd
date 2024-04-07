@@ -26,12 +26,9 @@ func crew_selected(crew: CrewMember) -> void:
 	selected_crew = crew
 
 func _on_selecting_room_state_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton:
-		if event.pressed:
-			match event.button_index:
-				1:
-					var selected_tile_coords = build_tile_map.local_to_map((event.position / camera.zoom) + camera.offset)
-					select_room(selected_tile_coords, event.position)
+	if event.is_action_pressed("select"):
+		var selected_tile_coords = build_tile_map.local_to_map((event.position / camera.zoom) + camera.offset)
+		select_room(selected_tile_coords, event.position)
 
 func select_room(selected_tile_coords: Vector2i, mouse_position: Vector2) -> void:
 	for room in Global.station.rooms:
