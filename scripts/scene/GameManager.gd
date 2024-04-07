@@ -26,7 +26,7 @@ func crew_selected(crew: CrewMember) -> void:
 	selected_crew = crew
 
 func _on_selecting_room_state_input(event: InputEvent) -> void:
-	if event.is_action_pressed("select"):
+	if event.is_action_pressed("do_action"):
 		var selected_tile_coords = build_tile_map.local_to_map((event.position / camera.zoom) + camera.offset)
 		select_room(selected_tile_coords, event.position)
 
