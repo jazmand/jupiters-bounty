@@ -35,10 +35,8 @@ func _ready() -> void:
 	popup = GUI.manager.new_popup(room_editor.popup_message, false, room_editor.confirm_delete, room_editor.cancel_delete)
 
 func _on_default_state_input(event: InputEvent):
-	if event is InputEventMouseButton:
-		if event.pressed:
-			match event.button_index:
-				1: room_editor.on_left_mouse_button_press(event, camera.offset, camera.zoom)
+	if event.is_action_pressed("select"):
+		room_editor.on_left_mouse_button_press(event, camera.offset, camera.zoom)
 
 func load_room_types() -> void:
 	var room_types_folder = "res://assets/room_type/"
@@ -96,8 +94,7 @@ func _on_editing_state_exited() -> void:
 	pass
 	
 func _on_editing_state_input(event: InputEvent) -> void:
-	if event is InputEventKey:
-		if event.pressed and event.keycode == KEY_ESCAPE:
+	if event.is_action_pressed("exit"):
 			state_manager.send_event(Events[StateEvent.EDITING_STOP])
 
 func _on_deleting_room_state_entered() -> void:
@@ -106,12 +103,7 @@ func _on_deleting_room_state_entered() -> void:
 func _on_deleting_room_state_exited() -> void:
 	popup.hide()
 
-func _on_deleting_room_state_input(event):
-	if event is InputEventMouseButton:
-		if event.pressed:
-			match event.button_index:
-				1:
-					pass
-				2: 
-					state_manager.send_event(Events[StateEvent.EDITING_STOP])
+func _on_deleting_room_state_input(event: InputEvent) -> void:
+	if event.is_action_pressed("cancel"): 
+		state_manager.send_event(Events[StateEvent.EDITING_STOP])
 
