@@ -12,8 +12,9 @@ signal time_updated(time: int)
 @export var id: int
 @export var hydrogen: int:
 	set(h):
-		hydrogen = h
-		hydrogen_updated.emit(h)
+		if hydrogen < 1000:
+			hydrogen = h
+			hydrogen_updated.emit(h)
 @export var power: int:
 	set(p):
 		power = p
@@ -50,3 +51,6 @@ func calculate_power_consumption_all_rooms() -> int:
 	
 func update_power() -> void:
 	power -= calculate_power_consumption_all_rooms()
+
+func update_hydrogen() -> void:
+	hydrogen += 5
