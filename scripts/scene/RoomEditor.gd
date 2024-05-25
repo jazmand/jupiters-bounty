@@ -48,7 +48,7 @@ func get_room_details(room: Room) -> Dictionary:
 	# Create a JSON dictionary
 	var room_details = {}
 	for room_type in room_types:
-		if room_type.id == room.roomTypeId:
+		if room_type.id == room.roomType.id:
 			room_details.name = room_type.name 
 			room_details.size = calculate_tile_count(room.topLeft, room.bottomRight)
 			room_details.powerConsumption = room_type.powerConsumption * room_details.size
