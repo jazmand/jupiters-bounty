@@ -151,7 +151,7 @@ func cancel_build() -> void:
 func save_room() -> void:
 	var new_room = Room.new()
 	new_room.id = generate_unique_room_id()
-	new_room.roomTypeId = selected_room_type.id
+	new_room.roomType = selected_room_type
 	new_room.topLeft = initial_tile_coords
 	new_room.bottomRight = transverse_tile_coords
 	new_room.doorTiles = temp_door_coords
@@ -187,7 +187,7 @@ func draw_room(room) -> void:
 	
 	
 	for room_type in room_types:
-		if (room_type.id == room.roomTypeId):
+		if (room_type.id == room.roomType.id):
 #			var tileset_id = room_type.tilesetId
 			var tileset_id = mock_room_tileset_id # TEMPORARY
 			# Iterate over the tiles within the room's boundaries and set them on the building layer
@@ -227,6 +227,7 @@ func check_selection_valid(coords: Vector2i, check_price_and_size: bool = false)
 	# Check if price and size are permissible
 	elif check_price_and_size:
 		var tile_count = calculate_tile_count(initial_tile_coords, transverse_tile_coords)
+		# Prevent skinny rooms
 		var room_width = abs(transverse_tile_coords.x - initial_tile_coords.x) + 1
 		var room_height = abs(transverse_tile_coords.y - initial_tile_coords.y) + 1
 		

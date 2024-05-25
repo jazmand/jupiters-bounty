@@ -33,7 +33,6 @@ signal time_updated(time: int)
 		time = t
 		time_updated.emit(t)
 
-
 func _init(p_id: int = 0, p_hydrogen: int = 0, p_power: int = 0, p_currency: int = 0, p_crew: int = 0, p_rooms: Array[Room] = [], p_time: int = 0):
 	id = p_id
 	hydrogen = p_hydrogen
@@ -42,3 +41,12 @@ func _init(p_id: int = 0, p_hydrogen: int = 0, p_power: int = 0, p_currency: int
 	crew = p_crew
 	rooms = p_rooms
 	time = p_time
+
+func calculate_power_consumption_all_rooms() -> int:
+	var total = 0
+	for room in rooms:
+		total += room.calculate_power_consumption()
+	return total
+	
+func update_power() -> void:
+	power -= calculate_power_consumption_all_rooms()
