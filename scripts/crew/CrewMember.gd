@@ -14,6 +14,13 @@ const Direction = {
 	UP_LEFT = Vector2(-1, -1)
 }
 
+enum State {
+	IDLE,
+	WALK,
+	WORK,
+	CHAT
+}
+
 @export var speed: int = 250
 @export var acceleration: int = 6
 
@@ -21,15 +28,21 @@ const Direction = {
 @onready var navigation_agent: NavigationAgent2D = $Navigation/NavigationAgent2D
 @onready var navigation_timer: Timer = $Navigation/Timer
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
+@onready var sprite_idle: Sprite2D = $AgathaIdle
+@onready var sprite_walk: Sprite2D = $AgathaWalk
 @onready var area: Area2D = $Area2D
 @onready var gui: CrewGUI = $CrewGUI
 
 var target = Vector2(0, 0)
 var current_direction = Vector2(0, 0)
-var current_animation = ''
+var current_animation = ""
+var current_state = State.IDLE
 
 var gui_open_temp = false
 var gui_open_perm = false
+
+var idle_timer = 0.0
+var idle_time_limit = 2.0
 
 func _ready() -> void:
 	Global.station.crew += 1
@@ -72,23 +85,34 @@ func set_rounded_direction() -> void:
 	current_direction = direction
 
 func set_current_animation() -> void:
+	var state_prefix = ""
+	match current_state:
+		State.IDLE:
+			state_prefix = "idle"
+		State.WALK:
+			state_prefix = "walk"
+		State.WORK:
+			state_prefix = "work"
+		State.CHAT:
+			state_prefix = "chat"
+		
 	match current_direction:
 		Direction.UP:
-			current_animation = 'walk_up'
+			current_animation = state_prefix + "_up"
 		Direction.UP_RIGHT:
-			current_animation = 'walk_up_right'
+			current_animation = state_prefix + "_up_right"
 		Direction.RIGHT:
-			current_animation = 'walk_right'
+			current_animation = state_prefix + "_right"
 		Direction.DOWN_RIGHT:
-			current_animation = 'walk_down_right'
+			current_animation = state_prefix + "_down_right"
 		Direction.DOWN:
-			current_animation = 'walk_down'
+			current_animation = state_prefix + "_down"
 		Direction.DOWN_LEFT:
-			current_animation = 'walk_down_left'
+			current_animation = state_prefix + "_down_left"
 		Direction.LEFT:
-			current_animation = 'walk_left'
+			current_animation = state_prefix + "_left"
 		Direction.UP_LEFT:
-			current_animation = 'walk_up_left'
+			current_animation = state_prefix + "_up_left"
 
 func randomise_target_position() -> void:
 	target = Vector2(randf_range(2500.0, 6500.0), randf_range(1500.0, 3000.0))
@@ -105,13 +129,19 @@ func _on_idle_state_exited() -> void:
 
 func _on_idle_state_physics_processing(delta: float) -> void:
 	if navigation_agent.is_navigation_finished():
-		randomise_target_position()
+		current_state = State.IDLE
+		idle_timer += delta
+		if idle_timer >= idle_time_limit:
+			current_state = State.WALK
+			idle_timer = 0.0
+			randomise_target_position()
 		return
 	
-	if !navigation_agent.is_target_reachable() or (abs(target.x - global_position.x) < 200 and abs(target.y - global_position.y) < 200):
+	if !navigation_agent.is_target_reachable(): # or (abs(target.x - global_position.x) < 200 and abs(target.y - global_position.y) < 200):
 		randomise_target_position()
 	
 	set_rounded_direction()
+	current_state = State.WALK
 	velocity = velocity.lerp(current_direction.normalized() * speed, acceleration * delta)
 	#var collision = move_and_collide(velocity * delta)
 	#if collision:
@@ -120,6 +150,7 @@ func _on_idle_state_physics_processing(delta: float) -> void:
 
 func _on_timer_timeout() -> void:
 	set_current_animation()
+	switch_visibility()
 	animation_player.play(current_animation)
 
 func start_assigning() -> void:
@@ -136,3 +167,19 @@ func _on_assignment_state_physics_processing(delta: float) -> void:
 		set_rounded_direction()
 		velocity = velocity.lerp(current_direction.normalized() * speed, acceleration * delta)
 		move_and_slide()
+
+func switch_visibility() -> void:
+	sprite_idle.hide()
+	sprite_walk.hide()
+	#sprite_work.hide()
+	#sprite_chat.hide()
+
+	match current_state:
+		State.IDLE:
+			sprite_idle.show()
+		State.WALK:
+			sprite_walk.show()
+		#State.WORK:
+			#sprite_work.show()
+		#State.CHAT:
+			#sprite_chat.show()
