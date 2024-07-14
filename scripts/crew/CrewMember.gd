@@ -15,10 +15,10 @@ const Direction = {
 }
 
 const AnimationState = {
-	IDLE = "idle",
-	WALK = "walk",
-	WORK = "work",
-	CHAT = "chat"
+	IDLE = &"idle",
+	WALK = &"walk",
+	WORK = &"work",
+	CHAT = &"chat"
 }
 
 @export var speed: int = 250
@@ -100,6 +100,18 @@ func set_current_animation() -> void:
 		Direction.UP_LEFT:
 			current_animation = animation_state + "_up_left"
 
+func set_sprite_visibility(state: StringName) -> void:
+	match state:
+		AnimationState.IDLE:
+			sprite_idle.show()
+			sprite_walk.hide()
+		AnimationState.WALK:
+			sprite_idle.hide()
+			sprite_walk.show()
+		AnimationState.WORK:
+			sprite_idle.show()
+			sprite_walk.hide()
+
 func randomise_target_position() -> void:
 	target = Vector2(randf_range(2500.0, 6500.0), randf_range(1500.0, 3000.0))
 	set_movement_target(target)
@@ -109,10 +121,10 @@ func randomise_target_position() -> void:
 
 func _on_idling_state_entered() -> void:
 	animation_state = AnimationState.IDLE
+	set_sprite_visibility(animation_state)
 	state_manager.set_expression_property(&"assignment", &"")
 	gui.idle_button.disabled = true
-	sprite_walk.hide()
-	sprite_idle.show()
+
 
 func _on_idling_state_exited() -> void:
 	gui.idle_button.disabled = false
@@ -126,8 +138,7 @@ func _on_idling_state_physics_processing(delta: float) -> void:
 
 func _on_walking_state_entered() -> void:
 	animation_state = AnimationState.WALK
-	sprite_idle.hide()
-	sprite_walk.show()
+	set_sprite_visibility(animation_state)
 
 func _on_walking_state_physics_processing(delta: float) -> void:
 	if navigation_agent.is_navigation_finished():
@@ -160,8 +171,7 @@ func assign(room: Room, center: Vector2) -> void:
 func _on_working_state_entered() -> void:
 	print("working...")
 	animation_state = AnimationState.IDLE
-	sprite_walk.hide()
-	sprite_idle.show()
+	set_sprite_visibility(animation_state)
 
 
 func _on_working_state_exited() -> void:
