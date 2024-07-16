@@ -1,17 +1,27 @@
-[gd_scene load_steps=29 format=3 uid="uid://6ddc1y0q3bhc"]
+[gd_scene load_steps=33 format=3 uid="uid://6ddc1y0q3bhc"]
 
 [ext_resource type="Script" path="res://scripts/crew/CrewMember.gd" id="1_rgjpg"]
 [ext_resource type="Texture2D" uid="uid://dhxmp0xpmlnfc" path="res://assets/sprites/idle_agatha.png" id="2_uo5jt"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="3_pcxuy"]
 [ext_resource type="Texture2D" uid="uid://dl20q4t7m3dex" path="res://assets/sprites/walk_agatha.png" id="3_yufvr"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="4_en38c"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/parallel_state.gd" id="5_hdvyl"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="5_me8bf"]
 [ext_resource type="Script" path="res://scripts/crew/Area2D.gd" id="7_erar8"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="7_yl87e"]
 [ext_resource type="Script" path="res://scripts/crew/CrewGUI.gd" id="8_xpily"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/expression_guard.gd" id="9_xlf2i"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ercuq"]
 size = Vector2(114, 78)
+
+[sub_resource type="Resource" id="Resource_iydo8"]
+script = ExtResource("9_xlf2i")
+expression = "assignment == \"work\""
+
+[sub_resource type="Resource" id="Resource_a4okr"]
+script = ExtResource("9_xlf2i")
+expression = "assignment == \"\""
 
 [sub_resource type="Animation" id="Animation_8m754"]
 length = 0.001
@@ -304,43 +314,68 @@ metadata/_edit_lock_ = true
 texture = ExtResource("3_yufvr")
 hframes = 12
 vframes = 8
-frame = 5
+frame = 48
 
 [node name="CrewStateManager" type="Node" parent="."]
 script = ExtResource("3_pcxuy")
 
-[node name="CrewState" type="Node" parent="CrewStateManager"]
-script = ExtResource("4_en38c")
-initial_state = NodePath("Idle")
+[node name="ParallelState" type="Node" parent="CrewStateManager"]
+script = ExtResource("5_hdvyl")
 
-[node name="Idle" type="Node" parent="CrewStateManager/CrewState"]
+[node name="CrewState" type="Node" parent="CrewStateManager/ParallelState"]
+script = ExtResource("4_en38c")
+initial_state = NodePath("Idling")
+
+[node name="Idling" type="Node" parent="CrewStateManager/ParallelState/CrewState"]
 script = ExtResource("5_me8bf")
 
-[node name="ToAssigning" type="Node" parent="CrewStateManager/CrewState/Idle"]
+[node name="ToWalking" type="Node" parent="CrewStateManager/ParallelState/CrewState/Idling"]
+script = ExtResource("7_yl87e")
+to = NodePath("../../Walking")
+event = &"walk"
+
+[node name="Walking" type="Node" parent="CrewStateManager/ParallelState/CrewState"]
+script = ExtResource("5_me8bf")
+
+[node name="ToWorking" type="Node" parent="CrewStateManager/ParallelState/CrewState/Walking"]
+script = ExtResource("7_yl87e")
+to = NodePath("../../Working")
+event = &"to_assignment"
+guard = SubResource("Resource_iydo8")
+
+[node name="ToIdling" type="Node" parent="CrewStateManager/ParallelState/CrewState/Walking"]
+script = ExtResource("7_yl87e")
+to = NodePath("../../Idling")
+event = &"to_assignment"
+guard = SubResource("Resource_a4okr")
+
+[node name="Working" type="Node" parent="CrewStateManager/ParallelState/CrewState"]
+script = ExtResource("5_me8bf")
+
+[node name="ToIdling" type="Node" parent="CrewStateManager/ParallelState/CrewState/Working"]
+script = ExtResource("7_yl87e")
+to = NodePath("../../Idling")
+event = &"idle"
+
+[node name="InteractionState" type="Node" parent="CrewStateManager/ParallelState"]
+script = ExtResource("4_en38c")
+initial_state = NodePath("None")
+
+[node name="None" type="Node" parent="CrewStateManager/ParallelState/InteractionState"]
+script = ExtResource("5_me8bf")
+
+[node name="ToAssigning" type="Node" parent="CrewStateManager/ParallelState/InteractionState/None"]
 script = ExtResource("7_yl87e")
 to = NodePath("../../Assigning")
-event = &"assigning"
+event = &"assign"
 
-[node name="Assigning" type="Node" parent="CrewStateManager/CrewState"]
+[node name="Assigning" type="Node" parent="CrewStateManager/ParallelState/InteractionState"]
 script = ExtResource("5_me8bf")
 
-[node name="ToAssignment" type="Node" parent="CrewStateManager/CrewState/Assigning"]
+[node name="ToNone" type="Node" parent="CrewStateManager/ParallelState/InteractionState/Assigning"]
 script = ExtResource("7_yl87e")
-to = NodePath("../../Assignment")
+to = NodePath("../../None")
 event = &"assigned"
-
-[node name="ToIdle" type="Node" parent="CrewStateManager/CrewState/Assigning"]
-script = ExtResource("7_yl87e")
-to = NodePath("../../Idle")
-event = &"idle"
-
-[node name="Assignment" type="Node" parent="CrewStateManager/CrewState"]
-script = ExtResource("5_me8bf")
-
-[node name="ToIdle" type="Node" parent="CrewStateManager/CrewState/Assignment"]
-script = ExtResource("7_yl87e")
-to = NodePath("../../Idle")
-event = &"idle"
 
 [node name="Navigation" type="Node2D" parent="."]
 metadata/_edit_lock_ = true
@@ -401,7 +436,10 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 50
 text = "Assign"
 
-[connection signal="state_entered" from="CrewStateManager/CrewState/Idle" to="." method="_on_idle_state_entered"]
-[connection signal="state_exited" from="CrewStateManager/CrewState/Idle" to="." method="_on_idle_state_exited"]
-[connection signal="state_physics_processing" from="CrewStateManager/CrewState/Idle" to="." method="_on_idle_state_physics_processing"]
-[connection signal="state_physics_processing" from="CrewStateManager/CrewState/Assignment" to="." method="_on_assignment_state_physics_processing"]
+[connection signal="state_entered" from="CrewStateManager/ParallelState/CrewState/Idling" to="." method="_on_idling_state_entered"]
+[connection signal="state_exited" from="CrewStateManager/ParallelState/CrewState/Idling" to="." method="_on_idling_state_exited"]
+[connection signal="state_physics_processing" from="CrewStateManager/ParallelState/CrewState/Idling" to="." method="_on_idling_state_physics_processing"]
+[connection signal="state_entered" from="CrewStateManager/ParallelState/CrewState/Walking" to="." method="_on_walking_state_entered"]
+[connection signal="state_physics_processing" from="CrewStateManager/ParallelState/CrewState/Walking" to="." method="_on_walking_state_physics_processing"]
+[connection signal="state_entered" from="CrewStateManager/ParallelState/CrewState/Working" to="." method="_on_working_state_entered"]
+[connection signal="state_exited" from="CrewStateManager/ParallelState/CrewState/Working" to="." method="_on_working_state_exited"]
