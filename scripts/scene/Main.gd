@@ -13,8 +13,10 @@ var delta_time: float = 0.0
 func _ready():
 	update_in_game_time()
 	background.rotate_jupiter(in_game_time, one_in_game_day)
-	for i in range(1):
-		manager.new_crew_member()
+	for i in range(4):
+		var x = 3000 + (i * 100)
+		var y = 2000 + (i * 100)
+		manager.new_crew_member(Vector2(x, y))
 
 func _process(delta):
 	delta_time += delta

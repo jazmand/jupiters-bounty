@@ -15,9 +15,9 @@ func _ready():
 	GUI.manager.connect("add_crew_pressed", Callable(self, "new_crew_member"))
 	Global.crew_assign_crew_selected.connect(crew_selected)
 
-func new_crew_member() -> CrewMember:
+func new_crew_member(positionVector: Vector2 = Vector2(5000, 3000)) -> CrewMember:
 	var crew_member: CrewMember = crew_scene.instantiate()
-	crew_member.position = Vector2(3000, 2000) # Adjust spawning position
+	crew_member.position = positionVector # Adjust spawning position
 	add_child(crew_member)
 	return crew_member
 	

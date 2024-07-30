@@ -34,6 +34,17 @@ func _init(base_tile_map_node: TileMap, build_tile_map_node: TileMap, room_types
 	base_tile_map = base_tile_map_node
 	build_tile_map = build_tile_map_node
 	room_types = room_types_arr
+	
+	# TEMPORARY. Initial room.
+	var new_room = Room.new()
+	new_room.id = generate_unique_room_id()
+	new_room.roomType = room_types[0];
+	new_room.topLeft = Vector2i(18, -4)
+	new_room.bottomRight = Vector2i(20, -5)
+	set_doors(Vector2i(19, -4))
+	new_room.doorTiles.append(Vector2i(19, -4))
+	Global.station.rooms.append(new_room)
+	draw_rooms()
 
 func clear_selected_roomtype() -> void:
 	selected_room_type = null # Deselect
