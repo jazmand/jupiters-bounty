@@ -490,7 +490,7 @@ event = &"building_start"
 
 [node name="ToEditing" type="Node" parent="GameManager/StateManager/GameState/Default"]
 script = ExtResource("21_n7j07")
-to = NodePath("../../Editing/DeletingRoom")
+to = NodePath("../../Editing/SelectingRoom")
 event = &"editing_start"
 
 [node name="ToCrew" type="Node" parent="GameManager/StateManager/GameState/Default"]
@@ -584,7 +584,20 @@ event = &"building_back"
 
 [node name="Editing" type="Node" parent="GameManager/StateManager/GameState"]
 script = ExtResource("19_8sc5u")
-initial_state = NodePath("DeletingRoom")
+initial_state = NodePath("SelectingRoom")
+
+[node name="SelectingRoom" type="Node" parent="GameManager/StateManager/GameState/Editing"]
+script = ExtResource("20_aq14c")
+
+[node name="ToDefault" type="Node" parent="GameManager/StateManager/GameState/Editing/SelectingRoom"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../../Default")
+event = &"editing_stop"
+
+[node name="ToDeletingRoom" type="Node" parent="GameManager/StateManager/GameState/Editing/SelectingRoom"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../DeletingRoom")
+event = &"editing_forward"
 
 [node name="DeletingRoom" type="Node" parent="GameManager/StateManager/GameState/Editing"]
 script = ExtResource("20_aq14c")
@@ -606,7 +619,7 @@ script = ExtResource("21_n7j07")
 to = NodePath("../../../Default")
 event = &"assigned"
 
-[connection signal="state_input" from="GameManager/StateManager/GameState/Default" to="GameManager/EditingManager" method="_on_default_state_input"]
+[connection signal="state_input" from="GameManager/StateManager/GameState/Default" to="GameManager" method="_on_default_state_input"]
 [connection signal="state_entered" from="GameManager/StateManager/GameState/Building" to="GameManager/BuildingManager" method="_on_building_state_entered"]
 [connection signal="state_exited" from="GameManager/StateManager/GameState/Building" to="GameManager/BuildingManager" method="_on_building_state_exited"]
 [connection signal="state_input" from="GameManager/StateManager/GameState/Building" to="GameManager/BuildingManager" method="_on_building_state_input"]
@@ -619,9 +632,7 @@ event = &"assigned"
 [connection signal="state_entered" from="GameManager/StateManager/GameState/Building/ConfirmingRoom" to="GameManager/BuildingManager" method="_on_confirming_room_state_entered"]
 [connection signal="state_exited" from="GameManager/StateManager/GameState/Building/ConfirmingRoom" to="GameManager/BuildingManager" method="_on_confirming_room_state_exited"]
 [connection signal="state_input" from="GameManager/StateManager/GameState/Building/ConfirmingRoom" to="GameManager/BuildingManager" method="_on_confirming_room_state_input"]
-[connection signal="state_entered" from="GameManager/StateManager/GameState/Editing" to="GameManager/EditingManager" method="_on_editing_state_entered"]
-[connection signal="state_exited" from="GameManager/StateManager/GameState/Editing" to="GameManager/EditingManager" method="_on_editing_state_exited"]
-[connection signal="state_input" from="GameManager/StateManager/GameState/Editing" to="GameManager/EditingManager" method="_on_editing_state_input"]
+[connection signal="state_input" from="GameManager/StateManager/GameState/Editing/SelectingRoom" to="GameManager/EditingManager" method="_on_selecting_room_state_input"]
 [connection signal="state_entered" from="GameManager/StateManager/GameState/Editing/DeletingRoom" to="GameManager/EditingManager" method="_on_deleting_room_state_entered"]
 [connection signal="state_exited" from="GameManager/StateManager/GameState/Editing/DeletingRoom" to="GameManager/EditingManager" method="_on_deleting_room_state_exited"]
 [connection signal="state_input" from="GameManager/StateManager/GameState/Editing/DeletingRoom" to="GameManager/EditingManager" method="_on_deleting_room_state_input"]

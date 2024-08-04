@@ -13,7 +13,7 @@ var selected_crew: CrewMember = null
 
 func _ready():
 	GUI.manager.connect("add_crew_pressed", Callable(self, "new_crew_member"))
-	Global.crew_assign_crew_selected.connect(crew_selected)
+	Global.crew_assigned.connect(crew_selected)
 
 func new_crew_member(positionVector: Vector2 = Vector2(5000, 3000)) -> CrewMember:
 	var crew_member: CrewMember = crew_scene.instantiate()
@@ -40,3 +40,11 @@ func select_room(selected_tile_coords: Vector2i, mouse_position: Vector2) -> voi
 		if selected_tile_coords.x >= min_x and selected_tile_coords.x <= max_x and selected_tile_coords.y >= min_y and selected_tile_coords.y <= max_y:
 			selected_crew.assign(room, (mouse_position / camera.zoom) + camera.offset)
 			state_manager.send_event("assigned")
+
+
+func _on_default_state_input(event: InputEvent) -> void:
+	if event.is_action_pressed(&"start_building"):
+		state_manager.send_event(&"building_start")
+	elif event.is_action_pressed(&"start_editing"):
+		state_manager.send_event(&"editing_start")
+	

@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://6ddc1y0q3bhc"]
+[gd_scene load_steps=32 format=3 uid="uid://6ddc1y0q3bhc"]
 
 [ext_resource type="Script" path="res://scripts/crew/CrewMember.gd" id="1_rgjpg"]
 [ext_resource type="Texture2D" uid="uid://dhxmp0xpmlnfc" path="res://assets/sprites/idle_agatha.png" id="2_uo5jt"]
@@ -9,7 +9,6 @@
 [ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="5_me8bf"]
 [ext_resource type="Script" path="res://scripts/crew/Area2D.gd" id="7_erar8"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="7_yl87e"]
-[ext_resource type="Script" path="res://scripts/crew/CrewGUI.gd" id="8_xpily"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/expression_guard.gd" id="9_xlf2i"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ercuq"]
@@ -299,6 +298,8 @@ input_pickable = true
 motion_mode = 1
 safe_margin = 2.0
 script = ExtResource("1_rgjpg")
+speed = null
+acceleration = null
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="."]
 position = Vector2(9, 119)
@@ -406,36 +407,6 @@ metadata/_edit_lock_ = true
 position = Vector2(8, -11)
 shape = SubResource("RectangleShape2D_kcu3h")
 metadata/_edit_lock_ = true
-
-[node name="CrewGUI" type="Control" parent="."]
-layout_mode = 3
-anchors_preset = 0
-offset_left = 101.0
-offset_top = -183.0
-offset_right = 332.0
-offset_bottom = -26.0
-size_flags_horizontal = 8
-mouse_filter = 1
-script = ExtResource("8_xpily")
-
-[node name="PanelContainer" type="PanelContainer" parent="CrewGUI"]
-layout_mode = 0
-offset_right = 228.0
-offset_bottom = 134.0
-mouse_filter = 1
-
-[node name="VBoxContainer" type="VBoxContainer" parent="CrewGUI/PanelContainer"]
-layout_mode = 2
-
-[node name="IdleButton" type="Button" parent="CrewGUI/PanelContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 50
-text = "Idle"
-
-[node name="AssignButton" type="Button" parent="CrewGUI/PanelContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 50
-text = "Assign"
 
 [connection signal="state_entered" from="CrewStateManager/ParallelState/CrewState/Idling" to="." method="_on_idling_state_entered"]
 [connection signal="state_exited" from="CrewStateManager/ParallelState/CrewState/Idling" to="." method="_on_idling_state_exited"]

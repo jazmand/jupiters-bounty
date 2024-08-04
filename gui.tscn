@@ -1,4 +1,4 @@
-[gd_scene load_steps=27 format=3 uid="uid://cpi6duyqx08ba"]
+[gd_scene load_steps=32 format=3 uid="uid://cpi6duyqx08ba"]
 
 [ext_resource type="Script" path="res://scripts/ui/GUI.gd" id="1_8pxxd"]
 [ext_resource type="Script" path="res://scripts/ui/GUIManager.gd" id="1_ekuro"]
@@ -19,6 +19,8 @@
 [ext_resource type="Texture2D" uid="uid://bcr0cjkhy5ik" path="res://assets/GUI/light-burst.png" id="12_3fce4"]
 [ext_resource type="Script" path="res://scripts/ui/Clock.gd" id="12_nuort"]
 [ext_resource type="Script" path="res://scripts/ui/BuildMenu.gd" id="13_v3skq"]
+[ext_resource type="Script" path="res://scripts/ui/CrewInfo.gd" id="20_4c2ym"]
+[ext_resource type="Texture2D" uid="uid://dqhbp0k7cdmty" path="res://assets/GUI/crew_portrait_temp.png" id="20_f6383"]
 
 [sub_resource type="SystemFont" id="SystemFont_oc4iu"]
 font_names = PackedStringArray("Cascadia Code")
@@ -50,6 +52,15 @@ line_spacing = 0.0
 font = SubResource("SystemFont_lvsnc")
 font_size = 40
 shadow_color = Color(0.156863, 0.156863, 0.156863, 0.698039)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_c1g2s"]
+bg_color = Color(0.890196, 0.458824, 0.360784, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sfqun"]
+bg_color = Color(0.815686, 0.364706, 0.298039, 0.937255)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xynr2"]
+bg_color = Color(0.815686, 0.364706, 0.298039, 0.937255)
 
 [node name="GUI" type="CanvasLayer"]
 layer = 0
@@ -233,6 +244,83 @@ offset_bottom = 102.0
 text = "Add Crew
 "
 
+[node name="CrewInfo" type="PanelContainer" parent="GUIManager"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.767
+anchor_top = 0.229
+anchor_right = 0.929
+anchor_bottom = 0.634
+offset_left = -0.640015
+offset_top = -0.320023
+offset_right = 0.319946
+offset_bottom = 0.279968
+script = ExtResource("20_4c2ym")
+
+[node name="CrewInfoContainer" type="VBoxContainer" parent="GUIManager/CrewInfo"]
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="HeaderContainer" type="HBoxContainer" parent="GUIManager/CrewInfo/CrewInfoContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="NameEdit" type="TextEdit" parent="GUIManager/CrewInfo/CrewInfoContainer/HeaderContainer"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="CloseButton" type="Button" parent="GUIManager/CrewInfo/CrewInfoContainer/HeaderContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_c1g2s")
+theme_override_styles/hover = SubResource("StyleBoxFlat_sfqun")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_xynr2")
+text = "X"
+
+[node name="PortraitContainer" type="HBoxContainer" parent="GUIManager/CrewInfo/CrewInfoContainer"]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="TextureRect" type="TextureRect" parent="GUIManager/CrewInfo/CrewInfoContainer/PortraitContainer"]
+custom_minimum_size = Vector2(82, 100)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+texture = ExtResource("20_f6383")
+expand_mode = 1
+stretch_mode = 4
+
+[node name="InfoContainer" type="VBoxContainer" parent="GUIManager/CrewInfo/CrewInfoContainer"]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="AgeLabel" type="Label" parent="GUIManager/CrewInfo/CrewInfoContainer/InfoContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="HometownLabel" type="Label" parent="GUIManager/CrewInfo/CrewInfoContainer/InfoContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="ActionContainer" type="VBoxContainer" parent="GUIManager/CrewInfo/CrewInfoContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+metadata/_edit_lock_ = true
+
+[node name="IdleButton" type="Button" parent="GUIManager/CrewInfo/CrewInfoContainer/ActionContainer"]
+layout_mode = 2
+text = "Idle"
+
+[node name="AssignButton" type="Button" parent="GUIManager/CrewInfo/CrewInfoContainer/ActionContainer"]
+layout_mode = 2
+text = "Assign"
+
 [connection signal="pressed" from="GUIManager/BuildMenu/BuildButton" to="GUIManager/BuildMenu" method="_on_build_button_pressed"]
 [connection signal="pressed" from="GUIManager/BuildMenu/RoomPanel/BuildCloseButton" to="GUIManager/BuildMenu" method="_on_build_close_button_pressed"]
 [connection signal="pressed" from="GUIManager/AddCrew" to="GUIManager" method="_on_add_crew_pressed"]
+[connection signal="text_changed" from="GUIManager/CrewInfo/CrewInfoContainer/HeaderContainer/NameEdit" to="GUIManager/CrewInfo" method="_on_name_edit_text_changed"]
