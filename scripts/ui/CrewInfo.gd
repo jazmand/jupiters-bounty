@@ -62,7 +62,7 @@ func no_rooms() -> bool:
 
 func update_available_actions(state: StringName) -> void:
 	match state:
-		&"idling":
+		crew.AnimationState.IDLE:
 			idle_button.disabled = true
 			assign_button.disabled = !no_rooms()
 		_:

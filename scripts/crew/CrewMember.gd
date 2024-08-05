@@ -38,7 +38,11 @@ var info: CrewInfo
 
 var target = Vector2(0, 0)
 var current_direction = Vector2(0, 0)
-var animation_state = AnimationState.IDLE
+var animation_state = AnimationState.IDLE:
+	set(state):
+		animation_state = state
+		state_transitioned.emit(state)
+
 var current_animation = animation_state + "_down"
 
 var idle_timer = 0.0
@@ -107,7 +111,6 @@ func randomise_target_position() -> void:
 		set_movement_target(target)
 
 func _on_idling_state_entered() -> void:
-	state_transitioned.emit(&"idling")
 	animation_state = AnimationState.IDLE
 	set_sprite_visibility(animation_state)
 	state_manager.set_expression_property(&"assignment", &"")
@@ -120,7 +123,6 @@ func _on_idling_state_physics_processing(delta: float) -> void:
 		randomise_target_position()
 
 func _on_walking_state_entered() -> void:
-	state_transitioned.emit(&"walking")
 	animation_state = AnimationState.WALK
 	set_sprite_visibility(animation_state)
 
@@ -149,7 +151,6 @@ func assign(room: Room, center: Vector2) -> void:
 
 
 func _on_working_state_entered() -> void:
-	state_transitioned.emit(&"working")
 	print("working...")
 	animation_state = AnimationState.IDLE
 	set_sprite_visibility(animation_state)
