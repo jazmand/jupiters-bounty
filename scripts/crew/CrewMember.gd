@@ -142,6 +142,9 @@ func _on_timer_timeout() -> void:
 	set_current_animation()
 	animation_player.play(current_animation)
 
+func can_assign() -> bool:
+	return Global.station.rooms.size() != 0
+
 func assign(room: Room, center: Vector2) -> void:
 	state_manager.send_event(&"assigned")
 	print(info.name, " assigned to room ", room.id)

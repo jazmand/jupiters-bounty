@@ -18,8 +18,8 @@ func _ready() -> void:
 	close_button.pressed.connect(close)
 
 func display_crew_info(crew_member: CrewMember) -> void:
-	idle_button.pressed.connect(start_idling.bind(crew_member))
-	assign_button.pressed.connect(start_assigning.bind(crew_member))
+	idle_button.pressed.connect(start_idling)
+	assign_button.pressed.connect(start_assigning)
 	idle_button.disabled = crew_member.animation_state == crew_member.AnimationState.IDLE
 	assign_button.disabled = false
 	name_edit.text = crew_member.info.name
@@ -29,8 +29,8 @@ func display_crew_info(crew_member: CrewMember) -> void:
 func reset_panel() -> void:
 	if crew == null:
 		return
-	idle_button.pressed.disconnect(start_idling.bind(crew))
-	assign_button.pressed.disconnect(start_assigning.bind(crew))
+	idle_button.pressed.disconnect(start_idling)
+	assign_button.pressed.disconnect(start_assigning)
 	crew.state_transitioned.disconnect(update_available_actions)
 	crew = null
 
@@ -45,29 +45,26 @@ func close() -> void:
 	hide()
 	reset_panel()
 
-func start_idling(crew_member: CrewMember) -> void:
-	crew_member.state_manager.send_event(&"idle")
+func start_idling() -> void:
+	crew.state_manager.send_event(&"idle")
 	idle_button.disabled = true
-	assign_button.disabled = !no_rooms()
+	assign_button.disabled = !crew.can_assign()
 	hide()
 
-func start_assigning(crew_member: CrewMember) -> void:
-	Global.crew_assigned.emit(crew_member)
+func start_assigning() -> void:
+	Global.crew_assigned.emit(crew)
 	idle_button.disabled = false
-	crew_member.state_manager.send_event(&"assign")
+	crew.state_manager.send_event(&"assign")
 	close()
-	
-func no_rooms() -> bool:
-	return Global.station.rooms.size() == 0
 
 func update_available_actions(state: StringName) -> void:
 	match state:
 		crew.AnimationState.IDLE:
 			idle_button.disabled = true
-			assign_button.disabled = !no_rooms()
+			assign_button.disabled = !crew.can_assign()
 		_:
 			idle_button.disabled = false
-			assign_button.disabled = !no_rooms()
+			assign_button.disabled = !crew.can_assign()
 
 
 func _on_name_edit_text_changed() -> void:
