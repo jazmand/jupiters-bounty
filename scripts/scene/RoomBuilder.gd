@@ -43,7 +43,7 @@ func _init(base_tile_map_node: TileMap, build_tile_map_node: TileMap, room_types
 	new_room.bottomRight = Vector2i(20, -5)
 	set_doors(Vector2i(19, -4))
 	new_room.doorTiles.append(Vector2i(19, -4))
-	Global.station.rooms.append(new_room)
+	Global.station.add_room(new_room)
 	draw_rooms()
 
 func clear_selected_roomtype() -> void:
@@ -166,7 +166,7 @@ func save_room() -> void:
 	new_room.topLeft = initial_tile_coords
 	new_room.bottomRight = transverse_tile_coords
 	new_room.doorTiles = temp_door_coords
-	Global.station.rooms.append(new_room)
+	Global.station.add_room(new_room)
 
 func draw_rooms() -> void:
 	# Clear drafting layer

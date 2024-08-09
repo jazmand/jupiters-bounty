@@ -25,7 +25,6 @@ func _process(delta):
 	if delta_time >= 0.25:
 		delta_time = 0
 		update_in_game_time()
-		Global.station.update_power()
 		Global.station.update_hydrogen()
 		Global.station.time = in_game_time
 		background.rotate_jupiter(in_game_time, one_in_game_day)

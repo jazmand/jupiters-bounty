@@ -4,6 +4,7 @@ class_name Station
 extends Resource
 
 signal hydrogen_updated(hydrogen: int)
+signal max_hydrogen_updated(max_hydrogen: int)
 signal power_updated(power: int)
 signal currency_updated(currency: int)
 signal crew_updated(crew: int)
@@ -12,9 +13,13 @@ signal time_updated(time: int)
 @export var id: int
 @export var hydrogen: int:
 	set(h):
-		if hydrogen < 1000:
+		if h <= max_hydrogen:
 			hydrogen = h
 			hydrogen_updated.emit(h)
+@export var max_hydrogen: int = 100:
+	set(mh):
+		max_hydrogen = mh
+		max_hydrogen_updated.emit(mh)
 @export var power: int:
 	set(p):
 		power = p
@@ -27,8 +32,11 @@ signal time_updated(time: int)
 	set(c):
 		crew = c
 		crew_updated.emit(c)
-@export var rooms: Array[Room]
-	
+@export var rooms: Array[Room]:
+	set(r):
+		rooms = r
+		update_max_hydrogen()
+		update_power()
 @export var time: int:
 	set(t):
 		time = t
@@ -42,15 +50,39 @@ func _init(p_id: int = 0, p_hydrogen: int = 0, p_power: int = 0, p_currency: int
 	crew = p_crew
 	rooms = p_rooms
 	time = p_time
+	update_max_hydrogen()
 
 func calculate_power_consumption_all_rooms() -> int:
-	var total = 0
+	var total_consuming_tiles = 0
+	var total_producing_tiles = 0
 	for room in rooms:
-		total += room.calculate_power_consumption()
-	return total
+		if room.roomType.id == 2: # 2 is the ID for generator rooms
+			total_producing_tiles += room.calculate_tile_count(room.topLeft, room.bottomRight)
+		else:
+			total_consuming_tiles += room.calculate_tile_count(room.topLeft, room.bottomRight)
+	return total_producing_tiles - total_consuming_tiles
 	
 func update_power() -> void:
-	power -= calculate_power_consumption_all_rooms()
+	power = calculate_power_consumption_all_rooms() * 100
 
 func update_hydrogen() -> void:
 	hydrogen += 5
+
+func update_max_hydrogen() -> void:
+	var total_storage_tiles = 0
+	for room in rooms:
+		if room.roomType.id == 3: # 3 is the ID for storage bays
+			total_storage_tiles += room.calculate_tile_count(room.topLeft, room.bottomRight)
+	max_hydrogen = 100 + (total_storage_tiles * 10)
+	
+func add_room(room: Room) -> void:
+	var new_rooms = rooms.duplicate()
+	new_rooms.append(room)
+	rooms = new_rooms
+
+func remove_room(room_id: int) -> void:
+	var new_rooms = []
+	for room in rooms:
+		if room.id != room_id:
+			new_rooms.append(room)
+	rooms = new_rooms

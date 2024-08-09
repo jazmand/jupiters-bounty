@@ -19,9 +19,8 @@ var popup_message: String = ""
 
 enum Action {START, BACK, FORWARD, COMPLETE}
 
-func _init(build_tile_map: TileMap, rooms: Array[Room], room_types: Array[RoomType], room_builder: RoomBuilder, navigation_region: NavigationRegion2D):
+func _init(build_tile_map: TileMap, room_types: Array[RoomType], room_builder: RoomBuilder, navigation_region: NavigationRegion2D):
 	self.build_tile_map = build_tile_map
-	self.rooms = rooms
 	self.room_types = room_types
 	self.room_builder = room_builder
 	self.nav_region = navigation_region
@@ -31,7 +30,7 @@ func on_left_mouse_button_press(event: InputEvent, offset: Vector2, zoom: Vector
 	select_room(selected_tile_coords)
 	
 func select_room(selected_tile_coords: Vector2i) -> void:
-	for room in rooms:
+	for room in Global.station.rooms:
 		var min_x = min(room.topLeft.x, room.bottomRight.x)
 		var max_x = max(room.topLeft.x, room.bottomRight.x)
 		var min_y = min(room.topLeft.y, room.bottomRight.y)
@@ -53,14 +52,9 @@ func get_room_details(room: Room) -> Dictionary:
 			room_details.size = calculate_tile_count(room.topLeft, room.bottomRight)
 			room_details.powerConsumption = room_type.powerConsumption * room_details.size
 	return room_details
-	
-func delete_room(room_id: int) -> void:
-	for room in Global.station.rooms:
-		if room["id"] == room_id:
-			Global.station.rooms.erase(room)
 
 func confirm_delete() -> void:
-	delete_room(selected_room.id)
+	Global.station.remove_room(selected_room.id)
 	room_builder.draw_rooms()
 	nav_region.bake_navigation_polygon()
 	action_completed.emit(Action.COMPLETE)

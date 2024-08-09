@@ -72,21 +72,15 @@ texture = ExtResource("2_rdfey")
 
 [node name="StationInfo" type="VBoxContainer" parent="GUIManager"]
 layout_mode = 0
-offset_left = 1424.0
-offset_top = 58.0
-offset_right = 1718.0
-offset_bottom = 135.0
-alignment = 1
+offset_left = 1417.0
+offset_top = 46.0
+offset_right = 1865.0
+offset_bottom = 137.0
 script = ExtResource("3_7tjv2")
 
 [node name="Currency" type="Label" parent="GUIManager/StationInfo"]
 layout_mode = 2
 text = "Currency:"
-label_settings = SubResource("LabelSettings_kdcap")
-
-[node name="Power" type="Label" parent="GUIManager/StationInfo"]
-layout_mode = 2
-text = "Power:"
 label_settings = SubResource("LabelSettings_kdcap")
 
 [node name="Crew" type="Label" parent="GUIManager/StationInfo"]
@@ -119,6 +113,16 @@ position = Vector2(-22.207, 0.00390625)
 scale = Vector2(0.7, 0.7)
 texture = ExtResource("4_uuqsp")
 
+[node name="Power" type="Label" parent="GUIManager/PowerMeter"]
+offset_left = -653.333
+offset_top = 186.667
+offset_right = -452.333
+offset_bottom = 311.667
+scale = Vector2(5, 5)
+text = "K  W"
+label_settings = SubResource("LabelSettings_kdcap")
+horizontal_alignment = 2
+
 [node name="HydrogenMeter" type="Sprite2D" parent="GUIManager"]
 top_level = true
 clip_children = 1
@@ -142,7 +146,6 @@ offset_top = -356.368
 offset_right = 1075.91
 offset_bottom = 319.632
 theme_override_styles/fill = SubResource("StyleBoxFlat_wegjk")
-max_value = 1000.0
 show_percentage = false
 
 [node name="Clock" type="Sprite2D" parent="GUIManager"]
