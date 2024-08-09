@@ -76,13 +76,14 @@ func update_max_hydrogen() -> void:
 	max_hydrogen = 100 + (total_storage_tiles * 10)
 	
 func add_room(room: Room) -> void:
-	var new_rooms = rooms.duplicate()
+	var new_rooms: Array[Room] = rooms.duplicate()
 	new_rooms.append(room)
 	rooms = new_rooms
 
 func remove_room(room_id: int) -> void:
-	var new_rooms = []
+	var new_rooms: Array[Room] = []
 	for room in rooms:
 		if room.id != room_id:
 			new_rooms.append(room)
+	print(new_rooms)
 	rooms = new_rooms

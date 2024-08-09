@@ -20,9 +20,9 @@ func _ready() -> void:
 	Global.station.power_updated.connect(on_power_updated)
 
 func _process(delta: float) -> void:
-	modulate_light(delta)
 	update_power_reading(delta)
-	rotate_dial(delta)
+	modulate_light()
+	rotate_dial()
 
 func on_power_updated(new_power: int) -> void:
 	target_power = new_power
@@ -42,7 +42,7 @@ func update_power_reading(delta: float) -> void:
 func set_power_label(power: int) -> void:
 	power_label.text = format_number_with_spaces(power) + "  K  W"
 
-func modulate_light(delta: float) -> void:
+func modulate_light() -> void:
 	var brightness_ratio = clamp((current_power / ROTATION_LIMIT_KW), 0.0, 1.0)
 	var eased_brightness = ease(brightness_ratio, 0.5) # 0.5 is the exponent for ease in/out
 	 
@@ -51,7 +51,7 @@ func modulate_light(delta: float) -> void:
 	
 	light.modulate = Color(1, 1, 1, eased_brightness + flicker)
 
-func rotate_dial(delta: float) -> void:
+func rotate_dial() -> void:
 	var rotation_ratio = clamp((current_power / ROTATION_LIMIT_KW), 0.0, 1.0)
 	var base_rotation = lerp(-ROTATION_LIMIT_DEG, ROTATION_LIMIT_DEG, rotation_ratio)
 	
