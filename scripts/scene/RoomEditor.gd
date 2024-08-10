@@ -42,7 +42,7 @@ func select_room(selected_tile_coords: Vector2i) -> void:
 			selected_room = room
 			var room_details = get_room_details(room)
 			popup_message = "You have selected " + room_details.name + " it's size is " + str(room_details.size) + " and it's power consumption is " + str(room_details.powerConsumption)
-			action_completed.emit(Action.START)
+			action_completed.emit(Action.FORWARD)
 			
 func get_room_details(room: Room) -> Dictionary:
 	# Create a JSON dictionary

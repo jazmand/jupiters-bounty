@@ -34,10 +34,6 @@ func _ready() -> void:
 	# Connect the buttons to the confirmation functions in the GUI script
 	popup = GUI.manager.new_popup(room_editor.popup_message, false, room_editor.confirm_delete, room_editor.cancel_delete)
 
-func _on_default_state_input(event: InputEvent):
-	if event.is_action_pressed("select"):
-		room_editor.on_left_mouse_button_press(event, camera.offset, camera.zoom)
-
 func load_room_types() -> void:
 	var room_types_folder = "res://assets/room_type/"
 	var room_type_files = DirAccess.open(room_types_folder)
@@ -86,14 +82,10 @@ func on_room_editor_action(action: int) -> void:
 		room_editor.Action.COMPLETE:
 			event = Events[StateEvent.EDITING_STOP]
 	state_manager.send_event(event)
-
-func _on_editing_state_entered() -> void:
-	pass
-
-func _on_editing_state_exited() -> void:
-	pass
 	
-func _on_editing_state_input(event: InputEvent) -> void:
+func _on_selecting_room_state_input(event: InputEvent) -> void:
+	if event.is_action_pressed("select"):
+		room_editor.on_left_mouse_button_press(event, camera.offset, camera.zoom)
 	if event.is_action_pressed("exit"):
 			state_manager.send_event(Events[StateEvent.EDITING_STOP])
 
@@ -104,6 +96,6 @@ func _on_deleting_room_state_exited() -> void:
 	popup.hide()
 
 func _on_deleting_room_state_input(event: InputEvent) -> void:
-	if event.is_action_pressed("cancel"): 
+	if event.is_action_pressed("exit") or event.is_action_pressed("cancel"):
 		state_manager.send_event(Events[StateEvent.EDITING_STOP])
 
