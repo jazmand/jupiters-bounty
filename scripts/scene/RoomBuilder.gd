@@ -208,6 +208,7 @@ func draw_room(room) -> void:
 					if tileset_mapper.has(Vector2i(x, y)):
 						tileset_coords = tileset_mapper[Vector2i(x, y)]
 					build_tile_map.set_cell(building_layer, Vector2(x, y), tileset_id, tileset_coords)
+					base_tile_map.erase_cell(0, Vector2i(x, y))
 			for doorTile in room.doorTiles:
 				if doorTile.x == min_x:
 					build_tile_map.set_cell(building_layer, doorTile, tileset_id, Vector2(2, 1))

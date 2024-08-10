@@ -23,8 +23,7 @@ const AnimationState = {
 	CHAT = &"chat"
 }
 
-@export var speed: int = 250
-@export var acceleration: int = 6
+@export var speed: int = 5
 
 @onready var state_manager: StateChart = $CrewStateManager
 @onready var navigation_agent: NavigationAgent2D = $Navigation/NavigationAgent2D
@@ -38,15 +37,15 @@ var info: CrewInfo
 
 var target = Vector2(0, 0)
 var current_direction = Vector2(0, 0)
+
 var animation_state = AnimationState.IDLE:
 	set(state):
 		animation_state = state
 		state_transitioned.emit(state)
-
 var current_animation = animation_state + "_down"
 
 var idle_timer = 0.0
-var idle_time_limit = 4.0
+var idle_time_limit = 2.0
 
 func _ready() -> void:
 	Global.station.crew += 1
@@ -132,15 +131,26 @@ func _on_walking_state_physics_processing(delta: float) -> void:
 		return
 	
 	set_rounded_direction()
-	velocity = velocity.lerp(current_direction.normalized() * speed, acceleration * delta)
-	#var collision = move_and_collide(velocity * delta)
+	#velocity = velocity.lerp(current_direction.normalized() * speed, 1.0)
+	velocity = current_direction.normalized() * speed
+	move_and_collide(velocity)
+	#var collision = move_and_slide()
 	#if collision:
-		#velocity = velocity.bounce(collision.get_normal())
-	move_and_slide()
+		#var x = -navigation_agent.target_position.x
+		#var y = -navigation_agent.target_position.y
+		#set_movement_target(Vector2(x,y))
 
 func _on_timer_timeout() -> void:
 	set_current_animation()
 	animation_player.play(current_animation)
+
+func _on_working_state_entered() -> void:
+	print("working...")
+	animation_state = AnimationState.IDLE
+	set_sprite_visibility(animation_state)
+
+func _on_working_state_exited() -> void:
+	print("stopped working")
 
 func can_assign() -> bool:
 	return Global.station.rooms.size() > 0
@@ -151,13 +161,3 @@ func assign(room: Room, center: Vector2) -> void:
 	set_movement_target(center)
 	state_manager.set_expression_property(&"assignment", &"work")
 	state_manager.send_event(&"walk")
-
-
-func _on_working_state_entered() -> void:
-	print("working...")
-	animation_state = AnimationState.IDLE
-	set_sprite_visibility(animation_state)
-
-
-func _on_working_state_exited() -> void:
-	print("stopped working")
