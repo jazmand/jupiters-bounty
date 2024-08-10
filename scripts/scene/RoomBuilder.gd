@@ -24,6 +24,7 @@ var selected_room_type: RoomType
 
 var base_tile_map: TileMap
 var build_tile_map: TileMap
+var base_tile_map_data: Dictionary = {}
 var room_types: Array[RoomType]
 
 var popup_message: String = ""
@@ -34,6 +35,8 @@ func _init(base_tile_map_node: TileMap, build_tile_map_node: TileMap, room_types
 	base_tile_map = base_tile_map_node
 	build_tile_map = build_tile_map_node
 	room_types = room_types_arr
+	
+	base_tile_map_data = save_base_tile_map_state()
 	
 	# TEMPORARY. Initial room.
 	var new_room = Room.new()
@@ -172,6 +175,7 @@ func draw_rooms() -> void:
 	# Clear drafting layer
 	build_tile_map.clear_layer(drafting_layer)
 	build_tile_map.clear_layer(building_layer)
+	restore_base_tile_map_state()
 	for room in Global.station.rooms:
 		draw_room(room)
 		
@@ -209,6 +213,7 @@ func draw_room(room) -> void:
 						tileset_coords = tileset_mapper[Vector2i(x, y)]
 					build_tile_map.set_cell(building_layer, Vector2(x, y), tileset_id, tileset_coords)
 					base_tile_map.erase_cell(0, Vector2i(x, y))
+						
 			for doorTile in room.doorTiles:
 				if doorTile.x == min_x:
 					build_tile_map.set_cell(building_layer, doorTile, tileset_id, Vector2(2, 1))
@@ -218,7 +223,23 @@ func draw_room(room) -> void:
 					build_tile_map.set_cell(building_layer, doorTile, tileset_id, Vector2(0, 1)) 
 				elif doorTile.y == max_y - 1:
 					build_tile_map.set_cell(building_layer, doorTile, tileset_id, Vector2(3, 2))
+					
+func save_base_tile_map_state() -> Dictionary:
+	var tile_data = {}
+	for x in range(base_tile_map.get_used_rect().position.x, base_tile_map.get_used_rect().position.x + base_tile_map.get_used_rect().size.x):
+		for y in range(base_tile_map.get_used_rect().position.y, base_tile_map.get_used_rect().position.y + base_tile_map.get_used_rect().size.y):
+			var coords = Vector2i(x, y)
+			var cell_atlas_data = base_tile_map.get_cell_atlas_coords(0, coords)
+			if cell_atlas_data:
+				tile_data[coords] = cell_atlas_data
+	return tile_data
 
+func restore_base_tile_map_state() -> void:
+	base_tile_map.clear()
+	for coords in base_tile_map_data.keys():
+		var atlas_coords = base_tile_map_data[coords]
+		print("Coordinates: ", coords, ", Atlas Coords: ", atlas_coords)
+		base_tile_map.set_cell(0, coords, 0, atlas_coords)
 
 # --- Helper functions ---
 
