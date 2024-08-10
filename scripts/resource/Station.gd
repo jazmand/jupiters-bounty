@@ -10,6 +10,9 @@ signal currency_updated(currency: int)
 signal crew_updated(crew: int)
 signal time_updated(time: int)
 
+const GENERATOR_ROOM_ID: int = 2
+const STORAGE_BAY_ID: int = 3
+
 @export var id: int
 @export var hydrogen: int:
 	set(h):
@@ -56,7 +59,7 @@ func calculate_power_consumption_all_rooms() -> int:
 	var total_consuming_tiles = 0
 	var total_producing_tiles = 0
 	for room in rooms:
-		if room.roomType.id == 2: # 2 is the ID for generator rooms
+		if room.roomType.id == GENERATOR_ROOM_ID:
 			total_producing_tiles += room.calculate_tile_count(room.topLeft, room.bottomRight)
 		else:
 			total_consuming_tiles += room.calculate_tile_count(room.topLeft, room.bottomRight)
@@ -71,7 +74,7 @@ func update_hydrogen() -> void:
 func update_max_hydrogen() -> void:
 	var total_storage_tiles = 0
 	for room in rooms:
-		if room.roomType.id == 3: # 3 is the ID for storage bays
+		if room.roomType.id == STORAGE_BAY_ID:
 			total_storage_tiles += room.calculate_tile_count(room.topLeft, room.bottomRight)
 	max_hydrogen = 100 + (total_storage_tiles * 10)
 	
