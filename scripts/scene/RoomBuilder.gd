@@ -230,15 +230,13 @@ func save_base_tile_map_state() -> Dictionary:
 		for y in range(base_tile_map.get_used_rect().position.y, base_tile_map.get_used_rect().position.y + base_tile_map.get_used_rect().size.y):
 			var coords = Vector2i(x, y)
 			var cell_atlas_data = base_tile_map.get_cell_atlas_coords(0, coords)
-			if cell_atlas_data:
-				tile_data[coords] = cell_atlas_data
+			tile_data[coords] = cell_atlas_data
 	return tile_data
 
 func restore_base_tile_map_state() -> void:
 	base_tile_map.clear()
 	for coords in base_tile_map_data.keys():
 		var atlas_coords = base_tile_map_data[coords]
-		print("Coordinates: ", coords, ", Atlas Coords: ", atlas_coords)
 		base_tile_map.set_cell(0, coords, 0, atlas_coords)
 
 # --- Helper functions ---
