@@ -502,7 +502,7 @@ sources/4 = SubResource("TileSetAtlasSource_aa86n")
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_jelv3"]
 source_geometry_mode = 1
 source_geometry_group_name = &"navigation"
-agent_radius = 25.0
+agent_radius = 50.0
 
 [node name="Main" type="Node"]
 script = ExtResource("1_3g4j0")
@@ -555,7 +555,6 @@ modulate = Color(0.356863, 0.533333, 1, 1)
 self_modulate = Color(0.145098, 1, 1, 1)
 position = Vector2(1, 0)
 navigation_polygon = SubResource("NavigationPolygon_jelv3")
-enabled = false
 use_edge_connections = false
 
 [node name="Camera2D" type="Camera2D" parent="GameManager"]

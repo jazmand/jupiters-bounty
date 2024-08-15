@@ -133,10 +133,13 @@ func _on_walking_state_physics_processing(delta: float) -> void:
 	set_rounded_direction()
 	#velocity = velocity.lerp(current_direction.normalized() * speed, 1.0)
 	velocity = current_direction.normalized() * speed
-	move_and_collide(velocity)
+	var collision = move_and_collide(velocity)
 	
 	#var collision = move_and_slide()
-	#if collision:
+	if collision:
+		pass
+		#velocity = -current_direction.normalized() * speed
+		#move_and_collide(velocity)
 		#var x = -navigation_agent.target_position.x
 		#var y = -navigation_agent.target_position.y
 		#set_movement_target(Vector2(x,y))
