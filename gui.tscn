@@ -152,10 +152,10 @@ texture = ExtResource("11_5oy5m")
 
 [node name="HydrogenMeterFluid" type="ProgressBar" parent="GUIManager/HydrogenMeter"]
 show_behind_parent = true
-offset_left = -989.09
-offset_top = -356.368
-offset_right = 1075.91
-offset_bottom = 319.632
+offset_left = -989.0
+offset_top = -222.0
+offset_right = 1076.0
+offset_bottom = 218.0
 theme_override_styles/fill = SubResource("StyleBoxFlat_wegjk")
 show_percentage = false
 
@@ -288,6 +288,11 @@ custom_minimum_size = Vector2(0, 150)
 layout_mode = 2
 metadata/_edit_lock_ = true
 
+[node name="PreviousCrewButton" type="Button" parent="GUIManager/CrewInfo/CrewInfoContainer/PortraitContainer"]
+custom_minimum_size = Vector2(25, 0)
+layout_mode = 2
+text = "<"
+
 [node name="TextureRect" type="TextureRect" parent="GUIManager/CrewInfo/CrewInfoContainer/PortraitContainer"]
 custom_minimum_size = Vector2(82, 100)
 layout_mode = 2
@@ -296,6 +301,11 @@ size_flags_vertical = 4
 texture = ExtResource("20_f6383")
 expand_mode = 1
 stretch_mode = 4
+
+[node name="NextCrewButton" type="Button" parent="GUIManager/CrewInfo/CrewInfoContainer/PortraitContainer"]
+custom_minimum_size = Vector2(25, 0)
+layout_mode = 2
+text = ">"
 
 [node name="InfoContainer" type="VBoxContainer" parent="GUIManager/CrewInfo/CrewInfoContainer"]
 custom_minimum_size = Vector2(0, 150)

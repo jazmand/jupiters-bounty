@@ -48,7 +48,6 @@ var idle_timer = 0.0
 var idle_time_limit = 2.0
 
 func _ready() -> void:
-	Global.station.crew += 1
 	info = CrewInfo.new()
 	print(info.name)
 	navigation_timer.timeout.connect(_on_timer_timeout)
@@ -125,7 +124,7 @@ func _on_walking_state_entered() -> void:
 	animation_state = AnimationState.WALK
 	set_sprite_visibility(animation_state)
 
-func _on_walking_state_physics_processing(delta: float) -> void:
+func _on_walking_state_physics_processing(_delta: float) -> void:
 	if navigation_agent.is_navigation_finished():
 		state_manager.send_event(&"to_assignment")
 		return

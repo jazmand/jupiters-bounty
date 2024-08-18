@@ -33,7 +33,7 @@ var age: int
 var hometown: String
 
 func _init() -> void:
-	id = Global.station.crew + 1
+	id = Global.station.crew.size() + 1
 	name = generate_name()
 	age = randi_range(18, 65)
 	hometown = "New Ilion, Ganymede"
