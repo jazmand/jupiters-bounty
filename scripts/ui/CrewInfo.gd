@@ -1,14 +1,17 @@
 class_name CrewInfoPanel
 extends PanelContainer
 
-@onready var name_edit = $CrewInfoContainer/HeaderContainer/NameEdit
-@onready var close_button = $CrewInfoContainer/HeaderContainer/CloseButton
+@onready var name_edit: TextEdit = $CrewInfoContainer/HeaderContainer/NameEdit
+@onready var close_button: Button = $CrewInfoContainer/HeaderContainer/CloseButton
 
-@onready var info_age = $CrewInfoContainer/InfoContainer/AgeLabel
-@onready var info_hometown = $CrewInfoContainer/InfoContainer/HometownLabel
+@onready var previous_button: Button = $CrewInfoContainer/PortraitContainer/PreviousCrewButton
+@onready var next_button: Button = $CrewInfoContainer/PortraitContainer/NextCrewButton
 
-@onready var idle_button = $CrewInfoContainer/ActionContainer/IdleButton
-@onready var assign_button = $CrewInfoContainer/ActionContainer/AssignButton
+@onready var info_age: Label = $CrewInfoContainer/InfoContainer/AgeLabel
+@onready var info_hometown: Label = $CrewInfoContainer/InfoContainer/HometownLabel
+
+@onready var idle_button: Button = $CrewInfoContainer/ActionContainer/IdleButton
+@onready var assign_button: Button = $CrewInfoContainer/ActionContainer/AssignButton
 
 var crew: CrewMember = null
 
@@ -16,6 +19,8 @@ func _ready() -> void:
 	hide()
 	Global.crew_selected.connect(open)
 	close_button.pressed.connect(close)
+	previous_button.pressed.connect(cycle_crew_members.bind(-1))
+	next_button.pressed.connect(cycle_crew_members.bind(1))
 
 func display_crew_info(crew_member: CrewMember) -> void:
 	idle_button.pressed.connect(start_idling)
@@ -34,11 +39,14 @@ func reset_panel() -> void:
 	crew.state_transitioned.disconnect(update_available_actions)
 	crew = null
 
-func open(crew_member: CrewMember) -> void:
-	reset_panel()
+func setup_new_panel(crew_member: CrewMember) -> void:
 	crew = crew_member
 	crew.state_transitioned.connect(update_available_actions)
 	display_crew_info(crew_member)
+
+func open(crew_member: CrewMember) -> void:
+	reset_panel()
+	setup_new_panel(crew_member)
 	show()
 
 func close() -> void:
@@ -69,3 +77,18 @@ func update_available_actions(state: StringName) -> void:
 
 func _on_name_edit_text_changed() -> void:
 	crew.info.name = name_edit.text
+
+func cycle_crew_members(diff: int) -> void:
+	var all_crew = Global.station.crew
+	var crew_size = all_crew.size()
+	var next_idx = all_crew.find(crew) + diff
+	var idx = get_cycled_idx(next_idx, crew_size)
+	reset_panel()
+	setup_new_panel(all_crew[idx])
+
+func get_cycled_idx(next_idx: int, crew_size: int) -> int:
+	if next_idx >= crew_size:
+		next_idx -= crew_size
+	elif next_idx < 0:
+		next_idx += crew_size
+	return next_idx

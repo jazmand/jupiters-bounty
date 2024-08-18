@@ -6,8 +6,7 @@
 script = ExtResource("1_o3hpo")
 id = 0
 hydrogen = 500
+max_hydrogen = 100
 power = 70
 currency = 3000
-crew = 0
-rooms = Array[Resource("scripts/resource/Room.gd")]([])
 time = 0

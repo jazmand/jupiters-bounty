@@ -3,7 +3,7 @@
 class_name GameManager
 extends Node
 
-const crew_scene: PackedScene = preload ("res://crew.tscn")
+const crew_scene: PackedScene = preload("res://crew.tscn")
 
 @onready var camera: Camera2D = $Camera2D
 @onready var state_manager: StateChart = $StateManager
@@ -15,10 +15,11 @@ func _ready():
 	GUI.manager.connect("add_crew_pressed", Callable(self, "new_crew_member"))
 	Global.crew_assigned.connect(crew_selected)
 
-func new_crew_member(positionVector: Vector2 = Vector2(5000, 3000)) -> CrewMember:
+func new_crew_member(position_vector: Vector2 = Vector2(5000, 3000)) -> CrewMember:
 	var crew_member: CrewMember = crew_scene.instantiate()
-	crew_member.position = positionVector # Adjust spawning position
+	crew_member.position = position_vector # Adjust spawning position
 	add_child(crew_member)
+	Global.station.add_crew(crew_member)
 	return crew_member
 	
 func crew_selected(crew: CrewMember) -> void:
@@ -47,4 +48,3 @@ func _on_default_state_input(event: InputEvent) -> void:
 		state_manager.send_event(&"building_start")
 	elif event.is_action_pressed(&"start_editing"):
 		state_manager.send_event(&"editing_start")
-	

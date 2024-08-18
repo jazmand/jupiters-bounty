@@ -48,13 +48,13 @@ func get_room_details(room: Room) -> Dictionary:
 	var room_details = {}
 	for room_type in room_types:
 		if room_type.id == room.roomType.id:
-			room_details.name = room_type.name 
+			room_details.name = room_type.name
 			room_details.size = calculate_tile_count(room.topLeft, room.bottomRight)
 			room_details.powerConsumption = room_type.powerConsumption * room_details.size
 	return room_details
 
 func confirm_delete() -> void:
-	Global.station.remove_room(selected_room.id)
+	Global.station.remove_room(selected_room)
 	room_builder.draw_rooms()
 	nav_region.bake_navigation_polygon()
 	action_completed.emit(Action.COMPLETE)
@@ -63,6 +63,6 @@ func cancel_delete() -> void:
 	action_completed.emit(Action.COMPLETE)
 
 func calculate_tile_count(vector1: Vector2, vector2: Vector2) -> int:
-	var difference_x = abs(vector2.x - vector1.x) + 1 
+	var difference_x = abs(vector2.x - vector1.x) + 1
 	var difference_y = abs(vector2.y - vector1.y) + 1
 	return difference_x * difference_y
