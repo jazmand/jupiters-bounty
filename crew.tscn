@@ -438,4 +438,5 @@ debug_color = Color(0.678431, 0.356863, 0.894118, 0.419608)
 [connection signal="state_physics_processing" from="CrewStateManager/ParallelState/CrewState/Walking" to="." method="_on_walking_state_physics_processing"]
 [connection signal="state_entered" from="CrewStateManager/ParallelState/CrewState/Working" to="." method="_on_working_state_entered"]
 [connection signal="state_exited" from="CrewStateManager/ParallelState/CrewState/Working" to="." method="_on_working_state_exited"]
+[connection signal="state_physics_processing" from="CrewStateManager/ParallelState/CrewState/Working" to="." method="_on_working_state_physics_processing"]
 [connection signal="velocity_computed" from="Navigation/NavigationAgent2D" to="." method="_on_navigation_agent_2d_velocity_computed"]

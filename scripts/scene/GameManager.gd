@@ -42,7 +42,6 @@ func select_room(selected_tile_coords: Vector2i, mouse_position: Vector2) -> voi
 			selected_crew.assign(room, (mouse_position / camera.zoom) + camera.offset)
 			state_manager.send_event("assigned")
 
-
 func _on_default_state_input(event: InputEvent) -> void:
 	if event.is_action_pressed(&"start_building"):
 		state_manager.send_event(&"building_start")
