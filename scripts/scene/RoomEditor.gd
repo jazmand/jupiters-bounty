@@ -13,7 +13,7 @@ var build_tile_map: TileMap
 var rooms: Array[Room]
 var room_types: Array[RoomType]
 var room_builder: RoomBuilder
-var nav_region: NavigationRegion2D
+var navigation_region: NavigationRegion2D
 
 var popup_message: String = ""
 
@@ -23,7 +23,7 @@ func _init(build_tile_map: TileMap, room_types: Array[RoomType], room_builder: R
 	self.build_tile_map = build_tile_map
 	self.room_types = room_types
 	self.room_builder = room_builder
-	self.nav_region = navigation_region
+	self.navigation_region = navigation_region
 
 func on_left_mouse_button_press(event: InputEvent, offset: Vector2, zoom: Vector2) -> void:
 	selected_tile_coords = build_tile_map.local_to_map((event.position / zoom) + offset)
@@ -56,7 +56,7 @@ func get_room_details(room: Room) -> Dictionary:
 func confirm_delete() -> void:
 	Global.station.remove_room(selected_room)
 	room_builder.draw_rooms()
-	nav_region.bake_navigation_polygon()
+	navigation_region.bake_navigation_polygon()
 	action_completed.emit(Action.COMPLETE)
 
 func cancel_delete() -> void:
