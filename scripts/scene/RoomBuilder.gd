@@ -23,17 +23,20 @@ var any_invalid: bool = false
 var selected_room_type: RoomType 
 
 var base_tile_map: TileMap
-var build_tile_map: TileMap
 var base_tile_map_data: Dictionary = {}
+var build_tile_map: TileMap
+var furniture_tile_map: TileMap
+
 var room_types: Array[RoomType]
 
 var popup_message: String = ""
 
 enum Action {BACK, FORWARD, COMPLETE}
 
-func _init(base_tile_map_node: TileMap, build_tile_map_node: TileMap, room_types_arr: Array[RoomType]) -> void:
+func _init(base_tile_map_node: TileMap, build_tile_map_node: TileMap, furniture_tile_map_node: TileMap, room_types_arr: Array[RoomType]) -> void:
 	base_tile_map = base_tile_map_node
 	build_tile_map = build_tile_map_node
+	furniture_tile_map = furniture_tile_map_node
 	room_types = room_types_arr
 	
 	base_tile_map_data = save_base_tile_map_state()
@@ -169,6 +172,7 @@ func save_room() -> void:
 	new_room.topLeft = initial_tile_coords
 	new_room.bottomRight = transverse_tile_coords
 	new_room.doorTiles = temp_door_coords
+	new_room.generate_hotspots()
 	Global.station.add_room(new_room)
 
 func draw_rooms() -> void:
@@ -200,7 +204,6 @@ func draw_room(room) -> void:
 		tileset_mapper[Vector2i(x, min_y)] = Vector2i(3, 0) # north east
 		tileset_mapper[Vector2i(x, max_y - 1)] = Vector2i(2, 2) # south west
 	
-	
 	for room_type in room_types:
 		if (room_type.id == room.roomType.id):
 #			var tileset_id = room_type.tilesetId
@@ -223,6 +226,9 @@ func draw_room(room) -> void:
 					build_tile_map.set_cell(building_layer, doorTile, tileset_id, Vector2(0, 1)) 
 				elif doorTile.y == max_y - 1:
 					build_tile_map.set_cell(building_layer, doorTile, tileset_id, Vector2(3, 2))
+					
+			for hotspot in room.hotSpots:
+				furniture_tile_map.set_cell(0, hotspot, 0, Vector2(0, 1)) # TEMPORARY
 					
 func save_base_tile_map_state() -> Dictionary:
 	var tile_data = {}

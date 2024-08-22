@@ -6,6 +6,7 @@ extends Node
 @onready var nav_region: NavigationRegion2D = $"../NavigationRegion2D"
 @onready var base_tile_map: TileMap = $"../BaseTileMap"
 @onready var build_tile_map: TileMap = $"../BaseTileMap/BuildTileMap"
+@onready var furniture_tile_map: TileMap = $"../BaseTileMap/FurnitureTileMap"
 
 @onready var camera: Camera2D = $"../Camera2D"
 
@@ -27,7 +28,7 @@ func _init() -> void:
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	room_builder = RoomBuilder.new(base_tile_map, build_tile_map, room_types)
+	room_builder = RoomBuilder.new(base_tile_map, build_tile_map, furniture_tile_map, room_types)
 	room_builder.action_completed.connect(on_room_builder_action)
 	# Connect the buttons to the confirmation functions in the GUI script
 	GUI.build_menu.action_completed.connect(on_build_menu_action)

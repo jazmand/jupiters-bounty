@@ -108,6 +108,16 @@ func randomise_target_position() -> void:
 		target = Vector2(randf_range(2500.0, 6500.0), randf_range(1500.0, 3000.0))
 		set_movement_target(target)
 
+func randomise_target_position_in_room() -> void:
+	# get crew member assigned room
+	# find hotspots in room
+	# set target inside room
+	pass
+
+func _on_timer_timeout() -> void:
+	set_current_animation()
+	animation_player.play(current_animation)
+
 func _on_idling_state_entered() -> void:
 	animation_state = AnimationState.IDLE
 	set_sprite_visibility(animation_state)
@@ -143,14 +153,14 @@ func _on_walking_state_physics_processing(_delta: float) -> void:
 		#var y = -navigation_agent.target_position.y
 		#set_movement_target(Vector2(x,y))
 
-func _on_timer_timeout() -> void:
-	set_current_animation()
-	animation_player.play(current_animation)
-
 func _on_working_state_entered() -> void:
 	print("working...")
 	animation_state = AnimationState.IDLE
 	set_sprite_visibility(animation_state)
+
+func _on_working_state_physics_processing(_delta: float) -> void:
+	randomise_target_position_in_room()
+	pass # Replace with function body.
 
 func _on_working_state_exited() -> void:
 	print("stopped working")
