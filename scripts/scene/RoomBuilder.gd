@@ -59,7 +59,7 @@ func clear_selected_roomtype() -> void:
 func stop_drafting() -> void:
 	build_tile_map.clear_layer(drafting_layer)
 	action_completed.emit(Action.BACK)
-
+	Global.hide_cursor_label.emit()
 # --- Input functions ---
 
 func selecting_tile(event: InputEventMouseButton, offset: Vector2, zoom: Vector2, current_room_type: RoomType) -> void:
@@ -81,6 +81,10 @@ func drafting_room() -> void:
 func drafting_room_motion(event: InputEventMouseMotion, offset: Vector2, zoom: Vector2) -> void:
 	transverse_tile_coords = base_tile_map.local_to_map((event.position / zoom) + offset)
 	draft_room(initial_tile_coords, transverse_tile_coords)
+		
+	var room_size = calculate_tile_count(initial_tile_coords, transverse_tile_coords)
+	var room_cost_total = selected_room_type.price * room_size
+	Global.update_cursor_label.emit("Cost: " + str(room_cost_total), event.position)
 
 func setting_door(event: InputEventMouseButton, offset: Vector2, zoom: Vector2) -> void:
 	temp_door_coords = []
@@ -145,12 +149,10 @@ func set_doors(coords: Vector2i) -> void:
 	temp_door_coords.append(coords)
 
 func confirm_room_details() -> void:
-	for room_type in room_types:
-		if room_type.id == selected_room_type.id:
-			var room_size = calculate_tile_count(initial_tile_coords, transverse_tile_coords)
-			var room_cost_total = room_type.price * room_size
-			popup_message = "Build " + room_type.name + " for " + str(room_cost_total)
-			action_completed.emit(Action.FORWARD)
+	var room_size = calculate_tile_count(initial_tile_coords, transverse_tile_coords)
+	var room_cost_total = selected_room_type.price * room_size
+	popup_message = "Build " + selected_room_type.name + " for " + str(room_cost_total)
+	action_completed.emit(Action.FORWARD)
 
 func confirm_build() -> void:
 	save_room()

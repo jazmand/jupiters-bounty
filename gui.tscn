@@ -1,4 +1,4 @@
-[gd_scene load_steps=32 format=3 uid="uid://cpi6duyqx08ba"]
+[gd_scene load_steps=33 format=3 uid="uid://cpi6duyqx08ba"]
 
 [ext_resource type="Script" path="res://scripts/ui/GUI.gd" id="1_8pxxd"]
 [ext_resource type="Script" path="res://scripts/ui/GUIManager.gd" id="1_ekuro"]
@@ -21,6 +21,7 @@
 [ext_resource type="Script" path="res://scripts/ui/BuildMenu.gd" id="13_v3skq"]
 [ext_resource type="Script" path="res://scripts/ui/CrewInfo.gd" id="20_4c2ym"]
 [ext_resource type="Texture2D" uid="uid://dqhbp0k7cdmty" path="res://assets/GUI/crew_portrait_temp.png" id="20_f6383"]
+[ext_resource type="Script" path="res://CursorLabel.gd" id="22_ax7ld"]
 
 [sub_resource type="SystemFont" id="SystemFont_oc4iu"]
 font_names = PackedStringArray("Cascadia Code")
@@ -240,10 +241,11 @@ alignment = 1
 
 [node name="AddCrew" type="Button" parent="GUIManager"]
 layout_mode = 0
-offset_left = 1230.0
-offset_top = 71.0
-offset_right = 1313.0
-offset_bottom = 102.0
+offset_left = 1170.0
+offset_top = 64.0
+offset_right = 1318.0
+offset_bottom = 114.0
+theme_override_font_sizes/font_size = 30
 text = "Add Crew
 "
 
@@ -332,6 +334,15 @@ text = "Idle"
 [node name="AssignButton" type="Button" parent="GUIManager/CrewInfo/CrewInfoContainer/ActionContainer"]
 layout_mode = 2
 text = "Assign"
+
+[node name="CursorLabel" type="Label" parent="GUIManager"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 30
+script = ExtResource("22_ax7ld")
 
 [connection signal="pressed" from="GUIManager/BuildMenu/BuildButton" to="GUIManager/BuildMenu" method="_on_build_button_pressed"]
 [connection signal="pressed" from="GUIManager/BuildMenu/RoomPanel/BuildCloseButton" to="GUIManager/BuildMenu" method="_on_build_close_button_pressed"]
