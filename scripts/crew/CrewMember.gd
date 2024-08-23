@@ -1,11 +1,8 @@
-# CrewMember.gd
-
-class_name CrewMember
-extends CharacterBody2D
+class_name CrewMember extends CharacterBody2D
 
 signal state_transitioned(state: StringName)
 
-const Direction = {
+const DIRECTION = {
 	UP = Vector2(0, -1),
 	UP_RIGHT = Vector2(1, -1),
 	RIGHT = Vector2(1, 0),
@@ -16,7 +13,7 @@ const Direction = {
 	UP_LEFT = Vector2(-1, -1)
 }
 
-const AnimationState = {
+const ANIMATION_STATE = {
 	IDLE = &"idle",
 	WALK = &"walk",
 	WORK = &"work",
@@ -38,7 +35,7 @@ var info: CrewInfo
 var target = Vector2(0, 0)
 var current_direction = Vector2(0, 0)
 
-var animation_state = AnimationState.IDLE:
+var animation_state = ANIMATION_STATE.IDLE:
 	set(state):
 		animation_state = state
 		state_transitioned.emit(state)
@@ -72,32 +69,32 @@ func set_rounded_direction() -> void:
 
 func set_current_animation() -> void:
 	match current_direction:
-		Direction.UP:
+		DIRECTION.UP:
 			current_animation = animation_state + "_up"
-		Direction.UP_RIGHT:
+		DIRECTION.UP_RIGHT:
 			current_animation = animation_state + "_up_right"
-		Direction.RIGHT:
+		DIRECTION.RIGHT:
 			current_animation = animation_state + "_right"
-		Direction.DOWN_RIGHT:
+		DIRECTION.DOWN_RIGHT:
 			current_animation = animation_state + "_down_right"
-		Direction.DOWN:
+		DIRECTION.DOWN:
 			current_animation = animation_state + "_down"
-		Direction.DOWN_LEFT:
+		DIRECTION.DOWN_LEFT:
 			current_animation = animation_state + "_down_left"
-		Direction.LEFT:
+		DIRECTION.LEFT:
 			current_animation = animation_state + "_left"
-		Direction.UP_LEFT:
+		DIRECTION.UP_LEFT:
 			current_animation = animation_state + "_up_left"
 
 func set_sprite_visibility(state: StringName) -> void:
 	match state:
-		AnimationState.IDLE:
+		ANIMATION_STATE.IDLE:
 			sprite_idle.show()
 			sprite_walk.hide()
-		AnimationState.WALK:
+		ANIMATION_STATE.WALK:
 			sprite_idle.hide()
 			sprite_walk.show()
-		AnimationState.WORK:
+		ANIMATION_STATE.WORK:
 			sprite_idle.show()
 			sprite_walk.hide()
 
@@ -119,7 +116,7 @@ func _on_timer_timeout() -> void:
 	animation_player.play(current_animation)
 
 func _on_idling_state_entered() -> void:
-	animation_state = AnimationState.IDLE
+	animation_state = ANIMATION_STATE.IDLE
 	set_sprite_visibility(animation_state)
 	state_manager.set_expression_property(&"assignment", &"")
 
@@ -131,7 +128,7 @@ func _on_idling_state_physics_processing(delta: float) -> void:
 		randomise_target_position()
 
 func _on_walking_state_entered() -> void:
-	animation_state = AnimationState.WALK
+	animation_state = ANIMATION_STATE.WALK
 	set_sprite_visibility(animation_state)
 
 func _on_walking_state_physics_processing(_delta: float) -> void:
@@ -155,7 +152,7 @@ func _on_walking_state_physics_processing(_delta: float) -> void:
 
 func _on_working_state_entered() -> void:
 	print("working...")
-	animation_state = AnimationState.IDLE
+	animation_state = ANIMATION_STATE.IDLE
 	set_sprite_visibility(animation_state)
 
 func _on_working_state_physics_processing(_delta: float) -> void:

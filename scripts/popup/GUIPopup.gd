@@ -1,7 +1,4 @@
-# GUIPopup.gd
-
-class_name GUIPopup
-extends Panel
+class_name GUIPopup extends Panel
 
 @onready var title: Label = $Title
 @onready var content: RichTextLabel = $Content

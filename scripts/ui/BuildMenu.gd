@@ -1,7 +1,4 @@
-# BuildMenu.gd
-
-class_name BuildMenu
-extends Control
+class_name BuildMenu extends Control
 
 signal action_completed(action: int, room_type: RoomType)
 
@@ -50,8 +47,7 @@ func on_currency_updated(currency: int) -> void:
 		if child is Button and room_buttons.has(child.text):
 			var room: RoomType = room_buttons.get(child.text)
 			var button: Button = child as Button
-			if (room.price * room.minTiles) > currency:
+			if (room.price * room.min_tiles) > currency:
 				button.disabled = true
 			else:
 				button.disabled = false
-	

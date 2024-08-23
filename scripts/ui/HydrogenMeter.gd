@@ -1,5 +1,4 @@
-class_name HydrogenMeter
-extends Sprite2D
+class_name HydrogenMeter extends Sprite2D
 
 @onready var fluid: ProgressBar = $HydrogenMeterFluid
 

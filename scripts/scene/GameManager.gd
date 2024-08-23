@@ -1,9 +1,6 @@
-# GameManager.gd
+class_name GameManager extends Node
 
-class_name GameManager
-extends Node
-
-const crew_scene: PackedScene = preload("res://crew.tscn")
+const CREW_SCENE: PackedScene = preload("res://crew.tscn")
 
 @onready var camera: Camera2D = $Camera2D
 @onready var state_manager: StateChart = $StateManager
@@ -16,7 +13,7 @@ func _ready():
 	Global.crew_assigned.connect(crew_selected)
 
 func new_crew_member(position_vector: Vector2 = Vector2(5000, 3000)) -> CrewMember:
-	var crew_member: CrewMember = crew_scene.instantiate()
+	var crew_member: CrewMember = CREW_SCENE.instantiate()
 	crew_member.position = position_vector # Adjust spawning position
 	add_child(crew_member)
 	Global.station.add_crew(crew_member)
@@ -33,10 +30,10 @@ func _on_selecting_room_state_input(event: InputEvent) -> void:
 
 func select_room(selected_tile_coords: Vector2i, mouse_position: Vector2) -> void:
 	for room in Global.station.rooms:
-		var min_x = min(room.topLeft.x, room.bottomRight.x)
-		var max_x = max(room.topLeft.x, room.bottomRight.x)
-		var min_y = min(room.topLeft.y, room.bottomRight.y)
-		var max_y = max(room.topLeft.y, room.bottomRight.y)
+		var min_x = min(room.top_left.x, room.bottom_right.x)
+		var max_x = max(room.top_left.x, room.bottom_right.x)
+		var min_y = min(room.top_left.y, room.bottom_right.y)
+		var max_y = max(room.top_left.y, room.bottom_right.y)
 		
 		if selected_tile_coords.x >= min_x and selected_tile_coords.x <= max_x and selected_tile_coords.y >= min_y and selected_tile_coords.y <= max_y:
 			selected_crew.assign(room, (mouse_position / camera.zoom) + camera.offset)

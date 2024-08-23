@@ -21,7 +21,7 @@
 [ext_resource type="Script" path="res://scripts/ui/BuildMenu.gd" id="13_v3skq"]
 [ext_resource type="Script" path="res://scripts/ui/CrewInfo.gd" id="20_4c2ym"]
 [ext_resource type="Texture2D" uid="uid://dqhbp0k7cdmty" path="res://assets/GUI/crew_portrait_temp.png" id="20_f6383"]
-[ext_resource type="Script" path="res://CursorLabel.gd" id="22_ax7ld"]
+[ext_resource type="Script" path="res://scripts/ui/CursorLabel.gd" id="22_vskqf"]
 
 [sub_resource type="SystemFont" id="SystemFont_oc4iu"]
 font_names = PackedStringArray("Cascadia Code")
@@ -342,7 +342,7 @@ offset_bottom = 23.0
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 25
-script = ExtResource("22_ax7ld")
+script = ExtResource("22_vskqf")
 
 [connection signal="pressed" from="GUIManager/BuildMenu/BuildButton" to="GUIManager/BuildMenu" method="_on_build_button_pressed"]
 [connection signal="pressed" from="GUIManager/BuildMenu/RoomPanel/BuildCloseButton" to="GUIManager/BuildMenu" method="_on_build_close_button_pressed"]
