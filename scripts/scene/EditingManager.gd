@@ -1,7 +1,4 @@
-# EditingManager.gd
-
-class_name EditingManager
-extends Node
+class_name EditingManager extends Node
 
 @onready var nav_region: NavigationRegion2D = $"../NavigationRegion2D"
 @onready var base_tile_map: TileMap = $"../BaseTileMap"
@@ -21,7 +18,7 @@ var popup: GUIPopup
 	
 enum StateEvent {EDITING_STOP, EDITING_START, EDITING_BACK, EDITING_FORWARD}
 
-const Events = [&"editing_stop", &"editing_start", &"editing_back", &"editing_forward"]
+const EDIT_EVENTS = [&"editing_stop", &"editing_start", &"editing_back", &"editing_forward"]
 
 func _init() -> void:
 	# Load and initialize room types
@@ -58,11 +55,11 @@ func load_room_types() -> void:
 				room_type_instance.id = room_type_resource.id
 				room_type_instance.name = room_type_resource.name
 				room_type_instance.price = room_type_resource.price
-				room_type_instance.powerConsumption = room_type_resource.powerConsumption
+				room_type_instance.power_consumption = room_type_resource.power_consumption
 				room_type_instance.capacity = room_type_resource.capacity
-				room_type_instance.minTiles = room_type_resource.minTiles
-				room_type_instance.maxTiles = room_type_resource.maxTiles
-				room_type_instance.tilesetId = room_type_resource.tilesetId
+				room_type_instance.min_tiles = room_type_resource.min_tiles
+				room_type_instance.max_tiles = room_type_resource.max_tiles
+				room_type_instance.tileset_id = room_type_resource.tileset_id
 				# Add the room type instance to the list
 				room_types.append(room_type_instance)
 				
@@ -74,20 +71,20 @@ func on_room_editor_action(action: int) -> void:
 	var event: String
 	match action:
 		room_editor.Action.START:
-			event = Events[StateEvent.EDITING_START]
+			event = EDIT_EVENTS[StateEvent.EDITING_START]
 		room_editor.Action.BACK:
-			event = Events[StateEvent.EDITING_BACK]
+			event = EDIT_EVENTS[StateEvent.EDITING_BACK]
 		room_editor.Action.FORWARD:
-			event = Events[StateEvent.EDITING_FORWARD]
+			event = EDIT_EVENTS[StateEvent.EDITING_FORWARD]
 		room_editor.Action.COMPLETE:
-			event = Events[StateEvent.EDITING_STOP]
+			event = EDIT_EVENTS[StateEvent.EDITING_STOP]
 	state_manager.send_event(event)
 	
 func _on_selecting_room_state_input(event: InputEvent) -> void:
 	if event.is_action_pressed("select"):
 		room_editor.on_left_mouse_button_press(event, camera.offset, camera.zoom)
 	if event.is_action_pressed("exit"):
-		state_manager.send_event(Events[StateEvent.EDITING_STOP])
+		state_manager.send_event(EDIT_EVENTS[StateEvent.EDITING_STOP])
 
 func _on_deleting_room_state_entered() -> void:
 	popup.set_title(room_editor.popup_title).set_content(room_editor.popup_content).set_yes_text(room_editor.popup_yes_text).set_no_text(room_editor.popup_no_text).show()
@@ -97,5 +94,4 @@ func _on_deleting_room_state_exited() -> void:
 
 func _on_deleting_room_state_input(event: InputEvent) -> void:
 	if event.is_action_pressed("exit") or event.is_action_pressed("cancel"):
-		state_manager.send_event(Events[StateEvent.EDITING_STOP])
-
+		state_manager.send_event(EDIT_EVENTS[StateEvent.EDITING_STOP])

@@ -1,5 +1,4 @@
-class_name PowerMeter
-extends Sprite2D
+class_name PowerMeter extends Sprite2D
 
 @onready var power_label: Label = $Power
 @onready var dial: Sprite2D = $Dial
@@ -30,7 +29,7 @@ func on_power_updated(new_power: int) -> void:
 
 func update_power_reading(delta: float) -> void:
 	if current_power != target_power:
-		elapsed_time += delta 
+		elapsed_time += delta
 		var transition_amount = clamp(elapsed_time / POWER_CHANGE_DURATION, 0.0, 1.0)
 		
 		current_power = round(lerp(current_power, target_power, transition_amount))

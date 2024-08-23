@@ -1,5 +1,4 @@
-class_name StationInfo
-extends VBoxContainer
+class_name StationInfo extends VBoxContainer
 
 @onready var currency_label: Label = $Currency
 @onready var crew_label: Label = $Crew

@@ -1,7 +1,4 @@
-# RoomEditor.gd
-
-class_name RoomEditor
-extends Node
+class_name RoomEditor extends Node
 
 signal action_completed(action: int)
 
@@ -34,26 +31,26 @@ func on_left_mouse_button_press(event: InputEvent, offset: Vector2, zoom: Vector
 	
 func select_room(selected_tile_coords: Vector2i) -> void:
 	for room in Global.station.rooms:
-		var min_x = min(room.topLeft.x, room.bottomRight.x)
-		var max_x = max(room.topLeft.x, room.bottomRight.x)
-		var min_y = min(room.topLeft.y, room.bottomRight.y)
-		var max_y = max(room.topLeft.y, room.bottomRight.y)
+		var min_x = min(room.top_left.x, room.bottom_right.x)
+		var max_x = max(room.top_left.x, room.bottom_right.x)
+		var min_y = min(room.top_left.y, room.bottom_right.y)
+		var max_y = max(room.top_left.y, room.bottom_right.y)
 		
 		if selected_tile_coords.x >= min_x and selected_tile_coords.x <= max_x and selected_tile_coords.y >= min_y and selected_tile_coords.y <= max_y:
 			# The selected_tile_coords is within the room's range
 			selected_room = room
-			var room_size = calculate_tile_count(room.topLeft, room.bottomRight)
-			var room_cost = room.roomType.price * room_size
-			var room_consumption = room.roomType.powerConsumption * room_size
-			var room_width = abs(room.bottomRight.x - room.topLeft.x) + 1
-			var room_height = abs(room.bottomRight.y - room.topLeft.y) + 1
+			var room_size = calculate_tile_count(room.top_left, room.bottom_right)
+			var room_cost = room.room_type.price * room_size
+			var room_consumption = room.room_type.power_consumption * room_size
+			var room_width = abs(room.bottom_right.x - room.top_left.x) + 1
+			var room_height = abs(room.bottom_right.y - room.top_left.y) + 1
 			var consumption_text = ""
 			if room_consumption < 0:
 				consumption_text = "[b]Generates: [/b]" + str(-room_consumption) + "KW"
 			else:
 				consumption_text = "[b]Consumes: [/b]" + str(room_consumption) + "KW"
-			popup_title = room.roomType.name
-			popup_content = "[b]Dimensions: [/b]" + str(room_width) + "x" + str(room_height) + " tiles\n" + consumption_text + "\n\n[b]Refund: [/b]" + str(room_cost / 3) 
+			popup_title = room.room_type.name
+			popup_content = "[b]Dimensions: [/b]" + str(room_width) + "x" + str(room_height) + " tiles\n" + consumption_text + "\n\n[b]Refund: [/b]" + str(room_cost / 3)
 			popup_yes_text = "Delete"
 			popup_no_text = "Close"
 			action_completed.emit(Action.FORWARD)
@@ -74,4 +71,4 @@ func calculate_tile_count(vector1: Vector2, vector2: Vector2) -> int:
 	return difference_x * difference_y
 
 func calculate_room_price() -> int:
-	return selected_room.roomType.price * calculate_tile_count(selected_room.topLeft, selected_room.bottomRight)
+	return selected_room.room_type.price * calculate_tile_count(selected_room.top_left, selected_room.bottom_right)

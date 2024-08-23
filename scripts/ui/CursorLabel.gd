@@ -1,5 +1,4 @@
-class_name CursorLabel
-extends Label
+class_name CursorLabel extends Label
 
 func _ready():
 	hide()
@@ -14,8 +13,8 @@ func _on_update_cursor_label(new_text: String, new_position: Vector2) -> void:
 func _on_hide_cursor_label() -> void:
 	hide()
 
-func update_position(global_mouse_position: Vector2 ) -> void:
-	position = global_mouse_position + Vector2(20, -20) 
+func update_position(global_mouse_position: Vector2) -> void:
+	position = global_mouse_position + Vector2(20, -20)
 
-func update_text(text: String) -> void:
-	self.text = text
+func update_text(updated_text: String) -> void:
+	self.text = updated_text

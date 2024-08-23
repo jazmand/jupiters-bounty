@@ -1,7 +1,4 @@
-# Station.gd
-
-class_name Station
-extends Resource
+class_name Station extends Resource
 
 signal hydrogen_updated(hydrogen: int)
 signal max_hydrogen_updated(max_hydrogen: int)
@@ -61,7 +58,7 @@ func _init(p_id: int = 0, p_hydrogen: int = 0, p_power: int = 0, p_currency: int
 func calculate_power_consumption_all_rooms() -> int:
 	var total_consumption = 0
 	for room in rooms:
-		total_consumption += room.calculate_tile_count(room.topLeft, room.bottomRight) * room.roomType.powerConsumption
+		total_consumption += room.calculate_tile_count(room.top_left, room.bottom_right) * room.room_type.power_consumption
 	return -total_consumption
 	
 func update_power() -> void:
@@ -73,8 +70,8 @@ func update_hydrogen() -> void:
 func update_max_hydrogen() -> void:
 	var total_storage_tiles = 0
 	for room in rooms:
-		if room.roomType.id == ROOMTYPE.STORAGE_BAY:
-			total_storage_tiles += room.calculate_tile_count(room.topLeft, room.bottomRight)
+		if room.room_type.id == ROOMTYPE.STORAGE_BAY:
+			total_storage_tiles += room.calculate_tile_count(room.top_left, room.bottom_right)
 	max_hydrogen = 100 + (total_storage_tiles * 10)
 
 func add_crew(crew_member: CrewMember) -> void:

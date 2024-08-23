@@ -1,5 +1,4 @@
-class_name Clock
-extends Sprite2D
+class_name Clock extends Sprite2D
 
 @onready var time: Label = $Time
 
@@ -17,4 +16,3 @@ func update(in_game_time: int) -> void:
 
 func format_time(hours: int, minutes: int) -> String:
 	return str(hours).pad_zeros(2) + ":" + str(minutes).pad_zeros(2)
-

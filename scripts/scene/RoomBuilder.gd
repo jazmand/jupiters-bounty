@@ -1,7 +1,4 @@
-# RoomBuilder.gd
-
-class_name RoomBuilder
-extends Node
+class_name RoomBuilder extends Node
 
 signal action_completed(action: int)
 
@@ -21,7 +18,7 @@ var temp_door_coords: Array[Vector2i] = []
 
 var any_invalid: bool = false
 
-var selected_room_type: RoomType 
+var selected_room_type: RoomType
 
 var base_tile_map: TileMap
 var base_tile_map_data: Dictionary = {}
@@ -48,11 +45,11 @@ func _init(base_tile_map_node: TileMap, build_tile_map_node: TileMap, furniture_
 	# TEMPORARY. Initial room.
 	var new_room = Room.new()
 	new_room.id = generate_unique_room_id()
-	new_room.roomType = room_types[0];
-	new_room.topLeft = Vector2i(18, -4)
-	new_room.bottomRight = Vector2i(20, -5)
+	new_room.room_type = room_types[0];
+	new_room.top_left = Vector2i(18, -4)
+	new_room.bottom_right = Vector2i(20, -5)
 	set_doors(Vector2i(19, -4))
-	new_room.doorTiles.append(Vector2i(19, -4))
+	new_room.door_tiles.append(Vector2i(19, -4))
 	new_room.generate_hotspots()
 	Global.station.add_room(new_room)
 	draw_rooms()
@@ -89,7 +86,7 @@ func drafting_room_motion(event: InputEventMouseMotion, offset: Vector2, zoom: V
 		
 	var room_size = calculate_tile_count(initial_tile_coords, transverse_tile_coords)
 	var room_cost = selected_room_type.price * room_size
-	var room_consumption = selected_room_type.powerConsumption * room_size
+	var room_consumption = selected_room_type.power_consumption * room_size
 	update_cursor_with_room_info(room_cost, room_consumption, event.position)
 
 func setting_door(event: InputEventMouseButton, offset: Vector2, zoom: Vector2) -> void:
@@ -138,7 +135,7 @@ func draft_room(initial_corner: Vector2i, opposite_corner: Vector2i) -> void:
 			var coords = Vector2(x, y)
 			if !check_selection_valid(coords, true):
 				any_invalid = true
-				break  # If any tile is invalid, no need to continue checking
+				break # If any tile is invalid, no need to continue checking
 				
 	# Redraw the entire selection based on whether any tile was invalid
 	for x in range(min_x, max_x):
@@ -179,10 +176,10 @@ func cancel_build() -> void:
 func save_room() -> void:
 	var new_room = Room.new()
 	new_room.id = generate_unique_room_id()
-	new_room.roomType = selected_room_type
-	new_room.topLeft = initial_tile_coords
-	new_room.bottomRight = transverse_tile_coords
-	new_room.doorTiles = temp_door_coords
+	new_room.room_type = selected_room_type
+	new_room.top_left = initial_tile_coords
+	new_room.bottom_right = transverse_tile_coords
+	new_room.door_tiles = temp_door_coords
 	new_room.generate_hotspots()
 	Global.station.add_room(new_room)
 
@@ -196,10 +193,10 @@ func draw_rooms() -> void:
 		draw_room(room)
 		
 func draw_room(room) -> void:
-	var min_x = min(room.topLeft.x, room.bottomRight.x)
-	var max_x = max(room.topLeft.x, room.bottomRight.x) + 1
-	var min_y = min(room.topLeft.y, room.bottomRight.y)
-	var max_y = max(room.topLeft.y, room.bottomRight.y) + 1
+	var min_x = min(room.top_left.x, room.bottom_right.x)
+	var max_x = max(room.top_left.x, room.bottom_right.x) + 1
+	var min_y = min(room.top_left.y, room.bottom_right.y)
+	var max_y = max(room.top_left.y, room.bottom_right.y) + 1
 	
 	var tileset_mapper = {
 	Vector2i(min_x, min_y): Vector2i(2, 0), # north corner
@@ -217,8 +214,8 @@ func draw_room(room) -> void:
 		tileset_mapper[Vector2i(x, max_y - 1)] = Vector2i(2, 2) # south west
 	
 	for room_type in room_types:
-		if (room_type.id == room.roomType.id):
-#			var tileset_id = room_type.tilesetId
+		if (room_type.id == room.room_type.id):
+#			var tileset_id = room_type.tileset_id
 			var tileset_id = mock_room_tileset_id # TEMPORARY
 			# Iterate over the tiles within the room's boundaries and set them on the building layer
 			for x in range(min_x, max_x):
@@ -229,17 +226,17 @@ func draw_room(room) -> void:
 					build_tile_map.set_cell(building_layer, Vector2(x, y), tileset_id, tileset_coords)
 					base_tile_map.erase_cell(0, Vector2i(x, y))
 						
-			for doorTile in room.doorTiles:
+			for doorTile in room.door_tiles:
 				if doorTile.x == min_x:
 					build_tile_map.set_cell(building_layer, doorTile, tileset_id, Vector2(2, 1))
 				elif doorTile.x == max_x - 1:
 					build_tile_map.set_cell(building_layer, doorTile, tileset_id, Vector2(1, 2))
 				elif doorTile.y == min_y:
-					build_tile_map.set_cell(building_layer, doorTile, tileset_id, Vector2(0, 1)) 
+					build_tile_map.set_cell(building_layer, doorTile, tileset_id, Vector2(0, 1))
 				elif doorTile.y == max_y - 1:
 					build_tile_map.set_cell(building_layer, doorTile, tileset_id, Vector2(3, 2))
 					
-			for hotspot in room.hotSpots:
+			for hotspot in room.hot_spots:
 				furniture_tile_map.set_cell(0, hotspot, 0, Vector2(0, 1)) # TEMPORARY
 					
 func save_base_tile_map_state() -> Dictionary:
@@ -283,10 +280,10 @@ func check_selection_valid(coords: Vector2i, check_price_and_size: bool = false)
 		if (calculate_room_price() >= Global.station.currency):
 			return false
 			
-		if (tile_count < selected_room_type.minTiles or tile_count > selected_room_type.maxTiles):
+		if (tile_count < selected_room_type.min_tiles or tile_count > selected_room_type.max_tiles):
 			return false
 			
-		if room_width <= 1 or room_height <=1:
+		if room_width <= 1 or room_height <= 1:
 			return false
 			
 	return true
@@ -320,7 +317,7 @@ func is_on_room_edge_and_not_corner(coords: Vector2i) -> bool:
 
 func is_blocking_door(coords: Vector2i) -> bool:
 	for room in Global.station.rooms:
-		for doorTile in room.doorTiles:
+		for doorTile in room.door_tiles:
 			if (abs(coords.x - doorTile.x) + abs(coords.y - doorTile.y)) == 1:
 				return true
 	return false
@@ -333,4 +330,3 @@ func update_cursor_with_room_info(room_cost: int, room_consumption: int, cursor_
 		consumption_text = "Consumes: " + str(room_consumption) + "KW"
 	var label_text = "Cost: " + str(room_cost) + "\n" + consumption_text
 	Global.update_cursor_label.emit(label_text, cursor_position)
-
