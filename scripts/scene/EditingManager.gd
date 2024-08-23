@@ -32,7 +32,7 @@ func _ready() -> void:
 	room_editor = RoomEditor.new(build_tile_map, room_types, building_manager.room_builder, nav_region)
 	room_editor.action_completed.connect(on_room_editor_action)
 	# Connect the buttons to the confirmation functions in the GUI script
-	popup = GUI.manager.new_popup(room_editor.popup_message, false, room_editor.confirm_delete, room_editor.cancel_delete)
+	popup = GUI.manager.new_popup(false, room_editor.confirm_delete, room_editor.cancel_delete)
 
 func load_room_types() -> void:
 	var room_types_folder = "res://assets/room_type/"
@@ -87,10 +87,10 @@ func _on_selecting_room_state_input(event: InputEvent) -> void:
 	if event.is_action_pressed("select"):
 		room_editor.on_left_mouse_button_press(event, camera.offset, camera.zoom)
 	if event.is_action_pressed("exit"):
-			state_manager.send_event(Events[StateEvent.EDITING_STOP])
+		state_manager.send_event(Events[StateEvent.EDITING_STOP])
 
 func _on_deleting_room_state_entered() -> void:
-	popup.set_text(room_editor.popup_message).show()
+	popup.set_title(room_editor.popup_title).set_content(room_editor.popup_content).set_yes_text(room_editor.popup_yes_text).set_no_text(room_editor.popup_no_text).show()
 
 func _on_deleting_room_state_exited() -> void:
 	popup.hide()

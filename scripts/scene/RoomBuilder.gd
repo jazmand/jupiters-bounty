@@ -7,6 +7,7 @@ signal action_completed(action: int)
 
 var building_layer: int = 0
 var drafting_layer: int = 1
+var hotspot_layer: int = 0
 
 var selection_tileset_id: int = 0
 var drafting_tileset_id: int = 1
@@ -29,7 +30,10 @@ var furniture_tile_map: TileMap
 
 var room_types: Array[RoomType]
 
-var popup_message: String = ""
+var popup_title: String = ""
+var popup_content: String = ""
+var popup_yes_text: String = "Yes"
+var popup_no_text: String = "No"
 
 enum Action {BACK, FORWARD, COMPLETE}
 
@@ -49,6 +53,7 @@ func _init(base_tile_map_node: TileMap, build_tile_map_node: TileMap, furniture_
 	new_room.bottomRight = Vector2i(20, -5)
 	set_doors(Vector2i(19, -4))
 	new_room.doorTiles.append(Vector2i(19, -4))
+	new_room.generate_hotspots()
 	Global.station.add_room(new_room)
 	draw_rooms()
 
@@ -83,8 +88,9 @@ func drafting_room_motion(event: InputEventMouseMotion, offset: Vector2, zoom: V
 	draft_room(initial_tile_coords, transverse_tile_coords)
 		
 	var room_size = calculate_tile_count(initial_tile_coords, transverse_tile_coords)
-	var room_cost_total = selected_room_type.price * room_size
-	Global.update_cursor_label.emit("Cost: " + str(room_cost_total), event.position)
+	var room_cost = selected_room_type.price * room_size
+	var room_consumption = selected_room_type.powerConsumption * room_size
+	update_cursor_with_room_info(room_cost, room_consumption, event.position)
 
 func setting_door(event: InputEventMouseButton, offset: Vector2, zoom: Vector2) -> void:
 	temp_door_coords = []
@@ -150,8 +156,11 @@ func set_doors(coords: Vector2i) -> void:
 
 func confirm_room_details() -> void:
 	var room_size = calculate_tile_count(initial_tile_coords, transverse_tile_coords)
-	var room_cost_total = selected_room_type.price * room_size
-	popup_message = "Build " + selected_room_type.name + " for " + str(room_cost_total)
+	var room_cost = selected_room_type.price * room_size
+	var room_width = abs(transverse_tile_coords.x - initial_tile_coords.x) + 1
+	var room_height = abs(transverse_tile_coords.y - initial_tile_coords.y) + 1
+	popup_title = "Confirm Construction"
+	popup_content = "[b]Room Type: [/b]" + selected_room_type.name + "\n" + "[b]Dimensions: [/b]" + str(room_width) + "x" + str(room_height) + " tiles\n" + "[b]Cost: [/b]" + str(room_cost)
 	action_completed.emit(Action.FORWARD)
 
 func confirm_build() -> void:
@@ -181,6 +190,7 @@ func draw_rooms() -> void:
 	# Clear drafting layer
 	build_tile_map.clear_layer(drafting_layer)
 	build_tile_map.clear_layer(building_layer)
+	furniture_tile_map.clear_layer(hotspot_layer)
 	restore_base_tile_map_state()
 	for room in Global.station.rooms:
 		draw_room(room)
@@ -314,4 +324,13 @@ func is_blocking_door(coords: Vector2i) -> bool:
 			if (abs(coords.x - doorTile.x) + abs(coords.y - doorTile.y)) == 1:
 				return true
 	return false
-	
+
+func update_cursor_with_room_info(room_cost: int, room_consumption: int, cursor_position: Vector2) -> void:
+	var consumption_text = ""
+	if room_consumption < 0:
+		consumption_text = "Generates: " + str(-room_consumption) + "KW"
+	else:
+		consumption_text = "Consumes: " + str(room_consumption) + "KW"
+	var label_text = "Cost: " + str(room_cost) + "\n" + consumption_text
+	Global.update_cursor_label.emit(label_text, cursor_position)
+

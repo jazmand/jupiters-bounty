@@ -59,17 +59,13 @@ func _init(p_id: int = 0, p_hydrogen: int = 0, p_power: int = 0, p_currency: int
 	update_max_hydrogen()
 
 func calculate_power_consumption_all_rooms() -> int:
-	var total_consuming_tiles = 0
-	var total_producing_tiles = 0
+	var total_consumption = 0
 	for room in rooms:
-		if room.roomType.id == ROOMTYPE.GENERATOR_ROOM:
-			total_producing_tiles += room.calculate_tile_count(room.topLeft, room.bottomRight)
-		else:
-			total_consuming_tiles += room.calculate_tile_count(room.topLeft, room.bottomRight)
-	return total_producing_tiles - total_consuming_tiles
+		total_consumption += room.calculate_tile_count(room.topLeft, room.bottomRight) * room.roomType.powerConsumption
+	return -total_consumption
 	
 func update_power() -> void:
-	power = calculate_power_consumption_all_rooms() * 100
+	power = calculate_power_consumption_all_rooms()
 
 func update_hydrogen() -> void:
 	hydrogen += 5
