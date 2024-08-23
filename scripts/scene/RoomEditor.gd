@@ -15,7 +15,10 @@ var room_types: Array[RoomType]
 var room_builder: RoomBuilder
 var navigation_region: NavigationRegion2D
 
-var popup_message: String = ""
+var popup_title: String = ""
+var popup_content: String = ""
+var popup_yes_text: String = "Yes"
+var popup_no_text: String = "No"
 
 enum Action {START, BACK, FORWARD, COMPLETE}
 
@@ -39,24 +42,27 @@ func select_room(selected_tile_coords: Vector2i) -> void:
 		if selected_tile_coords.x >= min_x and selected_tile_coords.x <= max_x and selected_tile_coords.y >= min_y and selected_tile_coords.y <= max_y:
 			# The selected_tile_coords is within the room's range
 			selected_room = room
-			var room_details = get_room_details(room)
-			popup_message = "You have selected " + room_details.name + " it's size is " + str(room_details.size) + " and it's power consumption is " + str(room_details.powerConsumption)
+			var room_size = calculate_tile_count(room.topLeft, room.bottomRight)
+			var room_cost = room.roomType.price * room_size
+			var room_consumption = room.roomType.powerConsumption * room_size
+			var room_width = abs(room.bottomRight.x - room.topLeft.x) + 1
+			var room_height = abs(room.bottomRight.y - room.topLeft.y) + 1
+			var consumption_text = ""
+			if room_consumption < 0:
+				consumption_text = "[b]Generates: [/b]" + str(-room_consumption) + "KW"
+			else:
+				consumption_text = "[b]Consumes: [/b]" + str(room_consumption) + "KW"
+			popup_title = room.roomType.name
+			popup_content = "[b]Dimensions: [/b]" + str(room_width) + "x" + str(room_height) + " tiles\n" + consumption_text + "\n\n[b]Refund: [/b]" + str(room_cost / 3) 
+			popup_yes_text = "Delete"
+			popup_no_text = "Close"
 			action_completed.emit(Action.FORWARD)
-			
-func get_room_details(room: Room) -> Dictionary:
-	# Create a JSON dictionary
-	var room_details = {}
-	for room_type in room_types:
-		if room_type.id == room.roomType.id:
-			room_details.name = room_type.name
-			room_details.size = calculate_tile_count(room.topLeft, room.bottomRight)
-			room_details.powerConsumption = room_type.powerConsumption * room_details.size
-	return room_details
 
 func confirm_delete() -> void:
 	Global.station.remove_room(selected_room)
 	room_builder.draw_rooms()
 	navigation_region.bake_navigation_polygon()
+	Global.station.currency += (calculate_room_price() / 3) # Refunds 1/3 the original cost
 	action_completed.emit(Action.COMPLETE)
 
 func cancel_delete() -> void:
@@ -66,3 +72,6 @@ func calculate_tile_count(vector1: Vector2, vector2: Vector2) -> int:
 	var difference_x = abs(vector2.x - vector1.x) + 1
 	var difference_y = abs(vector2.y - vector1.y) + 1
 	return difference_x * difference_y
+
+func calculate_room_price() -> int:
+	return selected_room.roomType.price * calculate_tile_count(selected_room.topLeft, selected_room.bottomRight)

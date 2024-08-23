@@ -32,7 +32,7 @@ func _ready() -> void:
 	room_builder.action_completed.connect(on_room_builder_action)
 	# Connect the buttons to the confirmation functions in the GUI script
 	GUI.build_menu.action_completed.connect(on_build_menu_action)
-	popup = GUI.manager.new_popup(room_builder.popup_message, false, room_builder.confirm_build, room_builder.cancel_build)
+	popup = GUI.manager.new_popup(false, room_builder.confirm_build, room_builder.cancel_build)
 
 func load_room_types() -> void:
 	var room_types_folder = "res://assets/room_type/"
@@ -136,7 +136,7 @@ func _on_setting_door_state_input(event: InputEvent) -> void:
 		room_builder.setting_door_motion(event, camera.position, camera.zoom)
 
 func _on_confirming_room_state_entered() -> void:
-	popup.set_text(room_builder.popup_message).show()
+	popup.set_title(room_builder.popup_title).set_content(room_builder.popup_content).set_yes_text(room_builder.popup_yes_text).set_no_text(room_builder.popup_no_text).show()
 
 func _on_confirming_room_state_exited() -> void:
 	popup.hide()
