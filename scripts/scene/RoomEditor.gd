@@ -31,7 +31,7 @@ func on_left_mouse_button_press(event: InputEvent, offset: Vector2, zoom: Vector
 		if not room:
 			return
 		selected_room = room
-		var room_size = calculate_tile_count(room.data.top_left, room.data.bottom_right)
+		var room_size = Room.calculate_tile_count(room.data.top_left, room.data.bottom_right)
 		var room_cost = room.data.type.price * room_size
 		var room_consumption = room.data.type.power_consumption * room_size
 		var room_width = abs(room.data.bottom_right.x - room.data.top_left.x) + 1
@@ -51,16 +51,10 @@ func on_left_mouse_button_press(event: InputEvent, offset: Vector2, zoom: Vector
 func confirm_delete() -> void:
 	Global.station.remove_room(selected_room)
 	room_builder.draw_rooms()
-	Global.station.currency += (calculate_room_price() / 3) # Refunds 1/3 the original cost
+	var room_size = Room.calculate_tile_count(selected_room.data.top_left, selected_room.data.bottom_right)
+	var price = Room.calculate_room_price(selected_room.data.type.price, room_size)
+	Global.station.currency += (price / 3) # Refunds 1/3 the original cost
 	action_completed.emit(Action.COMPLETE)
 
 func cancel_delete() -> void:
 	action_completed.emit(Action.COMPLETE)
-
-func calculate_tile_count(vector1: Vector2, vector2: Vector2) -> int:
-	var difference_x = abs(vector2.x - vector1.x) + 1
-	var difference_y = abs(vector2.y - vector1.y) + 1
-	return difference_x * difference_y
-
-func calculate_room_price() -> int:
-	return selected_room.data.type.price * calculate_tile_count(selected_room.data.top_left, selected_room.data.bottom_right)
