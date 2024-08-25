@@ -241,15 +241,15 @@ func draw_room(room) -> void:
 					build_tile_map.set_cell(building_layer, Vector2(x, y), tileset_id, tileset_coords)
 					base_tile_map.erase_cell(0, Vector2i(x, y))
 						
-			for doorTile in room.door_tiles:
-				if doorTile.x == min_x:
-					build_tile_map.set_cell(building_layer, doorTile, tileset_id, Vector2(2, 1))
-				elif doorTile.x == max_x - 1:
-					build_tile_map.set_cell(building_layer, doorTile, tileset_id, Vector2(1, 2))
-				elif doorTile.y == min_y:
-					build_tile_map.set_cell(building_layer, doorTile, tileset_id, Vector2(0, 1))
-				elif doorTile.y == max_y - 1:
-					build_tile_map.set_cell(building_layer, doorTile, tileset_id, Vector2(3, 2))
+			for door_tile in room.door_tiles:
+				if door_tile.x == min_x:
+					build_tile_map.set_cell(building_layer, door_tile, tileset_id, Vector2(2, 1))
+				elif door_tile.x == max_x - 1:
+					build_tile_map.set_cell(building_layer, door_tile, tileset_id, Vector2(1, 2))
+				elif door_tile.y == min_y:
+					build_tile_map.set_cell(building_layer, door_tile, tileset_id, Vector2(0, 1))
+				elif door_tile.y == max_y - 1:
+					build_tile_map.set_cell(building_layer, door_tile, tileset_id, Vector2(3, 2))
 					
 			for hotspot in room.hot_spots:
 				furniture_tile_map.set_cell(0, hotspot, 0, Vector2(0, 1)) # TEMPORARY

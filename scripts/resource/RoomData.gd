@@ -15,7 +15,7 @@ func _init(
 	room_bottom_right: Vector2i = Vector2i(0, 0)
 ):
 	id = room_id
-	room_type = room_type
+	type = room_type
 	top_left = room_top_left
 	bottom_right = room_bottom_right
 	door_tiles = []
