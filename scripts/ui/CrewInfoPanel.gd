@@ -26,9 +26,9 @@ func display_crew_info(crew_member: CrewMember) -> void:
 	assign_button.pressed.connect(start_assigning)
 	idle_button.disabled = crew_member.state == crew_member.STATE.IDLE
 	assign_button.disabled = false
-	name_edit.text = crew_member.info.name
-	info_age.text = "Age: %s" % crew_member.info.age
-	info_hometown.text = "Hometown: %s" % crew_member.info.hometown
+	name_edit.text = crew_member.data.name
+	info_age.text = "Age: %s" % crew_member.data.age
+	info_hometown.text = "Hometown: %s" % crew_member.data.hometown
 
 func reset_panel() -> void:
 	if crew == null:
@@ -78,7 +78,7 @@ func update_available_actions(state: StringName) -> void:
 
 
 func _on_name_edit_text_changed() -> void:
-	crew.info.name = name_edit.text
+	crew.data.name = name_edit.text
 
 func cycle_crew_members(diff: int) -> void:
 	var all_crew = Global.station.crew

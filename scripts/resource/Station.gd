@@ -78,7 +78,7 @@ func remove_crew(crew_member: CrewMember) -> void:
 
 func find_crew_by_id(crew_id: int) -> CrewMember:
 	for crew_member in crew:
-		if crew_member.info.id == crew_id:
+		if crew_member.data.id == crew_id:
 			return crew_member
 	return null
 	

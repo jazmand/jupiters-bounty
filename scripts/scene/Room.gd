@@ -42,6 +42,6 @@ func can_assign_crew() -> bool:
 	return data.assigned_crew_ids.size() < data.hot_spots.size()
 
 func assign_crew(crew: CrewMember) -> Vector2:
-	data.assigned_crew_ids.append(crew.info.id)
+	data.assigned_crew_ids.append(crew.data.id)
 	return data.hot_spots[data.assigned_crew_ids.size() - 1]
 

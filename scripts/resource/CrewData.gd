@@ -1,4 +1,4 @@
-class_name CrewInfo extends Resource
+class_name CrewData extends Resource
 
 var first_names: Array[String] = [
 	"Judith",

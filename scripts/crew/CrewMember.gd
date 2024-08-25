@@ -30,7 +30,7 @@ const STATE = {
 @onready var sprite_walk: Sprite2D = $AgathaWalk
 @onready var area: Area2D = $Area2D
 
-var info: CrewInfo
+var data: CrewData
 
 var target = Vector2(0, 0)
 var current_direction = Vector2(0, 0)
@@ -47,8 +47,8 @@ var idle_timer = 0.0
 var idle_time_limit = 2.0
 
 func _ready() -> void:
-	info = CrewInfo.new()
-	print(info.name)
+	data = CrewData.new()
+	print(data.name)
 	navigation_timer.timeout.connect(_on_timer_timeout)
 	call_deferred("actor_setup")
 	area.input_event.connect(_on_input_event)
@@ -175,7 +175,7 @@ func can_assign() -> bool:
 
 func assign(room: Room, center: Vector2) -> void:
 	state_manager.send_event(&"assigned")
-	print(info.name, " assigned to room ", room.data.id)
+	print(data.name, " assigned to room ", room.data.id)
 	set_movement_target(center)
 	state_manager.set_expression_property(&"assignment", &"work")
 	state_manager.send_event(&"walk")

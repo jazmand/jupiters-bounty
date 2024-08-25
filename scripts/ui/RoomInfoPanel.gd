@@ -50,7 +50,7 @@ func display_room_info(selected_room: Room) -> void:
 func display_worker_info(selected_room: Room) -> void:
 	for crew_id in selected_room.data.assigned_crew_ids:
 		var crew: CrewMember = Global.station.find_crew_by_id(crew_id)
-		var display_text = "%s (%d)" % [crew.info.name, crew.info.age]
+		var display_text = "%s (%d)" % [crew.data.name, crew.data.age]
 		worker_list.add_item(display_text, null, false)
 
 func update_worker_info() -> void:
