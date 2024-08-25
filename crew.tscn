@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://6ddc1y0q3bhc"]
+[gd_scene load_steps=32 format=3 uid="uid://6ddc1y0q3bhc"]
 
 [ext_resource type="Script" path="res://scripts/crew/CrewMember.gd" id="1_rgjpg"]
 [ext_resource type="Texture2D" uid="uid://dhxmp0xpmlnfc" path="res://assets/sprites/idle_agatha.png" id="2_uo5jt"]
@@ -303,13 +303,6 @@ _data = {
 "walk_up_right": SubResource("Animation_i03w8")
 }
 
-[sub_resource type="GDScript" id="GDScript_u1h6i"]
-script/source = "extends Area2D
-
-signal gui_toggle
-
-"
-
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_ynwli"]
 radius = 39.0
 height = 324.0
@@ -434,7 +427,6 @@ libraries = {
 [node name="Area2D" type="Area2D" parent="."]
 collision_layer = 32768
 collision_mask = 32768
-script = SubResource("GDScript_u1h6i")
 metadata/_edit_lock_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
