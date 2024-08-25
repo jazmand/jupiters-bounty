@@ -2,14 +2,16 @@ class_name RoomEditor extends Node
 
 signal action_completed(action: int)
 
+@onready var build_tile_map: TileMap = %BuildTileMap
+@onready var editing_manager: EditingManager = %EditingManager
+@onready var room_builder: RoomBuilder = %RoomBuilder
+
 var selected_tile_coords = Vector2i()
 var selected_room: Room
 var building_layer: int = 0
 
-var build_tile_map: TileMap
 var rooms: Array[Room]
 var room_types: Array[RoomType]
-var room_builder: RoomBuilder
 
 var popup_title: String = ""
 var popup_content: String = ""
@@ -18,10 +20,8 @@ var popup_no_text: String = "No"
 
 enum Action {START, BACK, FORWARD, COMPLETE}
 
-func _init(build_map: TileMap, types: Array[RoomType], builder: RoomBuilder):
-	build_tile_map = build_map
-	room_types = types
-	room_builder = builder
+func _ready():
+	room_types = editing_manager.room_types
 
 func on_left_mouse_button_press(event: InputEvent, offset: Vector2, zoom: Vector2) -> void:
 	selected_tile_coords = build_tile_map.local_to_map((event.position / zoom) + offset)
