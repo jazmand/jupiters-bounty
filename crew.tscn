@@ -7,20 +7,19 @@
 [ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="4_en38c"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/parallel_state.gd" id="5_hdvyl"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="5_me8bf"]
-[ext_resource type="Script" path="res://scripts/crew/Area2D.gd" id="7_erar8"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="7_yl87e"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/expression_guard.gd" id="9_xlf2i"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_6x332"]
 radius = 40.0125
 
-[sub_resource type="Resource" id="Resource_iydo8"]
-script = ExtResource("9_xlf2i")
-expression = "assignment == \"work\""
-
 [sub_resource type="Resource" id="Resource_a4okr"]
 script = ExtResource("9_xlf2i")
 expression = "assignment == \"\""
+
+[sub_resource type="Resource" id="Resource_iydo8"]
+script = ExtResource("9_xlf2i")
+expression = "assignment == \"work\""
 
 [sub_resource type="Animation" id="Animation_8m754"]
 length = 0.001
@@ -304,6 +303,13 @@ _data = {
 "walk_up_right": SubResource("Animation_i03w8")
 }
 
+[sub_resource type="GDScript" id="GDScript_u1h6i"]
+script/source = "extends Area2D
+
+signal gui_toggle
+
+"
+
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_ynwli"]
 radius = 39.0
 height = 324.0
@@ -360,17 +366,22 @@ event = &"walk"
 [node name="Walking" type="Node" parent="CrewStateManager/ParallelState/CrewState"]
 script = ExtResource("5_me8bf")
 
-[node name="ToWorking" type="Node" parent="CrewStateManager/ParallelState/CrewState/Walking"]
-script = ExtResource("7_yl87e")
-to = NodePath("../../Working")
-event = &"to_assignment"
-guard = SubResource("Resource_iydo8")
-
 [node name="ToIdling" type="Node" parent="CrewStateManager/ParallelState/CrewState/Walking"]
+script = ExtResource("7_yl87e")
+to = NodePath("../../Idling")
+event = &"idle"
+
+[node name="ToIdlingFromAssignment" type="Node" parent="CrewStateManager/ParallelState/CrewState/Walking"]
 script = ExtResource("7_yl87e")
 to = NodePath("../../Idling")
 event = &"to_assignment"
 guard = SubResource("Resource_a4okr")
+
+[node name="ToWorkingFromAssignment" type="Node" parent="CrewStateManager/ParallelState/CrewState/Walking"]
+script = ExtResource("7_yl87e")
+to = NodePath("../../Working")
+event = &"to_assignment"
+guard = SubResource("Resource_iydo8")
 
 [node name="Working" type="Node" parent="CrewStateManager/ParallelState/CrewState"]
 script = ExtResource("5_me8bf")
@@ -423,7 +434,7 @@ libraries = {
 [node name="Area2D" type="Area2D" parent="."]
 collision_layer = 32768
 collision_mask = 32768
-script = ExtResource("7_erar8")
+script = SubResource("GDScript_u1h6i")
 metadata/_edit_lock_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]

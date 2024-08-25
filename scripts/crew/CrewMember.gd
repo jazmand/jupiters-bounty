@@ -13,7 +13,7 @@ const DIRECTION = {
 	UP_LEFT = Vector2(-1, -1)
 }
 
-const ANIMATION_STATE = {
+const STATE = {
 	IDLE = &"idle",
 	WALK = &"walk",
 	WORK = &"work",
@@ -35,11 +35,13 @@ var info: CrewInfo
 var target = Vector2(0, 0)
 var current_direction = Vector2(0, 0)
 
-var animation_state = ANIMATION_STATE.IDLE:
-	set(state):
-		animation_state = state
+var state = STATE.IDLE:
+	set(animation_state):
+		state = animation_state
 		state_transitioned.emit(state)
-var current_animation = animation_state + "_down"
+		set_sprite_visibility(state)
+		
+var current_animation = state + "_down"
 
 var idle_timer = 0.0
 var idle_time_limit = 2.0
@@ -49,11 +51,19 @@ func _ready() -> void:
 	print(info.name)
 	navigation_timer.timeout.connect(_on_timer_timeout)
 	call_deferred("actor_setup")
-	area.gui_toggle.connect(select)
-
+	area.input_event.connect(_on_input_event)
+	area.mouse_entered.connect(func(): Global.is_crew_input = true)
+	area.mouse_exited.connect(func(): Global.is_crew_input = false)
+	
 func actor_setup():
 	await get_tree().physics_frame
 	set_movement_target(target)
+
+func _on_input_event(viewport, event, _shape_idx):
+	if event.is_action_pressed("select"):
+		viewport.set_input_as_handled()
+		select()
+
 
 func select() -> void:
 	Global.crew_selected.emit(self)
@@ -68,6 +78,7 @@ func set_rounded_direction() -> void:
 	current_direction = direction
 
 func set_current_animation() -> void:
+	var animation_state = STATE.WALK if state == STATE.WALK else STATE.IDLE
 	match current_direction:
 		DIRECTION.UP:
 			current_animation = animation_state + "_up"
@@ -86,15 +97,15 @@ func set_current_animation() -> void:
 		DIRECTION.UP_LEFT:
 			current_animation = animation_state + "_up_left"
 
-func set_sprite_visibility(state: StringName) -> void:
-	match state:
-		ANIMATION_STATE.IDLE:
+func set_sprite_visibility(animation_state: StringName) -> void:
+	match animation_state:
+		STATE.IDLE:
 			sprite_idle.show()
 			sprite_walk.hide()
-		ANIMATION_STATE.WALK:
+		STATE.WALK:
 			sprite_idle.hide()
 			sprite_walk.show()
-		ANIMATION_STATE.WORK:
+		STATE.WORK:
 			sprite_idle.show()
 			sprite_walk.hide()
 
@@ -116,8 +127,8 @@ func _on_timer_timeout() -> void:
 	animation_player.play(current_animation)
 
 func _on_idling_state_entered() -> void:
-	animation_state = ANIMATION_STATE.IDLE
-	set_sprite_visibility(animation_state)
+	state = STATE.IDLE
+	navigation_agent.target_position = position
 	state_manager.set_expression_property(&"assignment", &"")
 
 func _on_idling_state_physics_processing(delta: float) -> void:
@@ -128,8 +139,7 @@ func _on_idling_state_physics_processing(delta: float) -> void:
 		randomise_target_position()
 
 func _on_walking_state_entered() -> void:
-	animation_state = ANIMATION_STATE.WALK
-	set_sprite_visibility(animation_state)
+	state = STATE.WALK
 
 func _on_walking_state_physics_processing(_delta: float) -> void:
 	if navigation_agent.is_navigation_finished():
@@ -152,12 +162,10 @@ func _on_walking_state_physics_processing(_delta: float) -> void:
 
 func _on_working_state_entered() -> void:
 	print("working...")
-	animation_state = ANIMATION_STATE.IDLE
-	set_sprite_visibility(animation_state)
+	state = STATE.WORK
 
 func _on_working_state_physics_processing(_delta: float) -> void:
 	randomise_target_position_in_room()
-	pass # Replace with function body.
 
 func _on_working_state_exited() -> void:
 	print("stopped working")
@@ -167,7 +175,7 @@ func can_assign() -> bool:
 
 func assign(room: Room, center: Vector2) -> void:
 	state_manager.send_event(&"assigned")
-	print(info.name, " assigned to room ", room.id)
+	print(info.name, " assigned to room ", room.data.id)
 	set_movement_target(center)
 	state_manager.set_expression_property(&"assignment", &"work")
 	state_manager.send_event(&"walk")

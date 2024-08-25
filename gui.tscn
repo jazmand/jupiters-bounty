@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://cpi6duyqx08ba"]
+[gd_scene load_steps=34 format=3 uid="uid://cpi6duyqx08ba"]
 
 [ext_resource type="Script" path="res://scripts/ui/GUI.gd" id="1_8pxxd"]
 [ext_resource type="Script" path="res://scripts/ui/GUIManager.gd" id="1_ekuro"]
@@ -19,8 +19,9 @@
 [ext_resource type="Texture2D" uid="uid://bcr0cjkhy5ik" path="res://assets/GUI/light-burst.png" id="12_3fce4"]
 [ext_resource type="Script" path="res://scripts/ui/Clock.gd" id="12_nuort"]
 [ext_resource type="Script" path="res://scripts/ui/BuildMenu.gd" id="13_v3skq"]
-[ext_resource type="Script" path="res://scripts/ui/CrewInfo.gd" id="20_4c2ym"]
+[ext_resource type="Script" path="res://scripts/ui/CrewInfoPanel.gd" id="20_d483j"]
 [ext_resource type="Texture2D" uid="uid://dqhbp0k7cdmty" path="res://assets/GUI/crew_portrait_temp.png" id="20_f6383"]
+[ext_resource type="Script" path="res://scripts/ui/RoomInfoPanel.gd" id="21_u5e38"]
 [ext_resource type="Script" path="res://scripts/ui/CursorLabel.gd" id="22_vskqf"]
 
 [sub_resource type="SystemFont" id="SystemFont_oc4iu"]
@@ -249,7 +250,7 @@ theme_override_font_sizes/font_size = 30
 text = "Add Crew
 "
 
-[node name="CrewInfo" type="PanelContainer" parent="GUIManager"]
+[node name="CrewInfoPanel" type="PanelContainer" parent="GUIManager"]
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.767
@@ -260,23 +261,23 @@ offset_left = -0.640015
 offset_top = -0.320023
 offset_right = 0.319946
 offset_bottom = 0.279968
-script = ExtResource("20_4c2ym")
+script = ExtResource("20_d483j")
 
-[node name="CrewInfoContainer" type="VBoxContainer" parent="GUIManager/CrewInfo"]
+[node name="CrewInfoContainer" type="VBoxContainer" parent="GUIManager/CrewInfoPanel"]
 layout_mode = 2
 metadata/_edit_lock_ = true
 
-[node name="HeaderContainer" type="HBoxContainer" parent="GUIManager/CrewInfo/CrewInfoContainer"]
+[node name="HeaderContainer" type="HBoxContainer" parent="GUIManager/CrewInfoPanel/CrewInfoContainer"]
 custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 metadata/_edit_lock_ = true
 
-[node name="NameEdit" type="TextEdit" parent="GUIManager/CrewInfo/CrewInfoContainer/HeaderContainer"]
+[node name="NameEdit" type="TextEdit" parent="GUIManager/CrewInfoPanel/CrewInfoContainer/HeaderContainer"]
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="CloseButton" type="Button" parent="GUIManager/CrewInfo/CrewInfoContainer/HeaderContainer"]
+[node name="CloseButton" type="Button" parent="GUIManager/CrewInfoPanel/CrewInfoContainer/HeaderContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 20
@@ -285,17 +286,17 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_sfqun")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_xynr2")
 text = "X"
 
-[node name="PortraitContainer" type="HBoxContainer" parent="GUIManager/CrewInfo/CrewInfoContainer"]
+[node name="PortraitContainer" type="HBoxContainer" parent="GUIManager/CrewInfoPanel/CrewInfoContainer"]
 custom_minimum_size = Vector2(0, 150)
 layout_mode = 2
 metadata/_edit_lock_ = true
 
-[node name="PreviousCrewButton" type="Button" parent="GUIManager/CrewInfo/CrewInfoContainer/PortraitContainer"]
+[node name="PreviousCrewButton" type="Button" parent="GUIManager/CrewInfoPanel/CrewInfoContainer/PortraitContainer"]
 custom_minimum_size = Vector2(25, 0)
 layout_mode = 2
 text = "<"
 
-[node name="TextureRect" type="TextureRect" parent="GUIManager/CrewInfo/CrewInfoContainer/PortraitContainer"]
+[node name="TextureRect" type="TextureRect" parent="GUIManager/CrewInfoPanel/CrewInfoContainer/PortraitContainer"]
 custom_minimum_size = Vector2(82, 100)
 layout_mode = 2
 size_flags_horizontal = 6
@@ -304,36 +305,120 @@ texture = ExtResource("20_f6383")
 expand_mode = 1
 stretch_mode = 4
 
-[node name="NextCrewButton" type="Button" parent="GUIManager/CrewInfo/CrewInfoContainer/PortraitContainer"]
+[node name="NextCrewButton" type="Button" parent="GUIManager/CrewInfoPanel/CrewInfoContainer/PortraitContainer"]
 custom_minimum_size = Vector2(25, 0)
 layout_mode = 2
 text = ">"
 
-[node name="InfoContainer" type="VBoxContainer" parent="GUIManager/CrewInfo/CrewInfoContainer"]
+[node name="InfoContainer" type="VBoxContainer" parent="GUIManager/CrewInfoPanel/CrewInfoContainer"]
 custom_minimum_size = Vector2(0, 150)
 layout_mode = 2
 metadata/_edit_lock_ = true
 
-[node name="AgeLabel" type="Label" parent="GUIManager/CrewInfo/CrewInfoContainer/InfoContainer"]
+[node name="AgeLabel" type="Label" parent="GUIManager/CrewInfoPanel/CrewInfoContainer/InfoContainer"]
 layout_mode = 2
 horizontal_alignment = 1
 
-[node name="HometownLabel" type="Label" parent="GUIManager/CrewInfo/CrewInfoContainer/InfoContainer"]
+[node name="HometownLabel" type="Label" parent="GUIManager/CrewInfoPanel/CrewInfoContainer/InfoContainer"]
 layout_mode = 2
 horizontal_alignment = 1
 
-[node name="ActionContainer" type="VBoxContainer" parent="GUIManager/CrewInfo/CrewInfoContainer"]
+[node name="ActionContainer" type="VBoxContainer" parent="GUIManager/CrewInfoPanel/CrewInfoContainer"]
 layout_mode = 2
 size_flags_vertical = 3
 metadata/_edit_lock_ = true
 
-[node name="IdleButton" type="Button" parent="GUIManager/CrewInfo/CrewInfoContainer/ActionContainer"]
+[node name="IdleButton" type="Button" parent="GUIManager/CrewInfoPanel/CrewInfoContainer/ActionContainer"]
 layout_mode = 2
 text = "Idle"
 
-[node name="AssignButton" type="Button" parent="GUIManager/CrewInfo/CrewInfoContainer/ActionContainer"]
+[node name="AssignButton" type="Button" parent="GUIManager/CrewInfoPanel/CrewInfoContainer/ActionContainer"]
 layout_mode = 2
 text = "Assign"
+
+[node name="RoomInfoPanel" type="PanelContainer" parent="GUIManager"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.767
+anchor_top = 0.229
+anchor_right = 0.929
+anchor_bottom = 0.634
+offset_left = -0.640015
+offset_top = -0.320023
+offset_right = 0.319946
+offset_bottom = 0.279968
+script = ExtResource("21_u5e38")
+
+[node name="RoomInfoContainer" type="VBoxContainer" parent="GUIManager/RoomInfoPanel"]
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="HeaderContainer" type="HBoxContainer" parent="GUIManager/RoomInfoPanel/RoomInfoContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="Label" type="Label" parent="GUIManager/RoomInfoPanel/RoomInfoContainer/HeaderContainer"]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 1
+
+[node name="CloseButton" type="Button" parent="GUIManager/RoomInfoPanel/RoomInfoContainer/HeaderContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_c1g2s")
+theme_override_styles/hover = SubResource("StyleBoxFlat_sfqun")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_xynr2")
+text = "X"
+
+[node name="PortraitContainer" type="HBoxContainer" parent="GUIManager/RoomInfoPanel/RoomInfoContainer"]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="PreviousRoomButton" type="Button" parent="GUIManager/RoomInfoPanel/RoomInfoContainer/PortraitContainer"]
+custom_minimum_size = Vector2(25, 0)
+layout_mode = 2
+text = "<"
+
+[node name="TextureRect" type="TextureRect" parent="GUIManager/RoomInfoPanel/RoomInfoContainer/PortraitContainer"]
+custom_minimum_size = Vector2(82, 100)
+layout_mode = 2
+size_flags_horizontal = 6
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 4
+
+[node name="NextRoomButton" type="Button" parent="GUIManager/RoomInfoPanel/RoomInfoContainer/PortraitContainer"]
+custom_minimum_size = Vector2(25, 0)
+layout_mode = 2
+text = ">"
+
+[node name="TabContainer" type="TabContainer" parent="GUIManager/RoomInfoPanel/RoomInfoContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+metadata/_edit_lock_ = true
+
+[node name="InfoContainer" type="VBoxContainer" parent="GUIManager/RoomInfoPanel/RoomInfoContainer/TabContainer"]
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="InfoList" type="ItemList" parent="GUIManager/RoomInfoPanel/RoomInfoContainer/TabContainer/InfoContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="WorkersContainer" type="VBoxContainer" parent="GUIManager/RoomInfoPanel/RoomInfoContainer/TabContainer"]
+visible = false
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+metadata/_edit_lock_ = true
+
+[node name="WorkerList" type="ItemList" parent="GUIManager/RoomInfoPanel/RoomInfoContainer/TabContainer/WorkersContainer"]
+layout_mode = 2
+size_flags_vertical = 3
 
 [node name="CursorLabel" type="Label" parent="GUIManager"]
 layout_mode = 0
@@ -347,4 +432,4 @@ script = ExtResource("22_vskqf")
 [connection signal="pressed" from="GUIManager/BuildMenu/BuildButton" to="GUIManager/BuildMenu" method="_on_build_button_pressed"]
 [connection signal="pressed" from="GUIManager/BuildMenu/RoomPanel/BuildCloseButton" to="GUIManager/BuildMenu" method="_on_build_close_button_pressed"]
 [connection signal="pressed" from="GUIManager/AddCrew" to="GUIManager" method="_on_add_crew_pressed"]
-[connection signal="text_changed" from="GUIManager/CrewInfo/CrewInfoContainer/HeaderContainer/NameEdit" to="GUIManager/CrewInfo" method="_on_name_edit_text_changed"]
+[connection signal="text_changed" from="GUIManager/CrewInfoPanel/CrewInfoContainer/HeaderContainer/NameEdit" to="GUIManager/CrewInfoPanel" method="_on_name_edit_text_changed"]

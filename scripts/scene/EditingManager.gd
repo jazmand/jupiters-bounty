@@ -1,14 +1,13 @@
 class_name EditingManager extends Node
 
-@onready var nav_region: NavigationRegion2D = $"../NavigationRegion2D"
-@onready var base_tile_map: TileMap = $"../BaseTileMap"
-@onready var build_tile_map: TileMap = $"../BaseTileMap/BuildTileMap"
+@onready var base_tile_map: TileMap = %BaseTileMap
+@onready var build_tile_map: TileMap = %BuildTileMap
 
-@onready var camera: Camera2D = $"../Camera2D"
+@onready var camera: Camera2D = %Camera
 
-@onready var state_manager: StateChart = $"../StateManager"
+@onready var state_manager: StateChart = %StateManager
 
-@onready var building_manager: BuildingManager = $"../BuildingManager"
+@onready var building_manager: BuildingManager = %BuildingManager
 
 var room_editor: RoomEditor
 var room_types: Array[RoomType] = []
@@ -26,7 +25,7 @@ func _init() -> void:
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	room_editor = RoomEditor.new(build_tile_map, room_types, building_manager.room_builder, nav_region)
+	room_editor = RoomEditor.new(build_tile_map, room_types, building_manager.room_builder)
 	room_editor.action_completed.connect(on_room_editor_action)
 	# Connect the buttons to the confirmation functions in the GUI script
 	popup = GUI.manager.new_popup(false, room_editor.confirm_delete, room_editor.cancel_delete)

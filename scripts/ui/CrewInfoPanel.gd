@@ -24,7 +24,7 @@ func _ready() -> void:
 func display_crew_info(crew_member: CrewMember) -> void:
 	idle_button.pressed.connect(start_idling)
 	assign_button.pressed.connect(start_assigning)
-	idle_button.disabled = crew_member.animation_state == crew_member.ANIMATION_STATE.IDLE
+	idle_button.disabled = crew_member.state == crew_member.STATE.IDLE
 	assign_button.disabled = false
 	name_edit.text = crew_member.info.name
 	info_age.text = "Age: %s" % crew_member.info.age
@@ -66,9 +66,12 @@ func start_assigning() -> void:
 
 func update_available_actions(state: StringName) -> void:
 	match state:
-		crew.ANIMATION_STATE.IDLE:
+		crew.STATE.IDLE:
 			idle_button.disabled = true
 			assign_button.disabled = !crew.can_assign()
+		crew.STATE.WORK:
+			idle_button.disabled = false
+			assign_button.disabled = true
 		_:
 			idle_button.disabled = false
 			assign_button.disabled = !crew.can_assign()

@@ -1,7 +1,8 @@
 extends Node
 
-@onready var manager: GameManager = $GameManager
-@onready var background: Control = $GameManager/Background
+@onready var manager: GameManager = %GameManager
+@onready var background: ColorRect = %Background
+
 
 var in_game_time: int = 7200 # Start at 02:00
 var one_in_game_hour: int = 3600
