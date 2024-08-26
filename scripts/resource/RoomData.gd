@@ -41,16 +41,14 @@ func calculate_power_consumption() -> int:
 	
 func generate_hotspots() -> void:
 	hot_spots.clear()
-	var capacity = type.capacity
-	var _tile_count = calculate_tile_count(top_left, bottom_right)
 	var available_tiles = []
 	
 	var min_x = min(top_left.x, bottom_right.x)
-	var _max_x = max(top_left.x, bottom_right.x) + 1
+	var max_x = max(top_left.x, bottom_right.x) + 1
 	var min_y = min(top_left.y, bottom_right.y)
 	var max_y = max(top_left.y, bottom_right.y) + 1
 	
-	for x in range(min_x, bottom_right.x + 1):
+	for x in range(min_x, max_x):
 		for y in range(min_y, max_y):
 			var tile = Vector2i(x, y)
 			if !door_tiles.has(tile):
