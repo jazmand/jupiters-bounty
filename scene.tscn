@@ -1,4 +1,4 @@
-[gd_scene load_steps=62 format=3 uid="uid://dhh5wq2ka1ay8"]
+[gd_scene load_steps=64 format=3 uid="uid://dhh5wq2ka1ay8"]
 
 [ext_resource type="Script" path="res://scripts/scene/Main.gd" id="1_3g4j0"]
 [ext_resource type="Texture2D" uid="uid://dwwc4ti4c1ifx" path="res://assets/backgrounds/jupiter.png" id="2_i0a8p"]
@@ -18,10 +18,12 @@
 [ext_resource type="PackedScene" uid="uid://bcwkugn6v3oy7" path="res://addons/godot_state_charts/utilities/state_chart_debugger.tscn" id="13_g5vrw"]
 [ext_resource type="Texture2D" uid="uid://dyjlm6qqogqbm" path="res://assets/tilesets/mock_items_tileset.png" id="15_1q01x"]
 [ext_resource type="Script" path="res://scripts/scene/EditingManager.gd" id="16_50vy2"]
+[ext_resource type="Script" path="res://scripts/scene/RoomBuilder.gd" id="18_20ino"]
 [ext_resource type="Script" path="res://scripts/scene/BuildingManager.gd" id="18_cy305"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="18_o7t7g"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="19_8sc5u"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="20_aq14c"]
+[ext_resource type="Script" path="res://scripts/scene/RoomEditor.gd" id="20_trquu"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="21_n7j07"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_w47eo"]
@@ -297,7 +299,7 @@ tile_layout = 5
 tile_size = Vector2i(512, 296)
 physics_layer_0/collision_layer = 1
 physics_layer_0/collision_mask = 2
-navigation_layer_0/layers = 1
+navigation_layer_0/layers = 3
 sources/0 = SubResource("TileSetAtlasSource_psmxa")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_w7dmn"]
@@ -489,6 +491,7 @@ tile_size = Vector2i(512, 296)
 physics_layer_0/collision_layer = 1
 physics_layer_0/collision_mask = 2
 navigation_layer_0/layers = 1
+navigation_layer_1/layers = 2
 sources/1 = SubResource("TileSetAtlasSource_teld1")
 sources/0 = SubResource("TileSetAtlasSource_w7dmn")
 sources/3 = SubResource("TileSetAtlasSource_ulgmx")
@@ -519,10 +522,12 @@ agent_radius = 50.0
 [node name="Main" type="Node"]
 script = ExtResource("1_3g4j0")
 
-[node name="GameManager" type="Node" parent="."]
+[node name="GameManager" type="Node2D" parent="."]
+unique_name_in_owner = true
 script = ExtResource("2_yl83p")
 
 [node name="Background" type="ColorRect" parent="GameManager"]
+unique_name_in_owner = true
 offset_left = -416.0
 offset_top = -448.0
 offset_right = 10760.0
@@ -542,8 +547,8 @@ scale = Vector2(1.003, 1.003)
 texture = ExtResource("3_6bejq")
 
 [node name="BaseTileMap" type="TileMap" parent="GameManager" groups=["navigation"]]
+unique_name_in_owner = true
 y_sort_enabled = true
-scale = Vector2(1, 0.994733)
 tile_set = SubResource("TileSet_yt465")
 format = 2
 layer_0/name = "Base layer"
@@ -551,6 +556,7 @@ layer_0/y_sort_enabled = true
 layer_0/tile_data = PackedInt32Array(-393207, 196608, 3, -327671, 0, 4, -393206, 131072, 4, -262135, 196608, 5, -196599, 458752, 4, -65527, 458752, 4, 196617, 458752, 4, 327689, 458752, 4, -393204, 393216, 4, -393202, 393216, 4, 65545, 0, 0, 9, 0, 1, -131063, 196608, 5, 131081, 196608, 5, 262153, 196608, 5, -393205, 131072, 5, -393203, 131072, 5, -393199, 131072, 5, -393198, 393216, 4, -393197, 131072, 5, -393196, 393216, 4, -393194, 131072, 3, -393195, 262144, 4, -327658, 393216, 3, 393225, 327680, 4, 458761, 327680, 3, 458762, 458752, 3, -393201, 131072, 1, -393200, 131072, 0, 458763, 327680, 5, 458765, 327680, 5, 458769, 327680, 5, 458771, 327680, 5, 458770, 65536, 5, 458772, 65536, 5, 458766, 65536, 5, 458764, 65536, 5, 458768, 393216, 0, 458767, 393216, 1, 458774, 262144, 3, 458773, 65536, 4, 393238, 196608, 4, 262166, 262144, 5, 131094, 262144, 5, -131050, 262144, 5, -262122, 262144, 5, 327702, 0, 5, 196630, 0, 5, -65514, 0, 5, -196586, 0, 5, 22, 262144, 1, 65558, 262144, 0, -327670, 458752, 5, -327659, 458752, 5, -262123, 393216, 5, -196587, 393216, 5, 327701, 393216, 5, 262165, 393216, 5, 393237, 0, 6, 393226, 0, 6, 327690, 393216, 5, 262154, 393216, 5, -262134, 393216, 5, -196598, 393216, 5, 196629, 458752, 5, 196618, 458752, 5, -131062, 0, 6, -131051, 0, 6, 65552, 196608, 6, 16, 262144, 6, 15, 131072, 6, 65551, 65536, 6, 131082, 327680, 2, 393227, 327680, 2, -65526, 196608, 2, -327669, 196608, 2, -327660, 131072, 2, -65515, 131072, 2, 131093, 262144, 2, 393236, 262144, 2, 393235, 65536, 3, 393234, 65536, 3, 393233, 65536, 3, 393232, 65536, 3, 393231, 65536, 3, 393230, 65536, 3, 393229, 65536, 3, 393228, 65536, 3, 327700, 0, 3, 262164, 0, 3, 196628, 0, 3, 65557, 0, 3, 21, 0, 3, -262124, 0, 3, -196588, 0, 3, -131052, 0, 3, -327661, 393216, 2, -327662, 393216, 2, -327663, 393216, 2, -327664, 393216, 2, -327665, 393216, 2, -327666, 393216, 2, -327667, 393216, 2, -327668, 393216, 2, -262133, 458752, 2, -196597, 458752, 2, -131061, 458752, 2, 10, 458752, 2, 65546, 458752, 2, 196619, 458752, 2, 262155, 458752, 2, 327691, 458752, 2, -65525, 65536, 2, 65547, 65536, 2, -65516, 65536, 2, 65556, 65536, 2, 20, 0, 2, 131092, 0, 2, 11, 0, 2, 131083, 0, 2, 131087, 393216, 5, 131088, 393216, 5, -65521, 393216, 5, -65520, 393216, 5, 65553, 458752, 5, 65550, 458752, 5, 17, 0, 6, 14, 0, 6, 131089, 196608, 2, 131086, 131072, 2, -65522, 262144, 2, -65519, 327680, 2, 65549, 0, 3, 13, 0, 3, 196623, 393216, 2, 196624, 393216, 2, 65554, 458752, 2, 18, 458752, 2, -131057, 65536, 3, -131056, 65536, 3, -262132, 0, 2, -196595, 0, 2, -262130, 0, 2, -196593, 0, 2, -262128, 0, 2, -196591, 0, 2, -262126, 0, 2, -196589, 0, 2, -131054, 0, 2, -65517, 0, 2, 65555, 65536, 2, 196627, 0, 2, 131090, 0, 2, 196625, 0, 2, 262162, 0, 2, 327699, 0, 2, 327697, 0, 2, 262160, 0, 2, 327695, 0, 2, 262158, 0, 2, 327693, 0, 2, 262156, 65536, 2, 196621, 0, 2, 131084, 0, 2, 12, 0, 2, -131060, 0, 2, -65523, 0, 2, -131058, 0, 2, 262163, 65536, 2, 196626, 65536, 2, 327698, 65536, 2, 262161, 65536, 2, 327696, 65536, 2, 262159, 65536, 2, 327694, 65536, 2, 196622, 65536, 2, 131085, 65536, 2, 262157, 65536, 2, 196620, 65536, 2, 327692, 65536, 2, 65548, 65536, 2, -65524, 65536, 2, -131059, 65536, 2, -196596, 65536, 2, -262131, 65536, 2, -196594, 65536, 2, -262129, 65536, 2, -196592, 65536, 2, -131055, 65536, 2, -65518, 65536, 2, 19, 65536, 2, 131091, 65536, 2, -131053, 65536, 2, -196590, 65536, 2, -262127, 65536, 2, -262125, 65536, 2)
 
 [node name="BuildTileMap" type="TileMap" parent="GameManager/BaseTileMap" groups=["navigation"]]
+unique_name_in_owner = true
 y_sort_enabled = true
 tile_set = SubResource("TileSet_ru5bf")
 format = 2
@@ -563,6 +569,7 @@ layer_1/z_index = 2
 layer_1/tile_data = PackedInt32Array()
 
 [node name="FurnitureTileMap" type="TileMap" parent="GameManager/BaseTileMap" groups=["navigation"]]
+unique_name_in_owner = true
 y_sort_enabled = true
 tile_set = SubResource("TileSet_4wgk6")
 format = 2
@@ -570,14 +577,16 @@ layer_0/name = "Furniture layer"
 layer_0/y_sort_enabled = true
 layer_0/z_index = 3
 
-[node name="NavigationRegion2D" type="NavigationRegion2D" parent="GameManager"]
+[node name="NavigationRegion" type="NavigationRegion2D" parent="GameManager"]
+unique_name_in_owner = true
 modulate = Color(0.356863, 0.533333, 1, 1)
 self_modulate = Color(0.145098, 1, 1, 1)
 position = Vector2(1, 0)
 navigation_polygon = SubResource("NavigationPolygon_jelv3")
 use_edge_connections = false
 
-[node name="Camera2D" type="Camera2D" parent="GameManager"]
+[node name="Camera" type="Camera2D" parent="GameManager"]
+unique_name_in_owner = true
 offset = Vector2(2.08165e-12, 2.08165e-12)
 anchor_mode = 0
 zoom = Vector2(0.25, 0.25)
@@ -590,10 +599,20 @@ position_smoothing_speed = 8.0
 script = ExtResource("2_o2j5r")
 
 [node name="BuildingManager" type="Node" parent="GameManager"]
+unique_name_in_owner = true
 script = ExtResource("18_cy305")
 
+[node name="RoomBuilder" type="Node" parent="GameManager/BuildingManager"]
+unique_name_in_owner = true
+script = ExtResource("18_20ino")
+
 [node name="EditingManager" type="Node" parent="GameManager"]
+unique_name_in_owner = true
 script = ExtResource("16_50vy2")
+
+[node name="RoomEditor" type="Node" parent="GameManager/EditingManager"]
+unique_name_in_owner = true
+script = ExtResource("20_trquu")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="GameManager"]
 
@@ -605,6 +624,7 @@ offset_bottom = -168.0
 initial_node_to_watch = NodePath("../../StateManager")
 
 [node name="StateManager" type="Node" parent="GameManager"]
+unique_name_in_owner = true
 script = ExtResource("18_o7t7g")
 
 [node name="GameState" type="Node" parent="GameManager/StateManager"]
@@ -750,7 +770,7 @@ script = ExtResource("21_n7j07")
 to = NodePath("../../../Default")
 event = &"assigned"
 
-[connection signal="state_input" from="GameManager/StateManager/GameState/Default" to="GameManager" method="_on_default_state_input"]
+[connection signal="state_unhandled_input" from="GameManager/StateManager/GameState/Default" to="GameManager" method="_on_default_state_unhandled_input"]
 [connection signal="state_entered" from="GameManager/StateManager/GameState/Building" to="GameManager/BuildingManager" method="_on_building_state_entered"]
 [connection signal="state_exited" from="GameManager/StateManager/GameState/Building" to="GameManager/BuildingManager" method="_on_building_state_exited"]
 [connection signal="state_input" from="GameManager/StateManager/GameState/Building" to="GameManager/BuildingManager" method="_on_building_state_input"]

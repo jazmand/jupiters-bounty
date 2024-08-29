@@ -1,4 +1,4 @@
-[gd_scene load_steps=33 format=3 uid="uid://6ddc1y0q3bhc"]
+[gd_scene load_steps=32 format=3 uid="uid://6ddc1y0q3bhc"]
 
 [ext_resource type="Script" path="res://scripts/crew/CrewMember.gd" id="1_rgjpg"]
 [ext_resource type="Texture2D" uid="uid://dhxmp0xpmlnfc" path="res://assets/sprites/idle_agatha.png" id="2_uo5jt"]
@@ -7,20 +7,19 @@
 [ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="4_en38c"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/parallel_state.gd" id="5_hdvyl"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="5_me8bf"]
-[ext_resource type="Script" path="res://scripts/crew/Area2D.gd" id="7_erar8"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="7_yl87e"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/expression_guard.gd" id="9_xlf2i"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_6x332"]
 radius = 40.0125
 
-[sub_resource type="Resource" id="Resource_iydo8"]
-script = ExtResource("9_xlf2i")
-expression = "assignment == \"work\""
-
 [sub_resource type="Resource" id="Resource_a4okr"]
 script = ExtResource("9_xlf2i")
 expression = "assignment == \"\""
+
+[sub_resource type="Resource" id="Resource_iydo8"]
+script = ExtResource("9_xlf2i")
+expression = "assignment == \"work\""
 
 [sub_resource type="Animation" id="Animation_8m754"]
 length = 0.001
@@ -360,17 +359,22 @@ event = &"walk"
 [node name="Walking" type="Node" parent="CrewStateManager/ParallelState/CrewState"]
 script = ExtResource("5_me8bf")
 
-[node name="ToWorking" type="Node" parent="CrewStateManager/ParallelState/CrewState/Walking"]
-script = ExtResource("7_yl87e")
-to = NodePath("../../Working")
-event = &"to_assignment"
-guard = SubResource("Resource_iydo8")
-
 [node name="ToIdling" type="Node" parent="CrewStateManager/ParallelState/CrewState/Walking"]
+script = ExtResource("7_yl87e")
+to = NodePath("../../Idling")
+event = &"idle"
+
+[node name="ToIdlingFromAssignment" type="Node" parent="CrewStateManager/ParallelState/CrewState/Walking"]
 script = ExtResource("7_yl87e")
 to = NodePath("../../Idling")
 event = &"to_assignment"
 guard = SubResource("Resource_a4okr")
+
+[node name="ToWorkingFromAssignment" type="Node" parent="CrewStateManager/ParallelState/CrewState/Walking"]
+script = ExtResource("7_yl87e")
+to = NodePath("../../Working")
+event = &"to_assignment"
+guard = SubResource("Resource_iydo8")
 
 [node name="Working" type="Node" parent="CrewStateManager/ParallelState/CrewState"]
 script = ExtResource("5_me8bf")
@@ -423,7 +427,6 @@ libraries = {
 [node name="Area2D" type="Area2D" parent="."]
 collision_layer = 32768
 collision_mask = 32768
-script = ExtResource("7_erar8")
 metadata/_edit_lock_ = true
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Area2D"]
@@ -432,11 +435,9 @@ shape = SubResource("CapsuleShape2D_ynwli")
 debug_color = Color(0.678431, 0.356863, 0.894118, 0.419608)
 
 [connection signal="state_entered" from="CrewStateManager/ParallelState/CrewState/Idling" to="." method="_on_idling_state_entered"]
-[connection signal="state_exited" from="CrewStateManager/ParallelState/CrewState/Idling" to="." method="_on_idling_state_exited"]
 [connection signal="state_physics_processing" from="CrewStateManager/ParallelState/CrewState/Idling" to="." method="_on_idling_state_physics_processing"]
 [connection signal="state_entered" from="CrewStateManager/ParallelState/CrewState/Walking" to="." method="_on_walking_state_entered"]
 [connection signal="state_physics_processing" from="CrewStateManager/ParallelState/CrewState/Walking" to="." method="_on_walking_state_physics_processing"]
 [connection signal="state_entered" from="CrewStateManager/ParallelState/CrewState/Working" to="." method="_on_working_state_entered"]
 [connection signal="state_exited" from="CrewStateManager/ParallelState/CrewState/Working" to="." method="_on_working_state_exited"]
 [connection signal="state_physics_processing" from="CrewStateManager/ParallelState/CrewState/Working" to="." method="_on_working_state_physics_processing"]
-[connection signal="velocity_computed" from="Navigation/NavigationAgent2D" to="." method="_on_navigation_agent_2d_velocity_computed"]

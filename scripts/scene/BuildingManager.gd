@@ -1,15 +1,14 @@
 class_name BuildingManager extends Node
 
-@onready var nav_region: NavigationRegion2D = $"../NavigationRegion2D"
-@onready var base_tile_map: TileMap = $"../BaseTileMap"
-@onready var build_tile_map: TileMap = $"../BaseTileMap/BuildTileMap"
-@onready var furniture_tile_map: TileMap = $"../BaseTileMap/FurnitureTileMap"
+@onready var base_tile_map: TileMap = %BaseTileMap
+@onready var build_tile_map: TileMap = %BuildTileMap
+@onready var furniture_tile_map: TileMap = %FurnitureTileMap
+@onready var room_builder: RoomBuilder = %RoomBuilder
 
-@onready var camera: Camera2D = $"../Camera2D"
+@onready var camera: Camera2D = %Camera
 
-@onready var state_manager: StateChart = $"../StateManager"
+@onready var state_manager: StateChart = %StateManager
 
-var room_builder: RoomBuilder
 var room_types: Array[RoomType] = []
 var selected_roomtype: RoomType = null
 
@@ -25,11 +24,12 @@ func _init() -> void:
 
 # Called when the node enters the scene tree for the first time.
 func _ready() -> void:
-	room_builder = RoomBuilder.new(base_tile_map, build_tile_map, furniture_tile_map, room_types)
 	room_builder.action_completed.connect(on_room_builder_action)
 	# Connect the buttons to the confirmation functions in the GUI script
 	GUI.build_menu.action_completed.connect(on_build_menu_action)
 	popup = GUI.manager.new_popup(false, room_builder.confirm_build, room_builder.cancel_build)
+	load_room_types()
+	room_builder.room_types = room_types
 
 func load_room_types() -> void:
 	var room_types_folder = "res://assets/room_type/"
@@ -89,7 +89,6 @@ func on_room_builder_action(action: int) -> void:
 			event = BUILD_EVENTS[StateEvent.BUILDING_FORWARD]
 		room_builder.Action.COMPLETE:
 			event = BUILD_EVENTS[StateEvent.BUILDING_STOP]
-			nav_region.bake_navigation_polygon()
 	state_manager.send_event(event)
 
 func _on_building_state_input(event: InputEvent) -> void:
