@@ -1,0 +1,55 @@
+[gd_scene load_steps=3 format=3 uid="uid://chrvumsof3os0"]
+
+[ext_resource type="Script" path="res://scripts/menu/MainMenu.gd" id="1_nd8mi"]
+
+[sub_resource type="CanvasTexture" id="CanvasTexture_34try"]
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_nd8mi")
+
+[node name="TextureRect" type="TextureRect" parent="."]
+layout_mode = 0
+offset_right = 1928.0
+offset_bottom = 1088.0
+texture = SubResource("CanvasTexture_34try")
+
+[node name="GridContainer" type="GridContainer" parent="."]
+layout_mode = 0
+offset_left = 864.0
+offset_top = 392.0
+offset_right = 1128.0
+offset_bottom = 704.0
+
+[node name="NewGameButton" type="Button" parent="GridContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "New Game
+"
+
+[node name="LoadGameButton" type="Button" parent="GridContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "Load Game
+"
+
+[node name="SettingsButton" type="Button" parent="GridContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "Settings"
+
+[node name="QuitButton" type="Button" parent="GridContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 30
+text = "Quit
+"
+
+[connection signal="pressed" from="GridContainer/NewGameButton" to="." method="_on_new_game_button_pressed"]
+[connection signal="pressed" from="GridContainer/LoadGameButton" to="." method="_on_load_game_button_pressed"]
+[connection signal="pressed" from="GridContainer/SettingsButton" to="." method="_on_settings_button_pressed"]
+[connection signal="pressed" from="GridContainer/QuitButton" to="." method="_on_quit_button_pressed"]
