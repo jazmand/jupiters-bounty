@@ -1,6 +1,7 @@
-[gd_scene load_steps=64 format=3 uid="uid://dhh5wq2ka1ay8"]
+[gd_scene load_steps=65 format=3 uid="uid://dhh5wq2ka1ay8"]
 
 [ext_resource type="Script" path="res://scripts/scene/Main.gd" id="1_3g4j0"]
+[ext_resource type="PackedScene" uid="uid://cpi6duyqx08ba" path="res://gui.tscn" id="2_0qqu7"]
 [ext_resource type="Texture2D" uid="uid://dwwc4ti4c1ifx" path="res://assets/backgrounds/jupiter.png" id="2_i0a8p"]
 [ext_resource type="Script" path="res://scripts/Camera2D.gd" id="2_o2j5r"]
 [ext_resource type="Script" path="res://scripts/Background.gd" id="2_w13bo"]
@@ -521,6 +522,9 @@ agent_radius = 50.0
 
 [node name="Main" type="Node"]
 script = ExtResource("1_3g4j0")
+
+[node name="GUI" parent="." instance=ExtResource("2_0qqu7")]
+unique_name_in_owner = true
 
 [node name="GameManager" type="Node2D" parent="."]
 unique_name_in_owner = true

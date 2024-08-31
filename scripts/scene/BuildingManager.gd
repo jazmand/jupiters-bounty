@@ -1,5 +1,7 @@
 class_name BuildingManager extends Node
 
+@onready var GUI: StationGUI = %GUI
+
 @onready var base_tile_map: TileMap = %BaseTileMap
 @onready var build_tile_map: TileMap = %BuildTileMap
 @onready var furniture_tile_map: TileMap = %FurnitureTileMap
