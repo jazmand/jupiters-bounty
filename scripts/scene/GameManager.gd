@@ -11,7 +11,7 @@ const CREW_SCENE: PackedScene = preload("res://crew.tscn")
 var selected_crew: CrewMember = null
 
 func _ready():
-	GUI.manager.connect("add_crew_pressed", Callable(self, "new_crew_member"))
+	Events.gui_add_crew_pressed.connect(new_crew_member)
 	Global.crew_assigned.connect(crew_selected)
 	Global.station.rooms_updated.connect(update_navigation_region)
 

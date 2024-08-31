@@ -18,7 +18,7 @@ config/icon="res://assets/sprites/flirty_pose.png"
 [autoload]
 
 Global="*res://scripts/autoload/Global.gd"
-GUI="*res://gui.tscn"
+Events="*res://scripts/autoload/Events.gd"
 
 [debug]
 
