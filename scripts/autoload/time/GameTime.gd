@@ -35,25 +35,23 @@ func current_time_in_minutes() -> int:
 func current_time_in_seconds() -> int:
 	return (current_time_in_minutes() * SECONDS_PER_MINUTE) + time.seconds
 
+func add_time(current: int, amount: int, unit_max: int, updater: Callable) -> int:
+	var new_time: int = current + amount
+	if new_time >= unit_max:
+		new_time -= unit_max
+		updater.call(1)
+	return new_time
+
 func add_seconds(amount: int) -> void:
-	time.seconds += amount
-	if time.seconds >= SECONDS_PER_MINUTE:
-		time.seconds -= SECONDS_PER_MINUTE
-		add_minutes(1)
+	time.seconds = add_time(time.seconds, amount, SECONDS_PER_MINUTE, add_minutes)
 	second.emit()
 
 func add_minutes(amount: int) -> void:
-	time.minutes += amount
-	if time.minutes >= MINUTES_PER_HOUR:
-		time.minutes -= MINUTES_PER_HOUR
-		add_hours(1)
+	time.minutes = add_time(time.minutes, amount, MINUTES_PER_HOUR, add_hours)
 	minute.emit()
 
 func add_hours(amount: int) -> void:
-	time.hours += amount
-	if time.hours >= HOURS_PER_DAY:
-		time.hours -= HOURS_PER_DAY
-		add_days(1)
+	time.hours = add_time(time.hours, amount, HOURS_PER_DAY, add_days)
 	hour.emit()
 
 func add_days(amount: int) -> void:
