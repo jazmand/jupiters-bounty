@@ -5,7 +5,6 @@ signal max_hydrogen_updated(max_hydrogen: int)
 signal power_updated(power: int)
 signal currency_updated(currency: int)
 signal crew_updated(crew: int)
-signal time_updated(time: int)
 signal rooms_updated
 
 @export var id: int
@@ -31,21 +30,15 @@ signal rooms_updated
 		currency = c
 		currency_updated.emit(c)
 
-@export var time: int:
-	set(t):
-		time = t
-		time_updated.emit(t)
-
 var crew: Array[CrewMember] = []
 
 var rooms: Array[Room] = []
 
-func _init(p_id: int = 0, p_hydrogen: int = 0, p_power: int = 0, p_currency: int = 0, p_time: int = 0):
+func _init(p_id: int = 0, p_hydrogen: int = 0, p_power: int = 0, p_currency: int = 0):
 	id = p_id
 	hydrogen = p_hydrogen
 	power = p_power
 	currency = p_currency
-	time = p_time
 
 	update_max_hydrogen()
 
