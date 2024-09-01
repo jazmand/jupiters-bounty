@@ -2,9 +2,6 @@ class_name Clock extends Sprite2D
 
 @onready var time: Label = $Time
 
-const SECONDS_PER_HOUR: int = 3600
-const SECONDS_PER_MINUTE: int = 60
-
 func _ready() -> void:
 	update()
 	GameTime.minute.connect(update)
