@@ -7,11 +7,11 @@ signal second
 
 const time: TimeData = preload("res://scripts/autoload/time/resources/time.tres")
 
-const SECONDS_PER_MINUTE = 60
-const MINUTES_PER_HOUR = 60
-const HOURS_PER_DAY = 10
-const MINUTES_PER_DAY = MINUTES_PER_HOUR * HOURS_PER_DAY
-const SECONDS_PER_DAY = SECONDS_PER_MINUTE * MINUTES_PER_DAY
+const SECONDS_PER_MINUTE: int = 60
+const MINUTES_PER_HOUR: int = 60
+const HOURS_PER_DAY: int = 10
+const MINUTES_PER_DAY: int = MINUTES_PER_HOUR * HOURS_PER_DAY
+const SECONDS_PER_DAY: int = SECONDS_PER_MINUTE * MINUTES_PER_DAY
 
 const REAL_SECONDS_PER_TICK: float = 0.25
 const GAME_SECONDS_PER_TICK: int = 5
