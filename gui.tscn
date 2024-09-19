@@ -1,4 +1,4 @@
-[gd_scene load_steps=34 format=3 uid="uid://cpi6duyqx08ba"]
+[gd_scene load_steps=36 format=3 uid="uid://cpi6duyqx08ba"]
 
 [ext_resource type="Script" path="res://scripts/ui/GUI.gd" id="1_8pxxd"]
 [ext_resource type="Script" path="res://scripts/ui/GUIManager.gd" id="1_ekuro"]
@@ -63,6 +63,21 @@ bg_color = Color(0.815686, 0.364706, 0.298039, 0.937255)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xynr2"]
 bg_color = Color(0.815686, 0.364706, 0.298039, 0.937255)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_c2gkf"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.517647, 0.541176, 1, 1)
+skew = Vector2(2.08165e-12, 2.08165e-12)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fmu5r"]
+content_margin_left = 8.0
+content_margin_top = 8.0
+content_margin_right = 8.0
+content_margin_bottom = 8.0
+bg_color = Color(0.890196, 0.458824, 0.360784, 1)
 
 [node name="GUI" type="CanvasLayer"]
 layer = 0
@@ -251,6 +266,7 @@ text = "Add Crew
 "
 
 [node name="CrewInfoPanel" type="PanelContainer" parent="GUIManager"]
+visible = false
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.767
@@ -419,6 +435,22 @@ metadata/_edit_lock_ = true
 [node name="WorkerList" type="ItemList" parent="GUIManager/RoomInfoPanel/RoomInfoContainer/TabContainer/WorkersContainer"]
 layout_mode = 2
 size_flags_vertical = 3
+
+[node name="FooterContainer" type="HBoxContainer" parent="GUIManager/RoomInfoPanel/RoomInfoContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="RoomEditButton" type="Button" parent="GUIManager/RoomInfoPanel/RoomInfoContainer/FooterContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_c2gkf")
+text = "Edit"
+
+[node name="RoomDeleteButton" type="Button" parent="GUIManager/RoomInfoPanel/RoomInfoContainer/FooterContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_fmu5r")
+text = "Delete"
 
 [node name="CursorLabel" type="Label" parent="GUIManager"]
 layout_mode = 0
