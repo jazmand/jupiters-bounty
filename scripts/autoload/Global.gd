@@ -17,3 +17,6 @@ const ROOMTYPE: Dictionary = {
 var station: Station = load("res://assets/station/station_resources.tres") as Station
 
 var is_crew_input = false
+
+func _ready() -> void:
+	GameTime.second.connect(station.update_hydrogen)

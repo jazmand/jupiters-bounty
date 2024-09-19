@@ -17,6 +17,7 @@ config/icon="res://assets/sprites/flirty_pose.png"
 
 [autoload]
 
+GameTime="*res://scripts/autoload/time/time.tscn"
 Global="*res://scripts/autoload/Global.gd"
 Events="*res://scripts/autoload/Events.gd"
 
