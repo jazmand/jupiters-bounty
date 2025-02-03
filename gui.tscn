@@ -1,4 +1,4 @@
-[gd_scene load_steps=36 format=3 uid="uid://cpi6duyqx08ba"]
+[gd_scene load_steps=37 format=3 uid="uid://cpi6duyqx08ba"]
 
 [ext_resource type="Script" path="res://scripts/ui/GUI.gd" id="1_8pxxd"]
 [ext_resource type="Script" path="res://scripts/ui/GUIManager.gd" id="1_ekuro"]
@@ -17,6 +17,7 @@
 [ext_resource type="Script" path="res://scripts/ui/HydrogenMeter.gd" id="10_yv1ak"]
 [ext_resource type="Texture2D" uid="uid://dmb2c7oas0f1u" path="res://assets/GUI/glass-tube.png" id="11_5oy5m"]
 [ext_resource type="Texture2D" uid="uid://bcr0cjkhy5ik" path="res://assets/GUI/light-burst.png" id="12_3fce4"]
+[ext_resource type="Script" path="res://scripts/ui/FurnitureMenu.gd" id="12_kah54"]
 [ext_resource type="Script" path="res://scripts/ui/Clock.gd" id="12_nuort"]
 [ext_resource type="Script" path="res://scripts/ui/BuildMenu.gd" id="13_v3skq"]
 [ext_resource type="Script" path="res://scripts/ui/CrewInfoPanel.gd" id="20_d483j"]
@@ -176,6 +177,39 @@ offset_bottom = 218.0
 theme_override_styles/fill = SubResource("StyleBoxFlat_wegjk")
 show_percentage = false
 
+[node name="FurnitureMenu" type="Control" parent="GUIManager"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("12_kah54")
+
+[node name="FurniturePanel" type="Panel" parent="GUIManager/FurnitureMenu"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 975.0
+offset_right = 1079.0
+offset_bottom = 1073.0
+
+[node name="FurnitureCloseButton" type="Button" parent="GUIManager/FurnitureMenu/FurniturePanel"]
+layout_mode = 0
+offset_left = 1046.0
+offset_top = 4.0
+offset_right = 1558.0
+offset_bottom = 516.0
+scale = Vector2(0.04, 0.04)
+action_mode = 0
+icon = ExtResource("6_nem4v")
+flat = true
+
+[node name="HBoxContainer" type="HBoxContainer" parent="GUIManager/FurnitureMenu/FurniturePanel"]
+layout_mode = 0
+offset_left = 54.0
+offset_top = 1.0
+offset_right = 1031.0
+offset_bottom = 96.0
+alignment = 1
+
 [node name="Clock" type="Sprite2D" parent="GUIManager"]
 position = Vector2(226, 155)
 scale = Vector2(0.3, 0.3)
@@ -230,7 +264,6 @@ icon = ExtResource("5_cbcuv")
 flat = true
 
 [node name="RoomPanel" type="Panel" parent="GUIManager/BuildMenu"]
-visible = false
 layout_mode = 0
 offset_top = -57.0
 offset_right = 1071.0
@@ -440,7 +473,7 @@ size_flags_vertical = 3
 layout_mode = 2
 alignment = 1
 
-[node name="RoomEditButton" type="Button" parent="GUIManager/RoomInfoPanel/RoomInfoContainer/FooterContainer"]
+[node name="Button" type="Button" parent="GUIManager/RoomInfoPanel/RoomInfoContainer/FooterContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 theme_override_styles/normal = SubResource("StyleBoxFlat_c2gkf")
@@ -461,7 +494,9 @@ theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 25
 script = ExtResource("22_vskqf")
 
+[connection signal="pressed" from="GUIManager/FurnitureMenu/FurniturePanel/FurnitureCloseButton" to="GUIManager/BuildMenu" method="_on_build_close_button_pressed"]
 [connection signal="pressed" from="GUIManager/BuildMenu/BuildButton" to="GUIManager/BuildMenu" method="_on_build_button_pressed"]
 [connection signal="pressed" from="GUIManager/BuildMenu/RoomPanel/BuildCloseButton" to="GUIManager/BuildMenu" method="_on_build_close_button_pressed"]
 [connection signal="pressed" from="GUIManager/AddCrew" to="GUIManager" method="_on_add_crew_pressed"]
 [connection signal="text_changed" from="GUIManager/CrewInfoPanel/CrewInfoContainer/HeaderContainer/NameEdit" to="GUIManager/CrewInfoPanel" method="_on_name_edit_text_changed"]
+[connection signal="pressed" from="GUIManager/RoomInfoPanel/RoomInfoContainer/FooterContainer/Button" to="GUIManager/FurnitureMenu" method="_on_room_edit_button_pressed"]
