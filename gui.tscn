@@ -185,6 +185,7 @@ offset_bottom = 40.0
 script = ExtResource("12_kah54")
 
 [node name="FurniturePanel" type="Panel" parent="GUIManager/FurnitureMenu"]
+visible = false
 layout_mode = 0
 offset_left = 8.0
 offset_top = 975.0
@@ -264,6 +265,7 @@ icon = ExtResource("5_cbcuv")
 flat = true
 
 [node name="RoomPanel" type="Panel" parent="GUIManager/BuildMenu"]
+visible = false
 layout_mode = 0
 offset_top = -57.0
 offset_right = 1071.0

@@ -1,6 +1,6 @@
 class_name FurnitureMenu extends Control
 
-signal action_completed(action: int, furniture_type: Furniture)
+signal action_completed(action: int, furniture_type: FurnitureType)
 
 enum Action {CLOSE, OPEN, SELECT_FURNITURE}
 
@@ -17,7 +17,7 @@ func _on_room_edit_button_pressed():
 	#show_furniture_panel()
 	pass
 
-func show_furniture_panel(furniture_types: Array[Furniture]) -> void:
+func show_furniture_panel(furniture_types: Array[FurnitureType]) -> void:
 	for furniture_type in furniture_types:
 		if furniture_type.name not in furniture_buttons:
 			furniture_buttons[furniture_type.name] = furniture_type
@@ -36,14 +36,14 @@ func _on_furniture_button_pressed() -> void:
 func _on_furniture_close_button_pressed() -> void:
 	action_completed.emit(Action.CLOSE, null)
 
-func _on_furniture_selected(furniture_type: Furniture) -> void:
+func _on_furniture_selected(furniture_type: FurnitureType) -> void:
 	action_completed.emit(Action.SELECT_FURNITURE, furniture_type)
 
 func on_currency_updated(currency: int) -> void:
 	var children: Array[Node] = furniture_container.get_children()
 	for child in children:
 		if child is Button and furniture_buttons.has(child.text):
-			var furniture: Furniture = furniture_buttons.get(child.text)
+			var furniture: FurnitureType = furniture_buttons.get(child.text)
 			var button: Button = child as Button
 			if furniture.price > currency:
 				button.disabled = true

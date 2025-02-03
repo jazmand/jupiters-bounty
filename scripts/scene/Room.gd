@@ -45,21 +45,21 @@ func assign_crew(crew: CrewMember) -> Vector2:
 	data.assigned_crew_ids.append(crew.data.id)
 	return data.hot_spots[data.assigned_crew_ids.size() - 1]
 
-func place_furniture(furniture_type: Furniture.FurnitureType, position: Vector2i, rotation: int) -> void:
-	var furniture = Furniture.new()
-	furniture.id = 0 # TODO: Add unique id generator
-	furniture.type = furniture_type
-	furniture.position = position
-	furniture.size = Vector2i(1,1) # TODO: Set based on furniture type
-	furniture.rotation = rotation
-	data.add_furniture(furniture)
-
-func remove_furniture(furniture_id: int) -> void:
-	data.remove_furniture(furniture_id)
-
-func rotate_furniture(furniture_id: int) -> void:
-	var furniture = data.find_furniture(furniture_id)
-	if furniture:
-		furniture.rotation = (furniture.rotation + 1) % 2
-		furniture.size = Vector2i(furniture.size.y, furniture.size.x)  # Swap width and height
+#func place_furniture(furniture_type: Furniture.FurnitureType, position: Vector2i, rotation: int) -> void:
+	#var furniture = Furniture.new()
+	#furniture.id = 0 # TODO: Add unique id generator
+	#furniture.type = furniture_type
+	#furniture.position = position
+	#furniture.size = Vector2i(1,1) # TODO: Set based on furniture type
+	#furniture.rotation = rotation
+	#data.add_furniture(furniture)
+#
+#func remove_furniture(furniture_id: int) -> void:
+	#data.remove_furniture(furniture_id)
+#
+#func rotate_furniture(furniture_id: int) -> void:
+	#var furniture = data.find_furniture(furniture_id)
+	#if furniture:
+		#furniture.rotation = (furniture.rotation + 1) % 2
+		#furniture.size = Vector2i(furniture.size.y, furniture.size.x)  # Swap width and height
 

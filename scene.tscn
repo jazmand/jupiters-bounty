@@ -774,6 +774,20 @@ script = ExtResource("21_n7j07")
 to = NodePath("../../../Default")
 event = &"assigned"
 
+[node name="Furnishing" type="Node" parent="GameManager/StateManager/GameState"]
+script = ExtResource("19_8sc5u")
+initial_state = NodePath("SelectingFurniture")
+
+[node name="SelectingFurniture" type="Node" parent="GameManager/StateManager/GameState/Furnishing"]
+script = ExtResource("20_aq14c")
+
+[node name="ToPlacingFurniture" type="Node" parent="GameManager/StateManager/GameState/Furnishing/SelectingFurniture"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../PlacingFurniture")
+
+[node name="PlacingFurniture" type="Node" parent="GameManager/StateManager/GameState/Furnishing"]
+script = ExtResource("20_aq14c")
+
 [connection signal="state_unhandled_input" from="GameManager/StateManager/GameState/Default" to="GameManager" method="_on_default_state_unhandled_input"]
 [connection signal="state_entered" from="GameManager/StateManager/GameState/Building" to="GameManager/BuildingManager" method="_on_building_state_entered"]
 [connection signal="state_exited" from="GameManager/StateManager/GameState/Building" to="GameManager/BuildingManager" method="_on_building_state_exited"]

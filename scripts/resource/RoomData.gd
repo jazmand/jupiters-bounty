@@ -6,8 +6,8 @@ var id: int
 @export var bottom_right: Vector2i
 @export var door_tiles: Array[Vector2i]
 #@export var hot_spots: Array[Vector2i]
-@export var furniture_items: Array[Furniture] = []
-var assigned_crew_ids: Array[int]
+#@export var furniture_items: Array[Furniture] = []
+#var assigned_crew_ids: Array[int]
 
 func _init(
 	room_id: int = 0,
@@ -21,8 +21,8 @@ func _init(
 	bottom_right = room_bottom_right
 	door_tiles = []
 	#hot_spots = []
-	furniture_items = []
-	assigned_crew_ids = []
+	#furniture_items = []
+	#assigned_crew_ids = []
 
 func add_door_tile(tile_coords: Vector2i) -> void:
 	if is_exterior_tile(tile_coords):
@@ -41,17 +41,17 @@ func calculate_power_consumption() -> int:
 	var tile_count = calculate_tile_count(top_left, bottom_right)
 	return tile_count * type.power_consumption
 	
-func add_furniture(furniture: Furniture) -> void:
-	furniture_items.append(furniture)
-
-func remove_furniture(furniture_id: int) -> void:
-	print(furniture_items, 'delete')
-
-func find_furniture(furniture_id: int) -> Furniture:
-	for furniture in furniture_items:
-		if furniture.id == furniture_id:
-			return furniture
-	return null
+#func add_furniture(furniture: Furniture) -> void:
+	#furniture_items.append(furniture)
+#
+#func remove_furniture(furniture_id: int) -> void:
+	#print(furniture_items, 'delete')
+#
+#func find_furniture(furniture_id: int) -> Furniture:
+	#for furniture in furniture_items:
+		#if furniture.id == furniture_id:
+			#return furniture
+	#return null
 	
 #func generate_hotspots() -> void:
 	#hot_spots.clear()
