@@ -73,7 +73,6 @@ func _on_input_event(viewport, event, _shape_idx):
 		viewport.set_input_as_handled()
 		select()
 
-
 func select() -> void:
 	Global.crew_selected.emit(self)
 
@@ -199,6 +198,6 @@ func is_assigned() -> bool:
 func is_within_working_hours() -> bool:
 	var current_time: int = GameTime.current_time_in_minutes()
 	
-	var after_start = current_time >= ((starts_work_hour * 60) + starts_work_minute)
-	var before_stop = current_time < ((stops_work_hour * 60) + stops_work_minute) 
-	return after_start and before_stop
+	var after_starts_work = current_time >= ((starts_work_hour * 60) + starts_work_minute)
+	var before_stops_work = current_time < ((stops_work_hour * 60) + stops_work_minute) 
+	return after_starts_work and before_stops_work

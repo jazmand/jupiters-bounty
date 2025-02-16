@@ -477,7 +477,7 @@ consideration_name = &"is_assigned"
 
 [node name="DecisionTimer" type="Timer" parent="CrewAI"]
 unique_name_in_owner = true
-wait_time = 5.0
+wait_time = 2.0
 autostart = true
 
 [connection signal="state_entered" from="CrewStateManager/ParallelState/CrewState/Idling" to="." method="_on_idling_state_entered"]
