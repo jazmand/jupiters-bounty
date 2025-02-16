@@ -169,14 +169,14 @@ func _on_walking_state_physics_processing(_delta: float) -> void:
 		#set_movement_target(Vector2(x,y))
 
 func _on_working_state_entered() -> void:
-	print("working...")
+	print(data.name, ": working...")
 	state = STATE.WORK
 
 func _on_working_state_physics_processing(_delta: float) -> void:
 	randomise_target_position_in_room()
 
 func _on_working_state_exited() -> void:
-	print("stopped working")
+	print(data.name, ": stopped working")
 
 func can_assign() -> bool:
 	return Global.station.rooms.size() > 0
@@ -185,7 +185,7 @@ func assign(room: Room, center: Vector2) -> void:
 	workplace = room
 	work_location = center
 	state_manager.send_event(&"assigned")
-	print(data.name, " assigned to room ", room.data.id)
+	print(data.name, " assigned to room: ", room.data.id, " tile: ", center)
 
 func go_to_work() -> void:
 	set_movement_target(work_location)
