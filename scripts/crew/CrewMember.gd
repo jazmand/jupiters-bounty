@@ -22,13 +22,19 @@ const STATE = {
 
 @export var speed: int = 5
 
+@export_category("Working Hours")
+@export var starts_work_hour: int = 2
+@export var starts_work_minute: int = 10
+@export var stops_work_hour: int = 2
+@export var stops_work_minute: int = 25
+
 @onready var state_manager: StateChart = $CrewStateManager
 @onready var navigation_agent: NavigationAgent2D = $Navigation/NavigationAgent2D
 @onready var navigation_timer: Timer = $Navigation/Timer
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
 @onready var sprite_idle: Sprite2D = $AgathaIdle
 @onready var sprite_walk: Sprite2D = $AgathaWalk
-@onready var area: Area2D = $Area2D
+@onready var area: Area2D = $BodyArea
 
 var data: CrewData
 
@@ -45,6 +51,9 @@ var current_animation = state + "_down"
 
 var idle_timer = 0.0
 var idle_time_limit = 2.0
+
+var workplace: Room
+var work_location: Vector2i
 
 func _ready() -> void:
 	data = CrewData.new()
@@ -174,8 +183,22 @@ func can_assign() -> bool:
 	return Global.station.rooms.size() > 0
 
 func assign(room: Room, center: Vector2) -> void:
+	workplace = room
+	work_location = center
 	state_manager.send_event(&"assigned")
 	print(data.name, " assigned to room ", room.data.id)
-	set_movement_target(center)
+
+func go_to_work() -> void:
+	set_movement_target(work_location)
 	state_manager.set_expression_property(&"assignment", &"work")
 	state_manager.send_event(&"walk")
+	
+func is_assigned() -> bool:
+	return workplace != null
+	
+func is_within_working_hours() -> bool:
+	var current_time: int = GameTime.current_time_in_minutes()
+	
+	var after_start = current_time >= ((starts_work_hour * 60) + starts_work_minute)
+	var before_stop = current_time < ((stops_work_hour * 60) + stops_work_minute) 
+	return after_start and before_stop
