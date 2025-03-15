@@ -22,6 +22,7 @@ const STATE = {
 
 @export var speed: int = 5
 
+# TODO: temporary solution, will improve later
 @export_category("Working Hours")
 @export var starts_work_hour: int = 2
 @export var starts_work_minute: int = 10

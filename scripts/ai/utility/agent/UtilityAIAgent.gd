@@ -1,10 +1,16 @@
 class_name UtilityAIAgent extends Node
 
-@export var actions: Array[UtilityAIAction]
+var actions: Array[UtilityAIAction] = []
 
 var current_action: UtilityAIAction
 
-func determine_best_action() -> void:
+func _ready() -> void:
+	for child: Node in get_children():
+		if child is UtilityAIAction:
+			actions.append(child)
+		
+
+func determine_best_action() -> UtilityAIAction:
 	var best_score: float = 0.0
 	var best_action_idx: int = 0
 	
@@ -15,4 +21,4 @@ func determine_best_action() -> void:
 			best_action_idx = i
 	
 	current_action = actions[best_action_idx]
-
+	return current_action

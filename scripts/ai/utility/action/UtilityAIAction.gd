@@ -2,11 +2,17 @@ class_name UtilityAIAction extends Node
 
 @export var action_name: StringName
 
-@export var considerations: Array[UtilityAIConsideration]
+var considerations: Array[UtilityAIConsideration] = []
 
-var score: float = 0.0:
-	set(s):
-		score = clampf(s, 0.0, 1.0)
+var score: float = 0.0: set = set_score
+
+func _ready() -> void:
+	for child: Node in get_children():
+		if child is UtilityAIConsideration:
+			considerations.append(child)
+
+func set_score(s: float) -> void:
+	score = clampf(s, 0.0, 1.0)
 
 func calculate_score() -> float:
 	var temp_score: float = 1.0

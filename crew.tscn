@@ -1,4 +1,4 @@
-[gd_scene load_steps=38 format=3 uid="uid://6ddc1y0q3bhc"]
+[gd_scene load_steps=39 format=3 uid="uid://6ddc1y0q3bhc"]
 
 [ext_resource type="Script" path="res://scripts/crew/CrewMember.gd" id="1_rgjpg"]
 [ext_resource type="Texture2D" uid="uid://dhxmp0xpmlnfc" path="res://assets/sprites/idle_agatha.png" id="2_uo5jt"]
@@ -11,6 +11,7 @@
 [ext_resource type="Script" path="res://addons/godot_state_charts/expression_guard.gd" id="9_xlf2i"]
 [ext_resource type="Script" path="res://scripts/crew/ai/CrewAI.gd" id="10_2np2b"]
 [ext_resource type="Script" path="res://scripts/crew/ai/actions/IdleAction.gd" id="11_kpeov"]
+[ext_resource type="Script" path="res://scripts/ai/utility/agent/UtilityAIAgent.gd" id="11_y45sd"]
 [ext_resource type="Script" path="res://scripts/ai/utility/consideration/UtilityAICurveConsideration.gd" id="12_3vs40"]
 [ext_resource type="Script" path="res://scripts/crew/ai/actions/WorkAction.gd" id="13_2nqfg"]
 [ext_resource type="Script" path="res://scripts/ai/utility/consideration/UtilityAIBooleanConsideration.gd" id="13_bshj5"]
@@ -444,34 +445,35 @@ position = Vector2(-1, -123)
 shape = SubResource("CapsuleShape2D_ynwli")
 debug_color = Color(0.678431, 0.356863, 0.894118, 0.419608)
 
-[node name="CrewAI" type="Node" parent="." node_paths=PackedStringArray("actions")]
+[node name="CrewAI" type="Node" parent="."]
 script = ExtResource("10_2np2b")
-actions = [NodePath("IdleAction"), NodePath("WorkAction")]
 
-[node name="IdleAction" type="Node" parent="CrewAI" node_paths=PackedStringArray("considerations")]
+[node name="Agent" type="Node" parent="CrewAI"]
+unique_name_in_owner = true
+script = ExtResource("11_y45sd")
+
+[node name="IdleAction" type="Node" parent="CrewAI/Agent"]
 script = ExtResource("11_kpeov")
 action_name = &"idle"
-considerations = [NodePath("DefaultConsideration")]
 
-[node name="DefaultConsideration" type="Node" parent="CrewAI/IdleAction"]
+[node name="DefaultConsideration" type="Node" parent="CrewAI/Agent/IdleAction"]
 script = ExtResource("12_3vs40")
 curve = SubResource("Curve_j4pgs")
 consideration_name = &"default"
 
-[node name="WorkAction" type="Node" parent="CrewAI" node_paths=PackedStringArray("considerations")]
+[node name="WorkAction" type="Node" parent="CrewAI/Agent"]
 script = ExtResource("13_2nqfg")
 action_name = &"work"
-considerations = [NodePath("IsWithinWorkingHoursConsideration"), NodePath("IsAssignedConsideration")]
 
-[node name="IsWithinWorkingHoursConsideration" type="Node" parent="CrewAI/WorkAction" node_paths=PackedStringArray("node")]
+[node name="IsWithinWorkingHoursConsideration" type="Node" parent="CrewAI/Agent/WorkAction" node_paths=PackedStringArray("node")]
 script = ExtResource("13_bshj5")
-node = NodePath("../../..")
+node = NodePath("../../../..")
 method = &"is_within_working_hours"
 consideration_name = &"is_within_working_hours"
 
-[node name="IsAssignedConsideration" type="Node" parent="CrewAI/WorkAction" node_paths=PackedStringArray("node")]
+[node name="IsAssignedConsideration" type="Node" parent="CrewAI/Agent/WorkAction" node_paths=PackedStringArray("node")]
 script = ExtResource("13_bshj5")
-node = NodePath("../../..")
+node = NodePath("../../../..")
 method = &"is_assigned"
 consideration_name = &"is_assigned"
 
