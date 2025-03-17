@@ -4,7 +4,7 @@ class_name BuildingManager extends Node
 
 @onready var base_tile_map: TileMap = %BaseTileMap
 @onready var build_tile_map: TileMap = %BuildTileMap
-@onready var furniture_tile_map: TileMap = %FurnitureTileMap
+#@onready var furniture_tile_map: TileMap = %FurnitureTileMap
 @onready var room_builder: RoomBuilder = %RoomBuilder
 
 @onready var camera: Camera2D = %Camera
