@@ -6,8 +6,12 @@ class_name FurnishingManager extends Node
 
 @onready var state_manager: StateChart = %StateManager
 
+@onready var camera: Camera2D = $Camera2D  # Adjust as needed
+
 var furniture_types: Array[FurnitureType]
-var selected_furnituretype: RoomType = null
+var selected_furniture_type: FurnitureType = null
+var _current_room_area: Array[Vector2i] = []
+var _current_room_type: RoomType = null
 
 func _init() -> void:
 	load_furniture_types()
@@ -58,3 +62,51 @@ func load_furniture_types() -> void:
 ## Called every frame. 'delta' is the elapsed time since the previous frame.
 #func _process(delta):
 	#pass
+	
+func get_valid_furniture_for_room(room_type: RoomType) -> Array[FurnitureType]:
+	var valid_furniture = []
+	for furniture in furniture_types:
+		if room_type.id in furniture.valid_room_types:
+			valid_furniture.append(furniture)
+	return valid_furniture
+		
+func start_furnishing(room_type: RoomType, room_area: Array[Vector2i]) -> void:
+	selected_furniture_type = null
+	_current_room_area = room_area
+	_current_room_type = room_type
+	GUI.furniture_menu.show_furniture_panel(get_valid_furniture_for_room(room_type))
+	state_manager.send_event("furnishing_start")
+
+func _on_furnishing_state_input(event: InputEvent) -> void:
+	if event.is_action_pressed("select"):
+		place_furniture(event, camera.position, camera.zoom)
+	elif event.is_action_pressed("cancel"):
+		state_manager.send_event("furnishing_cancel")
+	elif event.is_action_pressed("rotate"):
+		rotate_selected_furniture()
+
+func _on_furniture_action_completed(action: int, furniture_type: FurnitureType) -> void:
+	if action == GUI.furniture_menu.Action.SELECT_FURNITURE:
+		selected_furniture_type = furniture_type
+		print("Selected furniture for placement: %s" % furniture_type.name)
+	elif action == GUI.furniture_menu.Action.CLOSE:
+		state_manager.send_event("furnishing_cancel")
+
+func place_furniture(event: InputEvent, cam_position: Vector2, zoom: Vector2) -> void:
+	if selected_furniture_type == null:
+		print("No furniture selected")
+		return
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		var world_pos = (event.position / zoom) + cam_position
+		var tile_pos = furniture_tile_map.local_to_map(world_pos)
+		if not _current_room_area.has(tile_pos):
+			print("Tile outside room area!")
+			return
+		furniture_tile_map.set_cell(0, tile_pos, selected_furniture_type.tileset_id)
+		print("Placed %s at %s" % [selected_furniture_type.name, tile_pos])
+
+func rotate_selected_furniture() -> void:
+	pass
+	#current_rotation = (current_rotation + 90) % 360
+	#print("Rotated to %d degrees" % current_rotation)
+
