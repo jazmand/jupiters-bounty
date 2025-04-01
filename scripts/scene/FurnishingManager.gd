@@ -6,15 +6,25 @@ class_name FurnishingManager extends Node
 
 @onready var state_manager: StateChart = %StateManager
 
-@onready var camera: Camera2D = $Camera2D  # Adjust as needed
+@onready var camera: Camera2D = %Camera
+
+@onready var building_manager: BuildingManager = %BuildingManager
 
 var furniture_types: Array[FurnitureType]
-var selected_furniture_type: FurnitureType = null
+var selected_furnituretype: FurnitureType = null
 var _current_room_area: Array[Vector2i] = []
 var _current_room_type: RoomType = null
 
+enum StateEvent {FURNISHING_STOP, FURNISHING_START, FURNISHING_BACK, FURNISHING_FORWARD}
+
+const FURNISH_EVENTS = [&"furnishing_stop", &"furnishing_start", &"furnishing_back", &"furnishing_forward"]
+
 func _init() -> void:
 	load_furniture_types()
+	
+func _ready() -> void:
+	building_manager.room_built.connect(start_furnishing)
+	GUI.furniture_menu.action_completed.connect(on_furniture_menu_action)
 	
 func load_furniture_types() -> void:
 	var furniture_types_folder = "res://assets/furniture_type/"
@@ -64,49 +74,74 @@ func load_furniture_types() -> void:
 	#pass
 	
 func get_valid_furniture_for_room(room_type: RoomType) -> Array[FurnitureType]:
-	var valid_furniture = []
+	var valid_furniture: Array[FurnitureType] = []
 	for furniture in furniture_types:
 		if room_type.id in furniture.valid_room_types:
 			valid_furniture.append(furniture)
 	return valid_furniture
 		
 func start_furnishing(room_type: RoomType, room_area: Array[Vector2i]) -> void:
-	selected_furniture_type = null
+	selected_furnituretype = null
 	_current_room_area = room_area
 	_current_room_type = room_type
-	GUI.furniture_menu.show_furniture_panel(get_valid_furniture_for_room(room_type))
 	state_manager.send_event("furnishing_start")
+	
 
-func _on_furnishing_state_input(event: InputEvent) -> void:
-	if event.is_action_pressed("select"):
-		place_furniture(event, camera.position, camera.zoom)
-	elif event.is_action_pressed("cancel"):
-		state_manager.send_event("furnishing_cancel")
-	elif event.is_action_pressed("rotate"):
-		rotate_selected_furniture()
+func on_furniture_menu_action(action: int, clicked_furnituretype: FurnitureType) -> void:
+	var event: String
+	match action:
+		GUI.furniture_menu.Action.CLOSE:
+			state_manager.send_event("furnishing_stop")
+		GUI.furniture_menu.Action.OPEN:
+			state_manager.send_event("furnishing_start")
+		GUI.furniture_menu.Action.SELECT_FURNITURE:
+			selected_furnituretype = clicked_furnituretype
+			state_manager.send_event("furnishing_forward")
 
-func _on_furniture_action_completed(action: int, furniture_type: FurnitureType) -> void:
-	if action == GUI.furniture_menu.Action.SELECT_FURNITURE:
-		selected_furniture_type = furniture_type
-		print("Selected furniture for placement: %s" % furniture_type.name)
-	elif action == GUI.furniture_menu.Action.CLOSE:
-		state_manager.send_event("furnishing_cancel")
+func _on_selecting_furniture_state_entered():
+	GUI.furniture_menu.show_furniture_panel(get_valid_furniture_for_room(_current_room_type))
 
-func place_furniture(event: InputEvent, cam_position: Vector2, zoom: Vector2) -> void:
-	if selected_furniture_type == null:
-		print("No furniture selected")
-		return
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		var world_pos = (event.position / zoom) + cam_position
-		var tile_pos = furniture_tile_map.local_to_map(world_pos)
-		if not _current_room_area.has(tile_pos):
-			print("Tile outside room area!")
-			return
-		furniture_tile_map.set_cell(0, tile_pos, selected_furniture_type.tileset_id)
-		print("Placed %s at %s" % [selected_furniture_type.name, tile_pos])
+func _on_selecting_furniture_state_input(event):
+	if event.is_action_pressed("cancel"):
+		state_manager.send_event("furnishing_stop")
 
-func rotate_selected_furniture() -> void:
-	pass
-	#current_rotation = (current_rotation + 90) % 360
-	#print("Rotated to %d degrees" % current_rotation)
+func _on_selecting_furniture_state_exited() -> void:
+	GUI.furniture_menu.hide_furniture_panel()
 
+func _on_placing_furniture_state_input(event):
+	print(event, 'placing')
+
+#func _on_furnishing_state_input(event: InputEvent) -> void:
+	#print(event, 'e')
+	#if event.is_action_pressed("select"):
+		#place_furniture(event, camera.position, camera.zoom)
+	#elif event.is_action_pressed("cancel"):
+		#state_manager.send_event("furnishing_cancel")
+	#elif event.is_action_pressed("rotate"):
+		#rotate_selected_furniture()
+#
+#func _on_furniture_action_completed(action: int, furniture_type: FurnitureType) -> void:
+	#if action == GUI.furniture_menu.Action.SELECT_FURNITURE:
+		#selected_furniture_type = furniture_type
+		#print("Selected furniture for placement: %s" % furniture_type.name)
+	#elif action == GUI.furniture_menu.Action.CLOSE:
+		#state_manager.send_event("furnishing_cancel")
+#
+#func place_furniture(event: InputEvent, cam_position: Vector2, zoom: Vector2) -> void:
+	#print('plscing')
+	#if selected_furniture_type == null:
+		#print("No furniture selected")
+		#return
+	#if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		#var world_pos = (event.position / zoom) + cam_position
+		#var tile_pos = furniture_tile_map.local_to_map(world_pos)
+		#if not _current_room_area.has(tile_pos):
+			#print("Tile outside room area!")
+			#return
+		#furniture_tile_map.set_cell(0, tile_pos, selected_furniture_type.tileset_id)
+		#print("Placed %s at %s" % [selected_furniture_type.name, tile_pos])
+#
+#func rotate_selected_furniture() -> void:
+	#pass
+	##current_rotation = (current_rotation + 90) % 360
+	##print("Rotated to %d degrees" % current_rotation)

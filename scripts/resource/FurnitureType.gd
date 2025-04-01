@@ -8,7 +8,7 @@ class_name FurnitureType extends Resource
 @export var tileset_id: int
 @export var height: int
 @export var width: int
-@export var valid_room_types: Array[int]
+@export var valid_room_types: Array
 
 func _init(
 	p_id: int = 0,

@@ -15,7 +15,6 @@ func _ready():
 	Global.crew_assigned.connect(crew_selected)
 	Global.station.rooms_updated.connect(update_navigation_region)
 
-
 func new_crew_member(position_vector: Vector2 = Vector2(5000, 3000)) -> CrewMember:
 	var crew_member: CrewMember = CREW_SCENE.instantiate()
 	crew_member.position = position_vector # Adjust spawning position
@@ -55,6 +54,6 @@ func _on_default_state_unhandled_input(event: InputEvent) -> void:
 		if room:
 			Global.room_selected.emit(room)
 
-
 func update_navigation_region() -> void:
 	navigation_region.bake_navigation_polygon()
+

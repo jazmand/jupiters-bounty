@@ -5,11 +5,11 @@
 [resource]
 script = ExtResource("1_ykif7")
 id = 0
-name = ""
+name = "Canister"
 price = 5
 power_consumption = 0
 simultaneous_users = 1
 tileset_id = 0
 height = 1
 width = 1
-valid_room_types = Array[int]([1, 2, 3])
+valid_room_types = [3]

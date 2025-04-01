@@ -30,7 +30,7 @@ func show_furniture_panel(furniture_types: Array[FurnitureType]) -> void:
 func hide_furniture_panel() -> void:
 	furniture_panel.hide()
 
-func _on_furniture_button_pressed() -> void:
+func _on_furniture_open_button_pressed() -> void:
 	action_completed.emit(Action.OPEN, null)
 
 func _on_furniture_close_button_pressed() -> void:
