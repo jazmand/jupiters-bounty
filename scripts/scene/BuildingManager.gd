@@ -92,7 +92,7 @@ func on_room_builder_action(action: int) -> void:
 			event = BUILD_EVENTS[StateEvent.BUILDING_FORWARD]
 		room_builder.Action.COMPLETE:
 			event = BUILD_EVENTS[StateEvent.BUILDING_STOP]
-			emit_signal("room_built", selected_roomtype, room_builder.get_selected_tiles()) # Trigger furnishing manager start
+			room_built.emit(selected_roomtype, room_builder.get_selected_tiles())
 	state_manager.send_event(event)
 
 func _on_building_state_input(event: InputEvent) -> void:
