@@ -19,7 +19,6 @@ func set_data(
 		data.top_left = top_left
 		data.bottom_right = bottom_right
 		data.door_tiles.append_array(door_tiles)
-		#data.generate_hotspots()
 		add_room_to_id_map(id, top_left, bottom_right)
 
 func add_room_to_id_map(id: int, top_left: Vector2i, bottom_right: Vector2i) -> void:

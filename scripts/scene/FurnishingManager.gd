@@ -116,7 +116,7 @@ func place_furniture(event: InputEvent, cam_position: Vector2, zoom: Vector2) ->
 		if not _current_room_area.has(tile_pos):
 			print("Tile outside room area")
 			return
-		furniture_tile_map.set_cell(0, tile_pos, selected_furnituretype.tileset_id)
+		furniture_tile_map.set_cell(0, tile_pos, selected_furnituretype.tileset_id, Vector2i(0, 0))
 		print("Placed %s at %s" % [selected_furnituretype.name, tile_pos])
 
 #func rotate_selected_furniture() -> void:
