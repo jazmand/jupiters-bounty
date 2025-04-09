@@ -5,8 +5,9 @@ var id: int
 @export var top_left: Vector2i
 @export var bottom_right: Vector2i
 @export var door_tiles: Array[Vector2i]
-@export var hot_spots: Array[Vector2i]
-var assigned_crew_ids: Array[int]
+#@export var hot_spots: Array[Vector2i]
+#@export var furniture_items: Array[Furniture] = []
+#var assigned_crew_ids: Array[int]
 
 func _init(
 	room_id: int = 0,
@@ -19,8 +20,9 @@ func _init(
 	top_left = room_top_left
 	bottom_right = room_bottom_right
 	door_tiles = []
-	hot_spots = []
-	assigned_crew_ids = []
+	#hot_spots = []
+	#furniture_items = []
+	#assigned_crew_ids = []
 
 func add_door_tile(tile_coords: Vector2i) -> void:
 	if is_exterior_tile(tile_coords):
@@ -39,23 +41,35 @@ func calculate_power_consumption() -> int:
 	var tile_count = calculate_tile_count(top_left, bottom_right)
 	return tile_count * type.power_consumption
 	
-func generate_hotspots() -> void:
-	hot_spots.clear()
-	var available_tiles = []
+#func add_furniture(furniture: Furniture) -> void:
+	#furniture_items.append(furniture)
+#
+#func remove_furniture(furniture_id: int) -> void:
+	#print(furniture_items, 'delete')
+#
+#func find_furniture(furniture_id: int) -> Furniture:
+	#for furniture in furniture_items:
+		#if furniture.id == furniture_id:
+			#return furniture
+	#return null
 	
-	var min_x = min(top_left.x, bottom_right.x)
-	var max_x = max(top_left.x, bottom_right.x) + 1
-	var min_y = min(top_left.y, bottom_right.y)
-	var max_y = max(top_left.y, bottom_right.y) + 1
-	
-	for x in range(min_x, max_x):
-		for y in range(min_y, max_y):
-			var tile = Vector2i(x, y)
-			if !door_tiles.has(tile):
-				available_tiles.append(tile)
-				
-	var hotspot_count = int(round(available_tiles.size() * type.capacity))
-	for i in hotspot_count:
-		var rand_index = randi() % available_tiles.size()
-		hot_spots.append(available_tiles[rand_index])
-		available_tiles.remove_at(rand_index)
+#func generate_hotspots() -> void:
+	#hot_spots.clear()
+	#var available_tiles = []
+	#
+	#var min_x = min(top_left.x, bottom_right.x)
+	#var max_x = max(top_left.x, bottom_right.x) + 1
+	#var min_y = min(top_left.y, bottom_right.y)
+	#var max_y = max(top_left.y, bottom_right.y) + 1
+	#
+	#for x in range(min_x, max_x):
+		#for y in range(min_y, max_y):
+			#var tile = Vector2i(x, y)
+			#if !door_tiles.has(tile):
+				#available_tiles.append(tile)
+				#
+	#var hotspot_count = int(round(available_tiles.size() * type.capacity))
+	#for i in hotspot_count:
+		#var rand_index = randi() % available_tiles.size()
+		#hot_spots.append(available_tiles[rand_index])
+		#available_tiles.remove_at(rand_index)

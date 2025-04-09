@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="FurnitureType" load_steps=2 format=3 uid="uid://j4k8wug0f5du"]
+
+[ext_resource type="Script" path="res://scripts/resource/FurnitureType.gd" id="1_107aw"]
+
+[resource]
+script = ExtResource("1_107aw")
+id = 1
+name = "Bed"
+price = 10
+power_consumption = 0
+simultaneous_users = 1
+tileset_id = 0
+height = 2
+width = 1
+valid_room_types = [1]

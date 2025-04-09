@@ -3,6 +3,7 @@ class_name RoomBuilder extends Node
 const ROOM_SCENE: PackedScene = preload("res://room.tscn")
 
 signal action_completed(action: int)
+signal room_built(room_type, tiles)
 
 @onready var base_tile_map: TileMap = %BaseTileMap
 @onready var build_tile_map: TileMap = %BuildTileMap
@@ -11,7 +12,7 @@ signal action_completed(action: int)
 
 var building_layer: int = 0
 var drafting_layer: int = 1
-var hotspot_layer: int = 0
+#var hotspot_layer: int = 0
 
 var selection_tileset_id: int = 0
 var drafting_tileset_id: int = 1
@@ -202,7 +203,7 @@ func draw_rooms() -> void:
 	# Clear drafting layer
 	build_tile_map.clear_layer(drafting_layer)
 	build_tile_map.clear_layer(building_layer)
-	furniture_tile_map.clear_layer(hotspot_layer)
+	#furniture_tile_map.clear_layer(hotspot_layer)
 	restore_base_tile_map_state()
 	for room in Global.station.rooms:
 		draw_room(room.data)
@@ -251,8 +252,8 @@ func draw_room(room) -> void:
 				elif door_tile.y == max_y - 1:
 					build_tile_map.set_cell(building_layer, door_tile, tileset_id, Vector2(3, 2))
 					
-			for hotspot in room.hot_spots:
-				furniture_tile_map.set_cell(0, hotspot, 0, Vector2(0, 1)) # TEMPORARY
+			#for hotspot in room.hot_spots:
+				#furniture_tile_map.set_cell(0, hotspot, 0, Vector2(0, 1)) # TEMPORARY
 					
 func save_base_tile_map_state() -> Dictionary:
 	var tile_data = {}
@@ -339,3 +340,10 @@ func update_cursor_with_room_info(room_cost: int, room_consumption: int, cursor_
 		consumption_text = "Consumes: " + str(room_consumption) + "KW"
 	var label_text = "Cost: " + str(room_cost) + "\n" + consumption_text
 	Global.update_cursor_label.emit(label_text, cursor_position)
+
+func get_selected_tiles() -> Array[Vector2i]:
+	var tiles: Array[Vector2i] = []
+	for x in range(min(initial_tile_coords.x, transverse_tile_coords.x), max(initial_tile_coords.x, transverse_tile_coords.x) + 1):
+		for y in range(min(initial_tile_coords.y, transverse_tile_coords.y), max(initial_tile_coords.y, transverse_tile_coords.y) + 1):
+			tiles.append(Vector2i(x, y))
+	return tiles

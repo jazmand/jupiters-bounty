@@ -4,12 +4,13 @@ class_name BuildingManager extends Node
 
 @onready var base_tile_map: TileMap = %BaseTileMap
 @onready var build_tile_map: TileMap = %BuildTileMap
-@onready var furniture_tile_map: TileMap = %FurnitureTileMap
 @onready var room_builder: RoomBuilder = %RoomBuilder
 
 @onready var camera: Camera2D = %Camera
 
 @onready var state_manager: StateChart = %StateManager
+
+signal room_built(room_type: RoomType, room_area: Array[Vector2i])
 
 var room_types: Array[RoomType] = []
 var selected_roomtype: RoomType = null
@@ -91,6 +92,7 @@ func on_room_builder_action(action: int) -> void:
 			event = BUILD_EVENTS[StateEvent.BUILDING_FORWARD]
 		room_builder.Action.COMPLETE:
 			event = BUILD_EVENTS[StateEvent.BUILDING_STOP]
+			room_built.emit(selected_roomtype, room_builder.get_selected_tiles())
 	state_manager.send_event(event)
 
 func _on_building_state_input(event: InputEvent) -> void:

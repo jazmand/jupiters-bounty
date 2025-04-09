@@ -1,4 +1,4 @@
-[gd_scene load_steps=65 format=3 uid="uid://dhh5wq2ka1ay8"]
+[gd_scene load_steps=66 format=3 uid="uid://dhh5wq2ka1ay8"]
 
 [ext_resource type="Script" path="res://scripts/scene/Main.gd" id="1_3g4j0"]
 [ext_resource type="PackedScene" uid="uid://cpi6duyqx08ba" path="res://gui.tscn" id="2_0qqu7"]
@@ -26,6 +26,7 @@
 [ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="20_aq14c"]
 [ext_resource type="Script" path="res://scripts/scene/RoomEditor.gd" id="20_trquu"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="21_n7j07"]
+[ext_resource type="Script" path="res://scripts/scene/FurnishingManager.gd" id="22_avrh2"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_w47eo"]
 vertices = PackedVector2Array(256, 0, 0, 148, -256, 0, 0, -148)
@@ -618,6 +619,9 @@ script = ExtResource("16_50vy2")
 unique_name_in_owner = true
 script = ExtResource("20_trquu")
 
+[node name="FurnishingManager" type="Node" parent="GameManager"]
+script = ExtResource("22_avrh2")
+
 [node name="CanvasLayer" type="CanvasLayer" parent="GameManager"]
 
 [node name="StateChartDebugger" parent="GameManager/CanvasLayer" instance=ExtResource("13_g5vrw")]
@@ -652,6 +656,11 @@ event = &"editing_start"
 script = ExtResource("21_n7j07")
 to = NodePath("../../Crew")
 event = &"crew"
+
+[node name="ToFurnishing" type="Node" parent="GameManager/StateManager/GameState/Default"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../Furnishing/SelectingFurniture")
+event = &"furnishing_start"
 
 [node name="Building" type="Node" parent="GameManager/StateManager/GameState"]
 script = ExtResource("19_8sc5u")
@@ -737,6 +746,11 @@ script = ExtResource("21_n7j07")
 to = NodePath("../../SettingDoor")
 event = &"building_back"
 
+[node name="ToFurnishing" type="Node" parent="GameManager/StateManager/GameState/Building/ConfirmingRoom"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../../Furnishing/SelectingFurniture")
+event = &"furnishing_start"
+
 [node name="Editing" type="Node" parent="GameManager/StateManager/GameState"]
 script = ExtResource("19_8sc5u")
 initial_state = NodePath("SelectingRoom")
@@ -774,6 +788,26 @@ script = ExtResource("21_n7j07")
 to = NodePath("../../../Default")
 event = &"assigned"
 
+[node name="Furnishing" type="Node" parent="GameManager/StateManager/GameState"]
+script = ExtResource("19_8sc5u")
+initial_state = NodePath("SelectingFurniture")
+
+[node name="SelectingFurniture" type="Node" parent="GameManager/StateManager/GameState/Furnishing"]
+script = ExtResource("20_aq14c")
+
+[node name="ToPlacingFurniture" type="Node" parent="GameManager/StateManager/GameState/Furnishing/SelectingFurniture"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../PlacingFurniture")
+event = &"furnishing_forward"
+
+[node name="ToDefault" type="Node" parent="GameManager/StateManager/GameState/Furnishing/SelectingFurniture"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../../Default")
+event = &"furnishing_stop"
+
+[node name="PlacingFurniture" type="Node" parent="GameManager/StateManager/GameState/Furnishing"]
+script = ExtResource("20_aq14c")
+
 [connection signal="state_unhandled_input" from="GameManager/StateManager/GameState/Default" to="GameManager" method="_on_default_state_unhandled_input"]
 [connection signal="state_entered" from="GameManager/StateManager/GameState/Building" to="GameManager/BuildingManager" method="_on_building_state_entered"]
 [connection signal="state_exited" from="GameManager/StateManager/GameState/Building" to="GameManager/BuildingManager" method="_on_building_state_exited"]
@@ -792,3 +826,8 @@ event = &"assigned"
 [connection signal="state_exited" from="GameManager/StateManager/GameState/Editing/DeletingRoom" to="GameManager/EditingManager" method="_on_deleting_room_state_exited"]
 [connection signal="state_input" from="GameManager/StateManager/GameState/Editing/DeletingRoom" to="GameManager/EditingManager" method="_on_deleting_room_state_input"]
 [connection signal="state_input" from="GameManager/StateManager/GameState/Crew/SelectingRoom" to="GameManager" method="_on_selecting_room_state_input"]
+[connection signal="state_entered" from="GameManager/StateManager/GameState/Furnishing/SelectingFurniture" to="GameManager/FurnishingManager" method="_on_selecting_furniture_state_entered"]
+[connection signal="state_exited" from="GameManager/StateManager/GameState/Furnishing/SelectingFurniture" to="GameManager/FurnishingManager" method="_on_selecting_furniture_state_exited"]
+[connection signal="state_input" from="GameManager/StateManager/GameState/Furnishing/SelectingFurniture" to="GameManager/FurnishingManager" method="_on_selecting_furniture_state_input"]
+[connection signal="state_entered" from="GameManager/StateManager/GameState/Furnishing/PlacingFurniture" to="GameManager/FurnishingManager" method="_on_placing_furniture_state_entered"]
+[connection signal="state_input" from="GameManager/StateManager/GameState/Furnishing/PlacingFurniture" to="GameManager/FurnishingManager" method="_on_placing_furniture_state_input"]
