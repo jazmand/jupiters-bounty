@@ -104,6 +104,8 @@ func _on_selecting_furniture_state_exited() -> void:
 func _on_placing_furniture_state_input(event):
 	if event.is_action_pressed("select"):
 		place_furniture(event)
+	elif event.is_action_pressed("cancel") or event.is_action_pressed("exit"):
+		state_manager.send_event(FURNISH_EVENTS[StateEvent.FURNISHING_STOP])
 
 # Discuss: This needs to be tied to the room.
 func place_furniture(event: InputEvent) -> void:

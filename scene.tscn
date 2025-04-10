@@ -808,6 +808,11 @@ event = &"furnishing_stop"
 [node name="PlacingFurniture" type="Node" parent="GameManager/StateManager/GameState/Furnishing"]
 script = ExtResource("20_aq14c")
 
+[node name="ToDefault" type="Node" parent="GameManager/StateManager/GameState/Furnishing/PlacingFurniture"]
+script = ExtResource("21_n7j07")
+to = NodePath("../../../Default")
+event = &"furnishing_stop"
+
 [connection signal="state_unhandled_input" from="GameManager/StateManager/GameState/Default" to="GameManager" method="_on_default_state_unhandled_input"]
 [connection signal="state_entered" from="GameManager/StateManager/GameState/Building" to="GameManager/BuildingManager" method="_on_building_state_entered"]
 [connection signal="state_exited" from="GameManager/StateManager/GameState/Building" to="GameManager/BuildingManager" method="_on_building_state_exited"]
