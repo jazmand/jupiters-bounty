@@ -23,8 +23,8 @@ enum Action {START, BACK, FORWARD, COMPLETE}
 func _ready():
 	room_types = editing_manager.room_types
 
-func on_left_mouse_button_press(event: InputEvent, offset: Vector2, zoom: Vector2) -> void:
-	selected_tile_coords = build_tile_map.local_to_map((event.position / zoom) + offset)
+func on_left_mouse_button_press() -> void:
+	selected_tile_coords = build_tile_map.local_to_map(build_tile_map.get_global_mouse_position())
 	var room_id: int = Room.find_tile_room_id(selected_tile_coords)
 	if room_id > 0:
 		var room = Global.station.find_room_by_id(room_id)

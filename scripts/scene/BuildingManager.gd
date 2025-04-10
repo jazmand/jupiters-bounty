@@ -112,28 +112,29 @@ func _on_selecting_roomtype_state_exited() -> void:
 # TODO: refactor state input handlers
 func _on_selecting_tile_state_input(event: InputEvent) -> void:
 	if event.is_action_pressed("select"):
-		room_builder.selecting_tile(event, camera.position, camera.zoom, selected_roomtype)
+		room_builder.selecting_tile(selected_roomtype)
 	elif event.is_action_pressed("cancel"):
 		room_builder.clear_selected_roomtype()
 	elif event is InputEventMouseMotion:
-		room_builder.selecting_tile_motion(event, camera.position, camera.zoom)
+		room_builder.selecting_tile_motion()
+		
 
 func _on_drafting_room_state_input(event: InputEvent) -> void:
 	if event.is_action_pressed("select"):
 		room_builder.drafting_room()
 	elif event.is_action_pressed("cancel"):
 		room_builder.stop_drafting()
-		room_builder.selecting_tile_motion(event, camera.position, camera.zoom)
+		room_builder.selecting_tile_motion()
 	elif event is InputEventMouseMotion:
-		room_builder.drafting_room_motion(event, camera.position, camera.zoom)
+		room_builder.drafting_room_motion()
 
 func _on_setting_door_state_input(event: InputEvent) -> void:
 	if event.is_action_pressed("select"):
-		room_builder.setting_door(event, camera.position, camera.zoom)
+		room_builder.setting_door()
 	elif event.is_action_pressed("cancel"):
 		state_manager.send_event(BUILD_EVENTS[StateEvent.BUILDING_BACK])
 	elif event is InputEventMouseMotion:
-		room_builder.setting_door_motion(event, camera.position, camera.zoom)
+		room_builder.setting_door_motion()
 
 func _on_confirming_room_state_entered() -> void:
 	popup.set_title(room_builder.popup_title).set_content(room_builder.popup_content).set_yes_text(room_builder.popup_yes_text).set_no_text(room_builder.popup_no_text).show()

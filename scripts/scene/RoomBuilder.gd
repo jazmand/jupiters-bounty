@@ -81,42 +81,43 @@ func stop_drafting() -> void:
 	Global.hide_cursor_label.emit()
 # --- Input functions ---
 
-func selecting_tile(event: InputEventMouseButton, offset: Vector2, zoom: Vector2, current_room_type: RoomType) -> void:
-	var coords = base_tile_map.local_to_map((event.position / zoom) + offset)
+func selecting_tile(current_room_type: RoomType) -> void:
+	var coords = base_tile_map.local_to_map(base_tile_map.get_global_mouse_position())
 	if !any_invalid:
 		selected_room_type = current_room_type
 		initial_tile_coords = coords
 		action_completed.emit(Action.FORWARD)
 		
 
-func selecting_tile_motion(event: InputEventMouse, offset: Vector2, zoom: Vector2) -> void:
-	var coords = base_tile_map.local_to_map((event.position / zoom) + offset)
+func selecting_tile_motion() -> void:
+	var coords = base_tile_map.local_to_map(base_tile_map.get_global_mouse_position())
 	select_tile(coords)
+	
 
 func drafting_room() -> void:
 	if !any_invalid:
 		action_completed.emit(Action.FORWARD)
 
-func drafting_room_motion(event: InputEventMouseMotion, offset: Vector2, zoom: Vector2) -> void:
-	transverse_tile_coords = base_tile_map.local_to_map((event.position / zoom) + offset)
+func drafting_room_motion() -> void:
+	transverse_tile_coords = base_tile_map.local_to_map(base_tile_map.get_global_mouse_position())
 	draft_room(initial_tile_coords, transverse_tile_coords)
 		
 	var room_size = Room.calculate_tile_count(initial_tile_coords, transverse_tile_coords)
 	var room_cost = selected_room_type.price * room_size
 	var room_consumption = selected_room_type.power_consumption * room_size
-	update_cursor_with_room_info(room_cost, room_consumption, event.position)
+	update_cursor_with_room_info(room_cost, room_consumption, base_tile_map.get_global_mouse_position())
 
-func setting_door(event: InputEventMouseButton, offset: Vector2, zoom: Vector2) -> void:
+func setting_door() -> void:
 	temp_door_coords = []
-	var coords = base_tile_map.local_to_map((event.position / zoom) + offset)
+	var coords = base_tile_map.local_to_map(base_tile_map.get_global_mouse_position())
 	if is_on_room_edge_and_not_corner(coords):
 		set_doors(coords)
 		confirm_room_details()
 	else:
 		print("Door must be on the edge of the room")
 
-func setting_door_motion(event: InputEventMouseMotion, offset: Vector2, zoom: Vector2) -> void:
-	var coords = base_tile_map.local_to_map((event.position / zoom) + offset)
+func setting_door_motion() -> void:
+	var coords = base_tile_map.local_to_map(base_tile_map.get_global_mouse_position())
 	# Clear the previous door tile from the door_layer
 	draft_room(initial_tile_coords, transverse_tile_coords)
 	# Check if the tile is within the room and on the room's edge

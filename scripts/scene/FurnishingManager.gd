@@ -103,16 +103,15 @@ func _on_selecting_furniture_state_exited() -> void:
 
 func _on_placing_furniture_state_input(event):
 	if event.is_action_pressed("select"):
-		place_furniture(event, camera.position, camera.zoom)
+		place_furniture(event)
 
 # Discuss: This needs to be tied to the room.
-func place_furniture(event: InputEvent, cam_position: Vector2, zoom: Vector2) -> void:
+func place_furniture(event: InputEvent) -> void:
 	if selected_furnituretype == null:
 		print("No furniture selected")
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		var world_pos = (event.position / zoom) + cam_position
-		var tile_pos = furniture_tile_map.local_to_map(world_pos)
+		var tile_pos = furniture_tile_map.local_to_map(furniture_tile_map.get_global_mouse_position())
 		if not _current_room_area.has(tile_pos):
 			print("Tile outside room area")
 			return

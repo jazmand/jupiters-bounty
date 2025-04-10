@@ -83,7 +83,7 @@ func on_room_editor_action(action: int) -> void:
 	
 func _on_selecting_room_state_input(event: InputEvent) -> void:
 	if event.is_action_pressed("select"):
-		room_editor.on_left_mouse_button_press(event, camera.offset, camera.zoom)
+		room_editor.on_left_mouse_button_press()
 	if event.is_action_pressed("exit"):
 		state_manager.send_event(EDIT_EVENTS[StateEvent.EDITING_STOP])
 
