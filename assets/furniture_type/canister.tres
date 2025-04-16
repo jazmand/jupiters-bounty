@@ -10,6 +10,7 @@ price = 5
 power_consumption = 0
 simultaneous_users = 1
 tileset_id = 0
+tileset_coords = [Vector2(2.08165e-12, 1)]
 height = 1
 width = 1
 valid_room_types = [3]

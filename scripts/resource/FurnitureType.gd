@@ -6,6 +6,7 @@ class_name FurnitureType extends Resource
 @export var power_consumption: int
 @export var simultaneous_users: int
 @export var tileset_id: int
+@export var tileset_coords: Array[Vector2i]
 @export var height: int
 @export var width: int
 @export var valid_room_types: Array
@@ -17,6 +18,7 @@ func _init(
 	p_power_consumption: int = 0,
 	p_simultaneous_users: int = 1,
 	p_tileset_id: int = 0,
+	p_tileset_coords = [] as Array[Vector2i],
 	p_height: int = 1,
 	p_width: int = 1,
 	p_valid_room_types = []
@@ -29,5 +31,6 @@ func _init(
 	height = p_height
 	width = p_width
 	tileset_id = p_tileset_id
+	tileset_coords = p_tileset_coords
 	valid_room_types = p_valid_room_types 
 	

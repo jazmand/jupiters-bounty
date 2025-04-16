@@ -55,6 +55,7 @@ func load_furniture_types() -> void:
 				furniture_type_instance.height = furniture_type_resource.height
 				furniture_type_instance.width = furniture_type_resource.width
 				furniture_type_instance.tileset_id = furniture_type_resource.tileset_id
+				furniture_type_instance.tileset_coords = furniture_type_resource.tileset_coords
 				furniture_type_instance.valid_room_types = furniture_type_resource.valid_room_types
 			
 				# Add the furniture type instance to the list
@@ -107,18 +108,58 @@ func _on_placing_furniture_state_input(event):
 	elif event.is_action_pressed("cancel") or event.is_action_pressed("exit"):
 		state_manager.send_event(FURNISH_EVENTS[StateEvent.FURNISHING_STOP])
 
-# Discuss: This needs to be tied to the room.
 func place_furniture(event: InputEvent) -> void:
 	if selected_furnituretype == null:
 		print("No furniture selected")
 		return
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		var tile_pos = furniture_tile_map.local_to_map(furniture_tile_map.get_global_mouse_position())
-		if not _current_room_area.has(tile_pos):
-			print("Tile outside room area")
-			return
-		furniture_tile_map.set_cell(0, tile_pos, selected_furnituretype.tileset_id, Vector2i(0, 0))
-		print("Placed %s at %s" % [selected_furnituretype.name, tile_pos])
 
-#func rotate_selected_furniture() -> void:
-	# Discuss: 4 directions or 2?
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		var origin = furniture_tile_map.local_to_map(furniture_tile_map.get_global_mouse_position())
+		var positions = get_placement_positions_from_origin(origin, selected_furnituretype)
+
+		if positions.size() != selected_furnituretype.tileset_coords.size():
+			print("Tileset_coords size does not match width × height")
+			return
+
+		if !are_tiles_in_room(positions):
+			print("Some tiles are outside the room area")
+			return
+
+		if are_tiles_occupied(positions):
+			print("Some tiles are already occupied")
+			return
+
+		if not has_enough_currency(selected_furnituretype.price):
+			print("Not enough currency to place this furniture")
+			return
+
+		# Place each tile of the furniture
+		for i in positions.size():
+			var world_tile = positions[i]
+			var tileset_coord = selected_furnituretype.tileset_coords[i]
+			furniture_tile_map.set_cell(0, world_tile, selected_furnituretype.tileset_id, tileset_coord)
+
+		Global.station.currency -= selected_furnituretype.price
+		print("Placed %s. Remaining currency: %d" % [selected_furnituretype.name, Global.station.currency])
+
+func are_tiles_in_room(positions: Array[Vector2i]) -> bool:
+	for pos in positions:
+		if not _current_room_area.has(pos):
+			return false
+	return true
+
+func are_tiles_occupied(positions: Array[Vector2i]) -> bool:
+	for pos in positions:
+		if furniture_tile_map.get_cell_source_id(0, pos) != -1:
+			return true
+	return false
+
+func has_enough_currency(price: int) -> bool:
+	return Global.station.currency >= price
+
+func get_placement_positions_from_origin(origin: Vector2i, furniture: FurnitureType) -> Array[Vector2i]:
+	var positions: Array[Vector2i] = []
+	for y in range(furniture.height):
+		for x in range(furniture.width):
+			positions.append(origin + Vector2i(x, y))
+	return positions
