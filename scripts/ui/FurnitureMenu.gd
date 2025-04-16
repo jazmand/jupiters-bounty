@@ -28,6 +28,9 @@ func show_furniture_panel(furniture_types: Array[FurnitureType]) -> void:
 	furniture_panel.show()
 
 func hide_furniture_panel() -> void:
+	for child in furniture_container.get_children():
+		child.queue_free() # Clears options
+	furniture_buttons.clear()
 	furniture_panel.hide()
 
 func _on_furniture_open_button_pressed() -> void:

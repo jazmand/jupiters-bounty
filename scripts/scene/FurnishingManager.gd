@@ -77,7 +77,6 @@ func start_furnishing(room_type: RoomType, room_area: Array[Vector2i]) -> void:
 	_current_room_area = room_area
 	_current_room_type = room_type
 	state_manager.send_event("furnishing_start")
-	
 
 func on_furniture_menu_action(action: int, clicked_furnituretype: FurnitureType) -> void:
 	var event: String
