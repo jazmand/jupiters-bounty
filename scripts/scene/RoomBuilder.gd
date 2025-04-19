@@ -10,9 +10,8 @@ signal room_built(room_type, tiles)
 @onready var furniture_tile_map: TileMap = %FurnitureTileMap
 @onready var building_manager: BuildingManager = %BuildingManager
 
-var building_layer: int = 0
-var drafting_layer: int = 1
-#var hotspot_layer: int = 0
+var drafting_layer: int = 0
+var building_layer: int = 1
 
 var selection_tileset_id: int = 0
 var drafting_tileset_id: int = 1
@@ -241,7 +240,7 @@ func draw_room(room) -> void:
 					if tileset_mapper.has(Vector2i(x, y)):
 						tileset_coords = tileset_mapper[Vector2i(x, y)]
 					build_tile_map.set_cell(building_layer, Vector2(x, y), tileset_id, tileset_coords)
-					base_tile_map.erase_cell(0, Vector2i(x, y))
+					base_tile_map.erase_cell(0, Vector2i(x, y)) # Required for navigation. Sets wall bounds.
 						
 			for door_tile in room.door_tiles:
 				if door_tile.x == min_x:

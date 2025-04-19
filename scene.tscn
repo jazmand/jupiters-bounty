@@ -1,4 +1,4 @@
-[gd_scene load_steps=66 format=3 uid="uid://dhh5wq2ka1ay8"]
+[gd_scene load_steps=67 format=3 uid="uid://dhh5wq2ka1ay8"]
 
 [ext_resource type="Script" path="res://scripts/scene/Main.gd" id="1_3g4j0"]
 [ext_resource type="PackedScene" uid="uid://cpi6duyqx08ba" path="res://gui.tscn" id="2_0qqu7"]
@@ -510,11 +510,17 @@ texture_region_size = Vector2i(512, 512)
 1:0/0 = 0
 0:1/0 = 0
 
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_d1whw"]
+texture = ExtResource("5_y3eoa")
+texture_region_size = Vector2i(512, 512)
+0:0/0 = 0
+
 [sub_resource type="TileSet" id="TileSet_4wgk6"]
 tile_shape = 1
 tile_layout = 5
 tile_size = Vector2i(512, 296)
 sources/0 = SubResource("TileSetAtlasSource_6o7ut")
+sources/1 = SubResource("TileSetAtlasSource_d1whw")
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_jelv3"]
 source_geometry_mode = 1
@@ -578,9 +584,13 @@ unique_name_in_owner = true
 y_sort_enabled = true
 tile_set = SubResource("TileSet_4wgk6")
 format = 2
-layer_0/name = "Furniture layer"
+layer_0/name = "Draft Layer"
 layer_0/y_sort_enabled = true
 layer_0/z_index = 3
+layer_1/name = "Furniture layer"
+layer_1/y_sort_enabled = true
+layer_1/z_index = 4
+layer_1/tile_data = PackedInt32Array()
 
 [node name="NavigationRegion" type="NavigationRegion2D" parent="GameManager"]
 unique_name_in_owner = true
@@ -835,4 +845,5 @@ event = &"furnishing_stop"
 [connection signal="state_exited" from="GameManager/StateManager/GameState/Furnishing/SelectingFurniture" to="GameManager/FurnishingManager" method="_on_selecting_furniture_state_exited"]
 [connection signal="state_input" from="GameManager/StateManager/GameState/Furnishing/SelectingFurniture" to="GameManager/FurnishingManager" method="_on_selecting_furniture_state_input"]
 [connection signal="state_entered" from="GameManager/StateManager/GameState/Furnishing/PlacingFurniture" to="GameManager/FurnishingManager" method="_on_placing_furniture_state_entered"]
+[connection signal="state_exited" from="GameManager/StateManager/GameState/Furnishing/PlacingFurniture" to="GameManager/FurnishingManager" method="_on_placing_furniture_state_exited"]
 [connection signal="state_input" from="GameManager/StateManager/GameState/Furnishing/PlacingFurniture" to="GameManager/FurnishingManager" method="_on_placing_furniture_state_input"]
