@@ -25,7 +25,7 @@ func _init() -> void:
 	# Load and initialize room types
 	load_room_types()
 
-# Called when the node enters the scene tree for the first time.
+# Called when the node enters the scene tree for the first time
 func _ready() -> void:
 	room_builder.action_completed.connect(on_room_builder_action)
 	# Connect the buttons to the confirmation functions in the GUI script

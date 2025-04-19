@@ -2,6 +2,8 @@ class_name FurnishingManager extends Node
 
 @onready var GUI: StationGUI = %GUI
 
+@onready var base_tile_map: TileMap = %BaseTileMap
+@onready var build_tile_map: TileMap = %BuildTileMap
 @onready var furniture_tile_map: TileMap = %FurnitureTileMap
 
 @onready var state_manager: StateChart = %StateManager
@@ -14,6 +16,12 @@ var furniture_types: Array[FurnitureType]
 var selected_furnituretype: FurnitureType = null
 var _current_room_area: Array[Vector2i] = []
 var _current_room_type: RoomType = null
+
+var drafting_layer: int = 0
+var furnishing_layer: int = 1
+
+
+var overlay_tileset_id = 1 #TEMPORARY
 
 enum StateEvent {FURNISHING_STOP, FURNISHING_START, FURNISHING_BACK, FURNISHING_FORWARD}
 
@@ -55,6 +63,7 @@ func load_furniture_types() -> void:
 				furniture_type_instance.height = furniture_type_resource.height
 				furniture_type_instance.width = furniture_type_resource.width
 				furniture_type_instance.tileset_id = furniture_type_resource.tileset_id
+				furniture_type_instance.tileset_coords = furniture_type_resource.tileset_coords
 				furniture_type_instance.valid_room_types = furniture_type_resource.valid_room_types
 			
 				# Add the furniture type instance to the list
@@ -76,7 +85,6 @@ func start_furnishing(room_type: RoomType, room_area: Array[Vector2i]) -> void:
 	_current_room_area = room_area
 	_current_room_type = room_type
 	state_manager.send_event("furnishing_start")
-	
 
 func on_furniture_menu_action(action: int, clicked_furnituretype: FurnitureType) -> void:
 	var event: String
@@ -93,6 +101,8 @@ func on_furniture_menu_action(action: int, clicked_furnituretype: FurnitureType)
 
 func _on_selecting_furniture_state_entered():
 	GUI.furniture_menu.show_furniture_panel(get_valid_furniture_for_room(_current_room_type))
+	print('before call')
+	show_invalid_overlay()
 
 func _on_selecting_furniture_state_input(event):
 	if event.is_action_pressed("cancel"):
@@ -100,6 +110,10 @@ func _on_selecting_furniture_state_input(event):
 
 func _on_selecting_furniture_state_exited() -> void:
 	GUI.furniture_menu.hide_furniture_panel()
+	hide_invalid_overlay()
+
+func _on_placing_furniture_state_entered() -> void:
+	show_invalid_overlay()
 
 func _on_placing_furniture_state_input(event):
 	if event.is_action_pressed("select"):
@@ -107,18 +121,82 @@ func _on_placing_furniture_state_input(event):
 	elif event.is_action_pressed("cancel") or event.is_action_pressed("exit"):
 		state_manager.send_event(FURNISH_EVENTS[StateEvent.FURNISHING_STOP])
 
-# Discuss: This needs to be tied to the room.
+func _on_placing_furniture_state_exited() -> void:
+	hide_invalid_overlay()
+
 func place_furniture(event: InputEvent) -> void:
 	if selected_furnituretype == null:
 		print("No furniture selected")
 		return
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		var tile_pos = furniture_tile_map.local_to_map(furniture_tile_map.get_global_mouse_position())
-		if not _current_room_area.has(tile_pos):
-			print("Tile outside room area")
-			return
-		furniture_tile_map.set_cell(0, tile_pos, selected_furnituretype.tileset_id, Vector2i(0, 0))
-		print("Placed %s at %s" % [selected_furnituretype.name, tile_pos])
 
-#func rotate_selected_furniture() -> void:
-	# Discuss: 4 directions or 2?
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		var origin = furniture_tile_map.local_to_map(furniture_tile_map.get_global_mouse_position())
+		var positions = get_placement_positions_from_origin(origin, selected_furnituretype)
+
+		if positions.size() != selected_furnituretype.tileset_coords.size():
+			print("Tileset_coords size does not match width × height")
+			return
+
+		if !are_tiles_in_room(positions):
+			print("Some tiles are outside the room area")
+			return
+
+		if are_tiles_occupied(positions):
+			print("Some tiles are already occupied")
+			return
+
+		if not has_enough_currency(selected_furnituretype.price):
+			print("Not enough currency to place this furniture")
+			return
+
+		# Place each tile of the furniture
+		for i in positions.size():
+			var world_tile = positions[i]
+			var tileset_coord = selected_furnituretype.tileset_coords[i]
+			furniture_tile_map.set_cell(furnishing_layer, world_tile, selected_furnituretype.tileset_id, tileset_coord)
+
+		Global.station.currency -= selected_furnituretype.price
+		print("Placed %s. Remaining currency: %d" % [selected_furnituretype.name, Global.station.currency])
+
+func are_tiles_in_room(positions: Array[Vector2i]) -> bool:
+	for pos in positions:
+		if not _current_room_area.has(pos):
+			return false
+	return true
+
+func are_tiles_occupied(positions: Array[Vector2i]) -> bool:
+	for pos in positions:
+		if furniture_tile_map.get_cell_source_id(0, pos) != -1:
+			return true
+	return false
+
+func has_enough_currency(price: int) -> bool:
+	return Global.station.currency >= price
+
+func get_placement_positions_from_origin(origin: Vector2i, furniture: FurnitureType) -> Array[Vector2i]:
+	var positions: Array[Vector2i] = []
+	for y in range(furniture.height):
+		for x in range(furniture.width):
+			positions.append(origin + Vector2i(x, y))
+	return positions
+
+func show_invalid_overlay():
+	furniture_tile_map.clear_layer(drafting_layer)
+
+	if _current_room_area.is_empty():
+		return
+
+	var all_station_tiles := base_tile_map.get_used_cells(0)
+	var built_tiles := build_tile_map.get_used_cells(1) # Rooms are on layer 1 of build_tile_map
+
+	var combined_tiles := all_station_tiles.duplicate()
+	for pos in built_tiles:
+		if not combined_tiles.has(pos):
+			combined_tiles.append(pos)
+
+	for pos in combined_tiles:
+		if not _current_room_area.has(pos):
+			furniture_tile_map.set_cell(drafting_layer, pos, overlay_tileset_id, Vector2i(0, 0))
+
+func hide_invalid_overlay():
+	furniture_tile_map.clear_layer(drafting_layer)

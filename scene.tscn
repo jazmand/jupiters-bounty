@@ -1,4 +1,4 @@
-[gd_scene load_steps=66 format=3 uid="uid://dhh5wq2ka1ay8"]
+[gd_scene load_steps=67 format=3 uid="uid://dhh5wq2ka1ay8"]
 
 [ext_resource type="Script" path="res://scripts/scene/Main.gd" id="1_3g4j0"]
 [ext_resource type="PackedScene" uid="uid://cpi6duyqx08ba" path="res://gui.tscn" id="2_0qqu7"]
@@ -17,8 +17,8 @@
 [ext_resource type="Texture2D" uid="uid://c2p58o2dt13hn" path="res://assets/tilesets/door placeholder.png" id="9_nfm5o"]
 [ext_resource type="Texture2D" uid="uid://k3hf5argnn4k" path="res://assets/tilesets/storage_bay.png" id="9_x6k6u"]
 [ext_resource type="PackedScene" uid="uid://bcwkugn6v3oy7" path="res://addons/godot_state_charts/utilities/state_chart_debugger.tscn" id="13_g5vrw"]
-[ext_resource type="Texture2D" uid="uid://dyjlm6qqogqbm" path="res://assets/tilesets/mock_items_tileset.png" id="15_1q01x"]
 [ext_resource type="Script" path="res://scripts/scene/EditingManager.gd" id="16_50vy2"]
+[ext_resource type="Texture2D" uid="uid://qt1ul65p36gd" path="res://assets/tilesets/mock_furniture_tileset.png" id="16_g1lhb"]
 [ext_resource type="Script" path="res://scripts/scene/RoomBuilder.gd" id="18_20ino"]
 [ext_resource type="Script" path="res://scripts/scene/BuildingManager.gd" id="18_cy305"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="18_o7t7g"]
@@ -503,18 +503,24 @@ sources/7 = SubResource("TileSetAtlasSource_okf4u")
 sources/8 = SubResource("TileSetAtlasSource_i553p")
 sources/4 = SubResource("TileSetAtlasSource_aa86n")
 
-[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_sueew"]
-texture = ExtResource("15_1q01x")
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_6o7ut"]
+texture = ExtResource("16_g1lhb")
 texture_region_size = Vector2i(512, 512)
 0:0/0 = 0
 1:0/0 = 0
 0:1/0 = 0
 
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_d1whw"]
+texture = ExtResource("5_y3eoa")
+texture_region_size = Vector2i(512, 512)
+0:0/0 = 0
+
 [sub_resource type="TileSet" id="TileSet_4wgk6"]
 tile_shape = 1
 tile_layout = 5
 tile_size = Vector2i(512, 296)
-sources/0 = SubResource("TileSetAtlasSource_sueew")
+sources/0 = SubResource("TileSetAtlasSource_6o7ut")
+sources/1 = SubResource("TileSetAtlasSource_d1whw")
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_jelv3"]
 source_geometry_mode = 1
@@ -578,9 +584,13 @@ unique_name_in_owner = true
 y_sort_enabled = true
 tile_set = SubResource("TileSet_4wgk6")
 format = 2
-layer_0/name = "Furniture layer"
+layer_0/name = "Draft Layer"
 layer_0/y_sort_enabled = true
 layer_0/z_index = 3
+layer_1/name = "Furniture layer"
+layer_1/y_sort_enabled = true
+layer_1/z_index = 4
+layer_1/tile_data = PackedInt32Array()
 
 [node name="NavigationRegion" type="NavigationRegion2D" parent="GameManager"]
 unique_name_in_owner = true
@@ -835,4 +845,5 @@ event = &"furnishing_stop"
 [connection signal="state_exited" from="GameManager/StateManager/GameState/Furnishing/SelectingFurniture" to="GameManager/FurnishingManager" method="_on_selecting_furniture_state_exited"]
 [connection signal="state_input" from="GameManager/StateManager/GameState/Furnishing/SelectingFurniture" to="GameManager/FurnishingManager" method="_on_selecting_furniture_state_input"]
 [connection signal="state_entered" from="GameManager/StateManager/GameState/Furnishing/PlacingFurniture" to="GameManager/FurnishingManager" method="_on_placing_furniture_state_entered"]
+[connection signal="state_exited" from="GameManager/StateManager/GameState/Furnishing/PlacingFurniture" to="GameManager/FurnishingManager" method="_on_placing_furniture_state_exited"]
 [connection signal="state_input" from="GameManager/StateManager/GameState/Furnishing/PlacingFurniture" to="GameManager/FurnishingManager" method="_on_placing_furniture_state_input"]
