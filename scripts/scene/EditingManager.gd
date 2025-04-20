@@ -1,3 +1,4 @@
+# DISCUSS: Do we need this?
 class_name EditingManager extends Node
 
 @onready var GUI: StationGUI = %GUI
