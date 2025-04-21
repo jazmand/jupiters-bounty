@@ -19,7 +19,7 @@ var _current_room_type: RoomType = null
 
 var drafting_layer: int = 0
 var furnishing_layer: int = 1
-
+var no_placement_layer: int = 2
 
 var overlay_tileset_id = 1 #TEMPORARY
 
@@ -33,6 +33,8 @@ func _init() -> void:
 func _ready() -> void:
 	building_manager.room_built.connect(start_furnishing)
 	GUI.furniture_menu.action_completed.connect(on_furniture_menu_action)
+	
+	furniture_tile_map.set_layer_modulate(drafting_layer, Color(1, 1, 1, 0.5)) # Set drafting layer opacity to 50%
 	
 func load_furniture_types() -> void:
 	var furniture_types_folder = "res://assets/furniture_type/"
@@ -101,7 +103,6 @@ func on_furniture_menu_action(action: int, clicked_furnituretype: FurnitureType)
 
 func _on_selecting_furniture_state_entered():
 	GUI.furniture_menu.show_furniture_panel(get_valid_furniture_for_room(_current_room_type))
-	print('before call')
 	show_invalid_overlay()
 
 func _on_selecting_furniture_state_input(event):
@@ -121,8 +122,29 @@ func _on_placing_furniture_state_input(event):
 	elif event.is_action_pressed("cancel") or event.is_action_pressed("exit"):
 		state_manager.send_event(FURNISH_EVENTS[StateEvent.FURNISHING_STOP])
 
+func _on_placing_furniture_state_processing(delta) -> void:
+	if selected_furnituretype == null:
+		return
+	
+	update_furniture_preview()
+
 func _on_placing_furniture_state_exited() -> void:
 	hide_invalid_overlay()
+
+func update_furniture_preview() -> void:
+	furniture_tile_map.clear_layer(drafting_layer)
+
+	var origin = furniture_tile_map.local_to_map(furniture_tile_map.get_global_mouse_position())
+	var positions = get_placement_positions_from_origin(origin, selected_furnituretype)
+
+	if positions.size() != selected_furnituretype.tileset_coords.size():
+		return
+
+	for i in positions.size():
+		var tile_pos = positions[i]
+		var tile_coord = selected_furnituretype.tileset_coords[i]
+		furniture_tile_map.set_cell(drafting_layer, tile_pos, selected_furnituretype.tileset_id, tile_coord)
+
 
 func place_furniture(event: InputEvent) -> void:
 	if selected_furnituretype == null:
@@ -166,7 +188,7 @@ func are_tiles_in_room(positions: Array[Vector2i]) -> bool:
 
 func are_tiles_occupied(positions: Array[Vector2i]) -> bool:
 	for pos in positions:
-		if furniture_tile_map.get_cell_source_id(0, pos) != -1:
+		if furniture_tile_map.get_cell_source_id(furnishing_layer, pos) != -1:
 			return true
 	return false
 
@@ -181,7 +203,7 @@ func get_placement_positions_from_origin(origin: Vector2i, furniture: FurnitureT
 	return positions
 
 func show_invalid_overlay():
-	furniture_tile_map.clear_layer(drafting_layer)
+	furniture_tile_map.clear_layer(no_placement_layer)
 
 	if _current_room_area.is_empty():
 		return
@@ -196,7 +218,10 @@ func show_invalid_overlay():
 
 	for pos in combined_tiles:
 		if not _current_room_area.has(pos):
-			furniture_tile_map.set_cell(drafting_layer, pos, overlay_tileset_id, Vector2i(0, 0))
+			furniture_tile_map.set_cell(no_placement_layer, pos, overlay_tileset_id, Vector2i(0, 0))
 
 func hide_invalid_overlay():
-	furniture_tile_map.clear_layer(drafting_layer)
+	furniture_tile_map.clear_layer(no_placement_layer)
+
+
+
