@@ -102,7 +102,12 @@ func on_furniture_menu_action(action: int, clicked_furnituretype: FurnitureType)
 			
 
 func _on_selecting_furniture_state_entered():
+	if _current_room_area == null:
+		_current_room_area = [Global.selected_room.top_left, Global.selected_room.bottom_right]
+	if _current_room_type == null:
+		_current_room_type = Global.selected_room.data.type
 	GUI.furniture_menu.show_furniture_panel(get_valid_furniture_for_room(_current_room_type))
+	GUI.room_info_panel.open(Global.selected_room)
 	show_invalid_overlay()
 
 func _on_selecting_furniture_state_input(event):

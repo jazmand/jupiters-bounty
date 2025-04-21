@@ -23,7 +23,6 @@ var room: Room = null
 
 func _ready() -> void:
 	hide()
-	Global.room_selected.connect(open)
 	close_button.pressed.connect(close)
 	previous_button.pressed.connect(cycle_rooms.bind(-1))
 	next_button.pressed.connect(cycle_rooms.bind(1))

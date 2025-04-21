@@ -52,7 +52,8 @@ func _on_default_state_unhandled_input(event: InputEvent) -> void:
 		var room_id: int = Room.find_tile_room_id(selected_tile)
 		var room = Global.station.find_room_by_id(room_id)
 		if room:
-			Global.room_selected.emit(room)
+			Global.selected_room = room
+			state_manager.send_event(&"furnishing_start")
 
 func update_navigation_region() -> void:
 	navigation_region.bake_navigation_polygon()
