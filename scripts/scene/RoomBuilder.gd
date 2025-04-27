@@ -42,14 +42,7 @@ func _ready() -> void:
 	room_types = get_parent().room_types
 	Global.station.rooms_updated.connect(draw_rooms)
 	base_tile_map_data = save_base_tile_map_state()
-	
-	# TEMPORARY. Initial room.
-	var _new_room = create_room(
-		room_types[0],
-		Vector2i(18, -4),
-		Vector2i(20, -5),
-		[Vector2i(19, -4)]
-	)
+
 	draw_rooms()
 
 func create_room(
@@ -192,12 +185,13 @@ func cancel_build() -> void:
 	action_completed.emit(Action.COMPLETE)
 
 func save_room() -> void:
-	create_room(
+	var room = create_room(
 		selected_room_type,
 		initial_tile_coords,
 		transverse_tile_coords,
 		temp_door_coords
 	)
+	Global.selected_room = room
 
 func draw_rooms() -> void:
 	# Clear drafting layer
@@ -275,7 +269,12 @@ func restore_base_tile_map_state() -> void:
 func check_selection_valid(coords: Vector2i, check_price_and_size: bool = false) -> bool:
 	
 	# Check if outside station bounds
-	if !base_tile_map.get_cell_tile_data(0, coords) is TileData:
+	var tile_data = base_tile_map.get_cell_tile_data(0, coords)
+	if tile_data == null:
+		return false
+		
+	# Check if on a non-buildable tile (see: tileset custom layer)
+	elif tile_data && !tile_data.get_custom_data("is_buildable"):
 		return false
 		
 	# Check if overlapping an existing room

@@ -135,6 +135,7 @@ func _on_placing_furniture_state_processing(delta) -> void:
 
 func _on_placing_furniture_state_exited() -> void:
 	hide_invalid_overlay()
+	furniture_tile_map.clear_layer(drafting_layer)
 
 func update_furniture_preview() -> void:
 	furniture_tile_map.clear_layer(drafting_layer)
