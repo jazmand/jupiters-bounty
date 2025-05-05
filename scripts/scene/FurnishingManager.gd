@@ -116,16 +116,18 @@ func _on_selecting_furniture_state_input(event):
 
 func _on_selecting_furniture_state_exited() -> void:
 	GUI.furniture_menu.hide_furniture_panel()
+	GUI.room_info_panel.close() 
 	hide_invalid_overlay()
 
 func _on_placing_furniture_state_entered() -> void:
+	GUI.room_info_panel.open(Global.selected_room)
 	show_invalid_overlay()
 
 func _on_placing_furniture_state_input(event):
 	if event.is_action_pressed("select"):
 		place_furniture(event)
 	elif event.is_action_pressed("cancel") or event.is_action_pressed("exit"):
-		state_manager.send_event(FURNISH_EVENTS[StateEvent.FURNISHING_STOP])
+		state_manager.send_event(FURNISH_EVENTS[StateEvent.FURNISHING_BACK])
 
 func _on_placing_furniture_state_processing(delta) -> void:
 	if selected_furnituretype == null:
@@ -134,8 +136,9 @@ func _on_placing_furniture_state_processing(delta) -> void:
 	update_furniture_preview()
 
 func _on_placing_furniture_state_exited() -> void:
-	hide_invalid_overlay()
 	furniture_tile_map.clear_layer(drafting_layer)
+	hide_invalid_overlay()
+	GUI.room_info_panel.close() 
 
 func update_furniture_preview() -> void:
 	furniture_tile_map.clear_layer(drafting_layer)
