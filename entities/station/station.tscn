@@ -1,32 +1,32 @@
 [gd_scene load_steps=67 format=3 uid="uid://dhh5wq2ka1ay8"]
 
-[ext_resource type="Script" path="res://scripts/scene/Main.gd" id="1_3g4j0"]
-[ext_resource type="PackedScene" uid="uid://cpi6duyqx08ba" path="res://gui.tscn" id="2_0qqu7"]
-[ext_resource type="Texture2D" uid="uid://dwwc4ti4c1ifx" path="res://assets/backgrounds/jupiter.png" id="2_i0a8p"]
-[ext_resource type="Script" path="res://scripts/scene/Camera2D.gd" id="2_o2j5r"]
-[ext_resource type="Script" path="res://scripts/scene/Background.gd" id="2_w13bo"]
-[ext_resource type="Script" path="res://scripts/scene/GameManager.gd" id="2_yl83p"]
-[ext_resource type="Texture2D" uid="uid://cjwac7twpt2tt" path="res://assets/backgrounds/jupiter_overlay.png" id="3_6bejq"]
-[ext_resource type="Texture2D" uid="uid://btciaqokhqxrk" path="res://assets/tilesets/base_tileset.png" id="5_408k5"]
-[ext_resource type="Texture2D" uid="uid://di1gw67qnf5nt" path="res://assets/tilesets/select_new.png" id="5_ehm63"]
-[ext_resource type="Texture2D" uid="uid://dihqbub138rkb" path="res://assets/tilesets/invalid_new.png" id="5_y3eoa"]
-[ext_resource type="Texture2D" uid="uid://bin8xqkuxyohw" path="res://assets/tilesets/drafting_new.png" id="6_jemiv"]
-[ext_resource type="Texture2D" uid="uid://dw0d3bcfauhf2" path="res://assets/tilesets/crew_quarters.png" id="7_ypvsj"]
-[ext_resource type="Texture2D" uid="uid://b011v7odriiqs" path="res://assets/tilesets/generator_room.png" id="8_snmxr"]
-[ext_resource type="Texture2D" uid="uid://0tk4wi3k6763" path="res://assets/tilesets/mock_room_tileset.png" id="9_jca0f"]
-[ext_resource type="Texture2D" uid="uid://c2p58o2dt13hn" path="res://assets/tilesets/door placeholder.png" id="9_nfm5o"]
-[ext_resource type="Texture2D" uid="uid://k3hf5argnn4k" path="res://assets/tilesets/storage_bay.png" id="9_x6k6u"]
-[ext_resource type="PackedScene" uid="uid://bcwkugn6v3oy7" path="res://addons/godot_state_charts/utilities/state_chart_debugger.tscn" id="13_g5vrw"]
-[ext_resource type="Script" path="res://scripts/scene/EditingManager.gd" id="16_50vy2"]
-[ext_resource type="Texture2D" uid="uid://qt1ul65p36gd" path="res://assets/tilesets/mock_furniture_tileset.png" id="16_g1lhb"]
-[ext_resource type="Script" path="res://scripts/scene/RoomBuilder.gd" id="18_20ino"]
-[ext_resource type="Script" path="res://scripts/scene/BuildingManager.gd" id="18_cy305"]
-[ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="18_o7t7g"]
-[ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="19_8sc5u"]
-[ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="20_aq14c"]
-[ext_resource type="Script" path="res://scripts/scene/RoomEditor.gd" id="20_trquu"]
-[ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="21_n7j07"]
-[ext_resource type="Script" path="res://scripts/scene/FurnishingManager.gd" id="22_avrh2"]
+[ext_resource type="Script" path="res://entities/station/Main.gd" id="1_7qny5"]
+[ext_resource type="PackedScene" uid="uid://cpi6duyqx08ba" path="res://entities/ui/gui.tscn" id="2_o3d15"]
+[ext_resource type="Script" path="res://entities/station/GameManager.gd" id="3_mmmnn"]
+[ext_resource type="Script" path="res://entities/station/Background.gd" id="4_6ix4i"]
+[ext_resource type="Texture2D" uid="uid://dwwc4ti4c1ifx" path="res://assets/backgrounds/jupiter.png" id="5_hn376"]
+[ext_resource type="Texture2D" uid="uid://cjwac7twpt2tt" path="res://assets/backgrounds/jupiter_overlay.png" id="6_jukv1"]
+[ext_resource type="Texture2D" uid="uid://btciaqokhqxrk" path="res://assets/tilesets/base_tileset.png" id="7_h60qy"]
+[ext_resource type="Texture2D" uid="uid://di1gw67qnf5nt" path="res://assets/tilesets/select_new.png" id="8_m6ifj"]
+[ext_resource type="Texture2D" uid="uid://bin8xqkuxyohw" path="res://assets/tilesets/drafting_new.png" id="9_w12te"]
+[ext_resource type="Texture2D" uid="uid://dihqbub138rkb" path="res://assets/tilesets/invalid_new.png" id="10_1dhs5"]
+[ext_resource type="Texture2D" uid="uid://0tk4wi3k6763" path="res://assets/tilesets/mock_room_tileset.png" id="11_uyi2h"]
+[ext_resource type="Texture2D" uid="uid://c2p58o2dt13hn" path="res://assets/tilesets/door placeholder.png" id="12_rjb2n"]
+[ext_resource type="Texture2D" uid="uid://dw0d3bcfauhf2" path="res://assets/tilesets/crew_quarters.png" id="13_a377u"]
+[ext_resource type="Texture2D" uid="uid://b011v7odriiqs" path="res://assets/tilesets/generator_room.png" id="14_hyxq5"]
+[ext_resource type="Texture2D" uid="uid://k3hf5argnn4k" path="res://assets/tilesets/storage_bay.png" id="15_7x8jn"]
+[ext_resource type="Texture2D" uid="uid://qt1ul65p36gd" path="res://assets/tilesets/mock_furniture_tileset.png" id="16_ulmio"]
+[ext_resource type="Script" path="res://entities/station/Camera2D.gd" id="17_22vys"]
+[ext_resource type="Script" path="res://entities/station/BuildingManager.gd" id="18_pwhfs"]
+[ext_resource type="Script" path="res://entities/room/RoomBuilder.gd" id="19_3l3wh"]
+[ext_resource type="Script" path="res://entities/station/EditingManager.gd" id="20_oivyv"]
+[ext_resource type="Script" path="res://entities/room/RoomEditor.gd" id="21_of1mo"]
+[ext_resource type="Script" path="res://entities/station/FurnishingManager.gd" id="22_hn45n"]
+[ext_resource type="PackedScene" uid="uid://bcwkugn6v3oy7" path="res://addons/godot_state_charts/utilities/state_chart_debugger.tscn" id="23_d4vmm"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="24_1hbgi"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="25_db6qp"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="26_6q7yy"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="27_alvqe"]
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_w47eo"]
 vertices = PackedVector2Array(256, 0, 0, 148, -256, 0, 0, -148)
@@ -120,7 +120,7 @@ source_geometry_group_name = &"navigation_polygon_source_group"
 agent_radius = 0.0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_psmxa"]
-texture = ExtResource("5_408k5")
+texture = ExtResource("7_h60qy")
 texture_region_size = Vector2i(512, 512)
 0:0/0 = 0
 0:0/0/physics_layer_0/linear_velocity = Vector2(0, 0)
@@ -432,21 +432,21 @@ custom_data_layer_0/type = 1
 sources/0 = SubResource("TileSetAtlasSource_psmxa")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_w7dmn"]
-texture = ExtResource("5_ehm63")
+texture = ExtResource("8_m6ifj")
 texture_region_size = Vector2i(512, 512)
 0:0/0 = 0
 0:0/0/physics_layer_0/linear_velocity = Vector2(0, 0)
 0:0/0/physics_layer_0/angular_velocity = 0.0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_teld1"]
-texture = ExtResource("6_jemiv")
+texture = ExtResource("9_w12te")
 texture_region_size = Vector2i(512, 512)
 0:0/0 = 0
 0:0/0/physics_layer_0/linear_velocity = Vector2(0, 0)
 0:0/0/physics_layer_0/angular_velocity = 0.0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_npoi5"]
-texture = ExtResource("5_y3eoa")
+texture = ExtResource("10_1dhs5")
 texture_region_size = Vector2i(512, 512)
 0:0/0 = 0
 0:0/0/physics_layer_0/linear_velocity = Vector2(0, 0)
@@ -530,7 +530,7 @@ source_geometry_group_name = &"navigation_polygon_source_group"
 agent_radius = 0.0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ulgmx"]
-texture = ExtResource("9_jca0f")
+texture = ExtResource("11_uyi2h")
 texture_region_size = Vector2i(512, 512)
 0:0/0 = 0
 0:0/0/physics_layer_0/linear_velocity = Vector2(0, 0)
@@ -586,28 +586,28 @@ texture_region_size = Vector2i(512, 512)
 0:3/0/navigation_layer_0/polygon = SubResource("NavigationPolygon_bij33")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_aa86n"]
-texture = ExtResource("9_nfm5o")
+texture = ExtResource("12_rjb2n")
 texture_region_size = Vector2i(512, 512)
 0:0/0 = 0
 0:0/0/physics_layer_0/linear_velocity = Vector2(0, 0)
 0:0/0/physics_layer_0/angular_velocity = 0.0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_mtln5"]
-texture = ExtResource("7_ypvsj")
+texture = ExtResource("13_a377u")
 texture_region_size = Vector2i(512, 512)
 0:0/0 = 0
 0:0/0/physics_layer_0/linear_velocity = Vector2(0, 0)
 0:0/0/physics_layer_0/angular_velocity = 0.0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_okf4u"]
-texture = ExtResource("8_snmxr")
+texture = ExtResource("14_hyxq5")
 texture_region_size = Vector2i(512, 512)
 0:0/0 = 0
 0:0/0/physics_layer_0/linear_velocity = Vector2(0, 0)
 0:0/0/physics_layer_0/angular_velocity = 0.0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_i553p"]
-texture = ExtResource("9_x6k6u")
+texture = ExtResource("15_7x8jn")
 texture_region_size = Vector2i(512, 512)
 0:0/0 = 0
 0:0/0/physics_layer_0/linear_velocity = Vector2(0, 0)
@@ -631,14 +631,14 @@ sources/8 = SubResource("TileSetAtlasSource_i553p")
 sources/4 = SubResource("TileSetAtlasSource_aa86n")
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_6o7ut"]
-texture = ExtResource("16_g1lhb")
+texture = ExtResource("16_ulmio")
 texture_region_size = Vector2i(512, 512)
 0:0/0 = 0
 1:0/0 = 0
 0:1/0 = 0
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_d1whw"]
-texture = ExtResource("5_y3eoa")
+texture = ExtResource("10_1dhs5")
 texture_region_size = Vector2i(512, 512)
 0:0/0 = 0
 
@@ -655,14 +655,14 @@ source_geometry_group_name = &"navigation"
 agent_radius = 50.0
 
 [node name="Main" type="Node"]
-script = ExtResource("1_3g4j0")
+script = ExtResource("1_7qny5")
 
-[node name="GUI" parent="." instance=ExtResource("2_0qqu7")]
+[node name="GUI" parent="." instance=ExtResource("2_o3d15")]
 unique_name_in_owner = true
 
 [node name="GameManager" type="Node2D" parent="."]
 unique_name_in_owner = true
-script = ExtResource("2_yl83p")
+script = ExtResource("3_mmmnn")
 
 [node name="Background" type="ColorRect" parent="GameManager"]
 unique_name_in_owner = true
@@ -672,17 +672,17 @@ offset_right = 10760.0
 offset_bottom = 6792.0
 mouse_filter = 2
 color = Color(0, 0, 0, 1)
-script = ExtResource("2_w13bo")
+script = ExtResource("4_6ix4i")
 
 [node name="Jupiter" type="Sprite2D" parent="GameManager/Background"]
 position = Vector2(3000, 4000)
 scale = Vector2(3, 3)
-texture = ExtResource("2_i0a8p")
+texture = ExtResource("5_hn376")
 
 [node name="JupiterOverlay" type="Sprite2D" parent="GameManager/Background/Jupiter"]
 position = Vector2(-2, 0)
 scale = Vector2(1.003, 1.003)
-texture = ExtResource("3_6bejq")
+texture = ExtResource("6_jukv1")
 
 [node name="BaseTileMap" type="TileMap" parent="GameManager" groups=["navigation"]]
 unique_name_in_owner = true
@@ -742,30 +742,30 @@ limit_right = 10000
 limit_bottom = 5000
 position_smoothing_enabled = true
 position_smoothing_speed = 8.0
-script = ExtResource("2_o2j5r")
+script = ExtResource("17_22vys")
 
 [node name="BuildingManager" type="Node" parent="GameManager"]
 unique_name_in_owner = true
-script = ExtResource("18_cy305")
+script = ExtResource("18_pwhfs")
 
 [node name="RoomBuilder" type="Node" parent="GameManager/BuildingManager"]
 unique_name_in_owner = true
-script = ExtResource("18_20ino")
+script = ExtResource("19_3l3wh")
 
 [node name="EditingManager" type="Node" parent="GameManager"]
 unique_name_in_owner = true
-script = ExtResource("16_50vy2")
+script = ExtResource("20_oivyv")
 
 [node name="RoomEditor" type="Node" parent="GameManager/EditingManager"]
 unique_name_in_owner = true
-script = ExtResource("20_trquu")
+script = ExtResource("21_of1mo")
 
 [node name="FurnishingManager" type="Node" parent="GameManager"]
-script = ExtResource("22_avrh2")
+script = ExtResource("22_hn45n")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="GameManager"]
 
-[node name="StateChartDebugger" parent="GameManager/CanvasLayer" instance=ExtResource("13_g5vrw")]
+[node name="StateChartDebugger" parent="GameManager/CanvasLayer" instance=ExtResource("23_d4vmm")]
 offset_left = 13.0
 offset_top = 313.0
 offset_right = -1531.0
@@ -774,188 +774,188 @@ initial_node_to_watch = NodePath("../../StateManager")
 
 [node name="StateManager" type="Node" parent="GameManager"]
 unique_name_in_owner = true
-script = ExtResource("18_o7t7g")
+script = ExtResource("24_1hbgi")
 
 [node name="GameState" type="Node" parent="GameManager/StateManager"]
-script = ExtResource("19_8sc5u")
+script = ExtResource("25_db6qp")
 initial_state = NodePath("Default")
 
 [node name="Default" type="Node" parent="GameManager/StateManager/GameState"]
-script = ExtResource("20_aq14c")
+script = ExtResource("26_6q7yy")
 
 [node name="ToBuilding" type="Node" parent="GameManager/StateManager/GameState/Default"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../Building/SelectingRoomtype")
 event = &"building_start"
 
 [node name="ToEditing" type="Node" parent="GameManager/StateManager/GameState/Default"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../Editing/SelectingRoom")
 event = &"editing_start"
 
 [node name="ToCrew" type="Node" parent="GameManager/StateManager/GameState/Default"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../Crew")
 event = &"crew"
 
 [node name="ToFurnishing" type="Node" parent="GameManager/StateManager/GameState/Default"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../Furnishing/SelectingFurniture")
 event = &"furnishing_start"
 
 [node name="Building" type="Node" parent="GameManager/StateManager/GameState"]
-script = ExtResource("19_8sc5u")
+script = ExtResource("25_db6qp")
 initial_state = NodePath("SelectingRoomtype")
 
 [node name="SelectingRoomtype" type="Node" parent="GameManager/StateManager/GameState/Building"]
-script = ExtResource("20_aq14c")
+script = ExtResource("26_6q7yy")
 
 [node name="ToDefault" type="Node" parent="GameManager/StateManager/GameState/Building/SelectingRoomtype"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../../Default")
 event = &"building_stop"
 
 [node name="ToSelectingTile" type="Node" parent="GameManager/StateManager/GameState/Building/SelectingRoomtype"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../SelectingTile")
 event = &"building_forward"
 
 [node name="SelectingTile" type="Node" parent="GameManager/StateManager/GameState/Building"]
-script = ExtResource("20_aq14c")
+script = ExtResource("26_6q7yy")
 
 [node name="ToDefault" type="Node" parent="GameManager/StateManager/GameState/Building/SelectingTile"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../../Default")
 event = &"building_stop"
 
 [node name="ToSelectingRoomtype" type="Node" parent="GameManager/StateManager/GameState/Building/SelectingTile"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../SelectingRoomtype")
 event = &"building_back"
 
 [node name="ToDraftingRoom" type="Node" parent="GameManager/StateManager/GameState/Building/SelectingTile"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../DraftingRoom")
 event = &"building_forward"
 
 [node name="DraftingRoom" type="Node" parent="GameManager/StateManager/GameState/Building"]
-script = ExtResource("20_aq14c")
+script = ExtResource("26_6q7yy")
 
 [node name="ToDefault" type="Node" parent="GameManager/StateManager/GameState/Building/DraftingRoom"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../../Default")
 event = &"building_stop"
 
 [node name="ToSelectingTile" type="Node" parent="GameManager/StateManager/GameState/Building/DraftingRoom"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../SelectingTile")
 event = &"building_back"
 
 [node name="ToSettingDoor" type="Node" parent="GameManager/StateManager/GameState/Building/DraftingRoom"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../SettingDoor")
 event = &"building_forward"
 
 [node name="SettingDoor" type="Node" parent="GameManager/StateManager/GameState/Building"]
-script = ExtResource("20_aq14c")
+script = ExtResource("26_6q7yy")
 
 [node name="ToDefault" type="Node" parent="GameManager/StateManager/GameState/Building/SettingDoor"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../../Default")
 event = &"building_stop"
 
 [node name="ToDraftingRoom" type="Node" parent="GameManager/StateManager/GameState/Building/SettingDoor"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../DraftingRoom")
 event = &"building_back"
 
 [node name="ToConfirmingRoom" type="Node" parent="GameManager/StateManager/GameState/Building/SettingDoor"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../ConfirmingRoom")
 event = &"building_forward"
 
 [node name="ConfirmingRoom" type="Node" parent="GameManager/StateManager/GameState/Building"]
-script = ExtResource("20_aq14c")
+script = ExtResource("26_6q7yy")
 
 [node name="ToDefault" type="Node" parent="GameManager/StateManager/GameState/Building/ConfirmingRoom"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../../Default")
 event = &"building_stop"
 
 [node name="ToSettingDoor" type="Node" parent="GameManager/StateManager/GameState/Building/ConfirmingRoom"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../SettingDoor")
 event = &"building_back"
 
 [node name="ToFurnishing" type="Node" parent="GameManager/StateManager/GameState/Building/ConfirmingRoom"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../../Furnishing/SelectingFurniture")
 event = &"furnishing_start"
 
 [node name="Editing" type="Node" parent="GameManager/StateManager/GameState"]
-script = ExtResource("19_8sc5u")
+script = ExtResource("25_db6qp")
 initial_state = NodePath("SelectingRoom")
 
 [node name="SelectingRoom" type="Node" parent="GameManager/StateManager/GameState/Editing"]
-script = ExtResource("20_aq14c")
+script = ExtResource("26_6q7yy")
 
 [node name="ToDefault" type="Node" parent="GameManager/StateManager/GameState/Editing/SelectingRoom"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../../Default")
 event = &"editing_stop"
 
 [node name="ToDeletingRoom" type="Node" parent="GameManager/StateManager/GameState/Editing/SelectingRoom"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../DeletingRoom")
 event = &"editing_forward"
 
 [node name="DeletingRoom" type="Node" parent="GameManager/StateManager/GameState/Editing"]
-script = ExtResource("20_aq14c")
+script = ExtResource("26_6q7yy")
 
 [node name="ToDefault" type="Node" parent="GameManager/StateManager/GameState/Editing/DeletingRoom"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../../Default")
 event = &"editing_stop"
 
 [node name="Crew" type="Node" parent="GameManager/StateManager/GameState"]
-script = ExtResource("19_8sc5u")
+script = ExtResource("25_db6qp")
 initial_state = NodePath("SelectingRoom")
 
 [node name="SelectingRoom" type="Node" parent="GameManager/StateManager/GameState/Crew"]
-script = ExtResource("20_aq14c")
+script = ExtResource("26_6q7yy")
 
 [node name="ToDefault" type="Node" parent="GameManager/StateManager/GameState/Crew/SelectingRoom"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../../Default")
 event = &"assigned"
 
 [node name="Furnishing" type="Node" parent="GameManager/StateManager/GameState"]
-script = ExtResource("19_8sc5u")
+script = ExtResource("25_db6qp")
 initial_state = NodePath("SelectingFurniture")
 
 [node name="SelectingFurniture" type="Node" parent="GameManager/StateManager/GameState/Furnishing"]
-script = ExtResource("20_aq14c")
+script = ExtResource("26_6q7yy")
 
 [node name="ToPlacingFurniture" type="Node" parent="GameManager/StateManager/GameState/Furnishing/SelectingFurniture"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../PlacingFurniture")
 event = &"furnishing_forward"
 
 [node name="ToDefault" type="Node" parent="GameManager/StateManager/GameState/Furnishing/SelectingFurniture"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../../Default")
 event = &"furnishing_stop"
 
 [node name="PlacingFurniture" type="Node" parent="GameManager/StateManager/GameState/Furnishing"]
-script = ExtResource("20_aq14c")
+script = ExtResource("26_6q7yy")
 
 [node name="ToDefault" type="Node" parent="GameManager/StateManager/GameState/Furnishing/PlacingFurniture"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../../Default")
 event = &"furnishing_stop"
 
 [node name="ToSelectingFurniture" type="Node" parent="GameManager/StateManager/GameState/Furnishing/PlacingFurniture"]
-script = ExtResource("21_n7j07")
+script = ExtResource("27_alvqe")
 to = NodePath("../../SelectingFurniture")
 event = &"furnishing_back"
 

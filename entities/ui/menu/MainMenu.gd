@@ -1,7 +1,7 @@
 extends Control
 
 func _on_new_game_button_pressed():
-	get_tree().change_scene_to_file("res://scene.tscn")
+	get_tree().change_scene_to_file("res://entities/station/station.tscn")
 
 func _on_load_game_button_pressed():
 	print("Load Game pressed")

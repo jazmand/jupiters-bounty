@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://e75w5sbaxrt"]
 
-[ext_resource type="Script" path="res://scripts/popup/GUIPopup.gd" id="1_n0axi"]
+[ext_resource type="Script" path="res://entities/ui/popup/GUIPopup.gd" id="1_kqen1"]
 
 [sub_resource type="SystemFont" id="SystemFont_1dxa0"]
 font_names = PackedStringArray("Cascadia Code")
@@ -15,7 +15,7 @@ offset_left = 640.0
 offset_top = 384.0
 offset_right = 1280.0
 offset_bottom = 641.0
-script = ExtResource("1_n0axi")
+script = ExtResource("1_kqen1")
 
 [node name="HBoxContainer" type="BoxContainer" parent="."]
 layout_mode = 0

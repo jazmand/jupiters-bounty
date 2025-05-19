@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://chrvumsof3os0"]
 
-[ext_resource type="Script" path="res://scripts/menu/MainMenu.gd" id="1_nd8mi"]
+[ext_resource type="Script" path="res://entities/ui/menu/MainMenu.gd" id="1_vgndl"]
 
 [sub_resource type="CanvasTexture" id="CanvasTexture_34try"]
 
@@ -11,7 +11,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_nd8mi")
+script = ExtResource("1_vgndl")
 
 [node name="TextureRect" type="TextureRect" parent="."]
 layout_mode = 0

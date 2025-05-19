@@ -5,7 +5,7 @@ signal hour
 signal minute
 signal second
 
-const time: TimeData = preload("res://scripts/autoload/time/resources/time.tres")
+const time: TimeData = preload("res://common/time/time.tres")
 
 const SECONDS_PER_MINUTE: int = 60
 const MINUTES_PER_HOUR: int = 60

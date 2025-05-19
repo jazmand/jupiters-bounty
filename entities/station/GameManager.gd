@@ -1,6 +1,6 @@
 class_name GameManager extends Node2D
 
-const CREW_SCENE: PackedScene = preload("res://crew.tscn")
+const CREW_SCENE: PackedScene = preload("res://entities/crew/crew.tscn")
 
 @onready var camera: Camera2D = %Camera
 @onready var state_manager: StateChart = %StateManager

@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="FurnitureType" load_steps=2 format=3 uid="uid://j4k8wug0f5du"]
 
-[ext_resource type="Script" path="res://scripts/resource/FurnitureType.gd" id="1_107aw"]
+[ext_resource type="Script" path="res://entities/furniture/FurnitureType.gd" id="1_107aw"]
 
 [resource]
 script = ExtResource("1_107aw")

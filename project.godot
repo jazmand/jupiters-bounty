@@ -11,15 +11,15 @@ config_version=5
 [application]
 
 config/name="Jupiter's Forge"
-run/main_scene="res://main_menu.tscn"
+run/main_scene="res://entities/ui/menu/main_menu.tscn"
 config/features=PackedStringArray("4.2", "Forward Plus")
 config/icon="res://assets/sprites/flirty_pose.png"
 
 [autoload]
 
-GameTime="*res://scripts/autoload/time/time.tscn"
-Global="*res://scripts/autoload/Global.gd"
-Events="*res://scripts/autoload/Events.gd"
+GameTime="*res://common/time/time.tscn"
+Global="*res://common/Global.gd"
+Events="*res://common/Events.gd"
 
 [debug]
 

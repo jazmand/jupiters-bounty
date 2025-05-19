@@ -1,6 +1,6 @@
 class_name GUIManager extends Control
 
-const POPUP_SCENE: PackedScene = preload("res://popup.tscn")
+const POPUP_SCENE: PackedScene = preload("res://entities/ui/popup/popup.tscn")
 
 func new_popup(default_visible: bool, accept_function: Callable, decline_function: Callable) -> GUIPopup:
 	var popup: GUIPopup = POPUP_SCENE.instantiate()

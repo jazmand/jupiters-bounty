@@ -1,30 +1,30 @@
 [gd_scene load_steps=39 format=3 uid="uid://6ddc1y0q3bhc"]
 
-[ext_resource type="Script" path="res://scripts/crew/CrewMember.gd" id="1_rgjpg"]
-[ext_resource type="Texture2D" uid="uid://dhxmp0xpmlnfc" path="res://assets/sprites/idle_agatha.png" id="2_uo5jt"]
-[ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="3_pcxuy"]
-[ext_resource type="Texture2D" uid="uid://dl20q4t7m3dex" path="res://assets/sprites/walk_agatha.png" id="3_yufvr"]
-[ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="4_en38c"]
-[ext_resource type="Script" path="res://addons/godot_state_charts/parallel_state.gd" id="5_hdvyl"]
-[ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="5_me8bf"]
-[ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="7_yl87e"]
-[ext_resource type="Script" path="res://addons/godot_state_charts/expression_guard.gd" id="9_xlf2i"]
-[ext_resource type="Script" path="res://scripts/crew/ai/CrewAI.gd" id="10_2np2b"]
-[ext_resource type="Script" path="res://scripts/crew/ai/actions/IdleAction.gd" id="11_kpeov"]
-[ext_resource type="Script" path="res://scripts/ai/utility/agent/UtilityAIAgent.gd" id="11_y45sd"]
-[ext_resource type="Script" path="res://scripts/ai/utility/consideration/UtilityAICurveConsideration.gd" id="12_3vs40"]
-[ext_resource type="Script" path="res://scripts/crew/ai/actions/WorkAction.gd" id="13_2nqfg"]
-[ext_resource type="Script" path="res://scripts/ai/utility/consideration/UtilityAIBooleanConsideration.gd" id="13_bshj5"]
+[ext_resource type="Script" path="res://entities/crew/CrewMember.gd" id="1_jot6k"]
+[ext_resource type="Texture2D" uid="uid://dhxmp0xpmlnfc" path="res://assets/sprites/idle_agatha.png" id="2_fs5c3"]
+[ext_resource type="Texture2D" uid="uid://dl20q4t7m3dex" path="res://assets/sprites/walk_agatha.png" id="3_irob2"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="4_0j6fd"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/parallel_state.gd" id="5_yryhh"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="6_7dl77"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="7_15qs3"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="8_tteow"]
+[ext_resource type="Script" path="res://addons/godot_state_charts/expression_guard.gd" id="9_i3j20"]
+[ext_resource type="Script" path="res://entities/crew/ai/CrewAI.gd" id="10_wsqwl"]
+[ext_resource type="Script" path="res://common/ai/utility/agent/UtilityAIAgent.gd" id="11_g6tur"]
+[ext_resource type="Script" path="res://entities/crew/ai/actions/IdleAction.gd" id="12_5sd2t"]
+[ext_resource type="Script" path="res://common/ai/utility/consideration/UtilityAICurveConsideration.gd" id="13_lbf4u"]
+[ext_resource type="Script" path="res://entities/crew/ai/actions/WorkAction.gd" id="14_e63tw"]
+[ext_resource type="Script" path="res://common/ai/utility/consideration/UtilityAIBooleanConsideration.gd" id="15_82tfv"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_6x332"]
 radius = 40.0125
 
 [sub_resource type="Resource" id="Resource_a4okr"]
-script = ExtResource("9_xlf2i")
+script = ExtResource("9_i3j20")
 expression = "assignment == \"\""
 
 [sub_resource type="Resource" id="Resource_iydo8"]
-script = ExtResource("9_xlf2i")
+script = ExtResource("9_i3j20")
 expression = "assignment == \"work\""
 
 [sub_resource type="Animation" id="Animation_8m754"]
@@ -324,7 +324,7 @@ collision_mask = 11
 input_pickable = true
 motion_mode = 1
 safe_margin = 2.0
-script = ExtResource("1_rgjpg")
+script = ExtResource("1_jot6k")
 
 [node name="FeetCollisionShape" type="CollisionShape2D" parent="."]
 position = Vector2(-1, 0)
@@ -336,82 +336,82 @@ metadata/_edit_lock_ = true
 
 [node name="AgathaIdle" type="Sprite2D" parent="."]
 position = Vector2(0, -100)
-texture = ExtResource("2_uo5jt")
+texture = ExtResource("2_fs5c3")
 hframes = 8
 frame = 2
 metadata/_edit_lock_ = true
 
 [node name="AgathaWalk" type="Sprite2D" parent="."]
 position = Vector2(0, -100)
-texture = ExtResource("3_yufvr")
+texture = ExtResource("3_irob2")
 hframes = 12
 vframes = 8
 metadata/_edit_lock_ = true
 
 [node name="CrewStateManager" type="Node" parent="."]
 unique_name_in_owner = true
-script = ExtResource("3_pcxuy")
+script = ExtResource("4_0j6fd")
 
 [node name="ParallelState" type="Node" parent="CrewStateManager"]
-script = ExtResource("5_hdvyl")
+script = ExtResource("5_yryhh")
 
 [node name="CrewState" type="Node" parent="CrewStateManager/ParallelState"]
-script = ExtResource("4_en38c")
+script = ExtResource("6_7dl77")
 initial_state = NodePath("Idling")
 
 [node name="Idling" type="Node" parent="CrewStateManager/ParallelState/CrewState"]
-script = ExtResource("5_me8bf")
+script = ExtResource("7_15qs3")
 
 [node name="ToWalking" type="Node" parent="CrewStateManager/ParallelState/CrewState/Idling"]
-script = ExtResource("7_yl87e")
+script = ExtResource("8_tteow")
 to = NodePath("../../Walking")
 event = &"walk"
 
 [node name="Walking" type="Node" parent="CrewStateManager/ParallelState/CrewState"]
-script = ExtResource("5_me8bf")
+script = ExtResource("7_15qs3")
 
 [node name="ToIdling" type="Node" parent="CrewStateManager/ParallelState/CrewState/Walking"]
-script = ExtResource("7_yl87e")
+script = ExtResource("8_tteow")
 to = NodePath("../../Idling")
 event = &"idle"
 
 [node name="ToIdlingFromAssignment" type="Node" parent="CrewStateManager/ParallelState/CrewState/Walking"]
-script = ExtResource("7_yl87e")
+script = ExtResource("8_tteow")
 to = NodePath("../../Idling")
 event = &"to_assignment"
 guard = SubResource("Resource_a4okr")
 
 [node name="ToWorkingFromAssignment" type="Node" parent="CrewStateManager/ParallelState/CrewState/Walking"]
-script = ExtResource("7_yl87e")
+script = ExtResource("8_tteow")
 to = NodePath("../../Working")
 event = &"to_assignment"
 guard = SubResource("Resource_iydo8")
 
 [node name="Working" type="Node" parent="CrewStateManager/ParallelState/CrewState"]
-script = ExtResource("5_me8bf")
+script = ExtResource("7_15qs3")
 
 [node name="ToIdling" type="Node" parent="CrewStateManager/ParallelState/CrewState/Working"]
-script = ExtResource("7_yl87e")
+script = ExtResource("8_tteow")
 to = NodePath("../../Idling")
 event = &"idle"
 
 [node name="InteractionState" type="Node" parent="CrewStateManager/ParallelState"]
-script = ExtResource("4_en38c")
+script = ExtResource("6_7dl77")
 initial_state = NodePath("None")
 
 [node name="None" type="Node" parent="CrewStateManager/ParallelState/InteractionState"]
-script = ExtResource("5_me8bf")
+script = ExtResource("7_15qs3")
 
 [node name="ToAssigning" type="Node" parent="CrewStateManager/ParallelState/InteractionState/None"]
-script = ExtResource("7_yl87e")
+script = ExtResource("8_tteow")
 to = NodePath("../../Assigning")
 event = &"assign"
 
 [node name="Assigning" type="Node" parent="CrewStateManager/ParallelState/InteractionState"]
-script = ExtResource("5_me8bf")
+script = ExtResource("7_15qs3")
 
 [node name="ToNone" type="Node" parent="CrewStateManager/ParallelState/InteractionState/Assigning"]
-script = ExtResource("7_yl87e")
+script = ExtResource("8_tteow")
 to = NodePath("../../None")
 event = &"assigned"
 
@@ -446,33 +446,33 @@ shape = SubResource("CapsuleShape2D_ynwli")
 debug_color = Color(0.678431, 0.356863, 0.894118, 0.419608)
 
 [node name="CrewAI" type="Node" parent="."]
-script = ExtResource("10_2np2b")
+script = ExtResource("10_wsqwl")
 
 [node name="Agent" type="Node" parent="CrewAI"]
 unique_name_in_owner = true
-script = ExtResource("11_y45sd")
+script = ExtResource("11_g6tur")
 
 [node name="IdleAction" type="Node" parent="CrewAI/Agent"]
-script = ExtResource("11_kpeov")
+script = ExtResource("12_5sd2t")
 action_name = &"idle"
 
 [node name="DefaultConsideration" type="Node" parent="CrewAI/Agent/IdleAction"]
-script = ExtResource("12_3vs40")
+script = ExtResource("13_lbf4u")
 curve = SubResource("Curve_j4pgs")
 consideration_name = &"default"
 
 [node name="WorkAction" type="Node" parent="CrewAI/Agent"]
-script = ExtResource("13_2nqfg")
+script = ExtResource("14_e63tw")
 action_name = &"work"
 
 [node name="IsWithinWorkingHoursConsideration" type="Node" parent="CrewAI/Agent/WorkAction" node_paths=PackedStringArray("node")]
-script = ExtResource("13_bshj5")
+script = ExtResource("15_82tfv")
 node = NodePath("../../../..")
 method = &"is_within_working_hours"
 consideration_name = &"is_within_working_hours"
 
 [node name="IsAssignedConsideration" type="Node" parent="CrewAI/Agent/WorkAction" node_paths=PackedStringArray("node")]
-script = ExtResource("13_bshj5")
+script = ExtResource("15_82tfv")
 node = NodePath("../../../..")
 method = &"is_assigned"
 consideration_name = &"is_assigned"

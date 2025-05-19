@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://c3jm3igiv68hy"]
 
-[ext_resource type="Script" path="res://scripts/autoload/time/GameTime.gd" id="1_juhc0"]
+[ext_resource type="Script" path="res://common/time/GameTime.gd" id="1_juhc0"]
 
 [node name="GameTime" type="Timer"]
 script = ExtResource("1_juhc0")
