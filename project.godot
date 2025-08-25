@@ -22,6 +22,7 @@ Global="*res://common/Global.gd"
 Events="*res://common/Events.gd"
 ResourceManager="*res://scripts/managers/ResourceManager.gd"
 TileMapManager="*res://scripts/managers/TileMapManager.gd"
+ValidationManager="*res://scripts/managers/ValidationManager.gd"
 
 [debug]
 

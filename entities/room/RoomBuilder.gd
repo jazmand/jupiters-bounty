@@ -27,8 +27,8 @@ enum Action {BACK, FORWARD, COMPLETE}
 
 func _ready() -> void:
 	Global.station.rooms_updated.connect(draw_rooms)
-	
-	
+
+
 	draw_rooms()
 
 func create_room(
@@ -83,7 +83,7 @@ func drafting_room_motion() -> void:
 	var room_size = Room.calculate_tile_count(initial_tile_coords, transverse_tile_coords)
 	var room_cost = selected_room_type.price * room_size
 	var room_consumption = selected_room_type.power_consumption * room_size
-	update_cursor_with_room_info(room_cost, room_consumption, get_viewport().get_mouse_position())
+	update_cursor_with_room_info(room_cost, room_consumption, TileMapManager.base_tile_map.get_global_mouse_position())
 
 func setting_door() -> void:
 	temp_door_coords = []
@@ -141,7 +141,7 @@ func draft_room(initial_corner: Vector2i, opposite_corner: Vector2i) -> void:
 			if any_invalid:
 				tileset_id = TileMapManager.TilesetID.INVALID
 			else:
-				tileset_id = TileMapManager.TilesetID.DRAFTING
+				tileset_id = TileMapManager.TilesetID.OVERLAY  # Use OVERLAY (1) for blue drafting tiles
 			TileMapManager.set_drafting_cell(coords, tileset_id, Vector2i(0, 0))
 
 func set_doors(coords: Vector2i) -> void:
@@ -240,7 +240,17 @@ func draw_room(room) -> void:
 # --- Helper functions ---
 
 func check_selection_valid(coords: Vector2i, check_price_and_size: bool = false) -> bool:
+	# TODO: Re-enable when ValidationManager autoload is working
+
+	# return ValidationManager.is_room_placement_valid(
+	# 	coords, 
+	# 	check_price_and_size, 
+	# 	selected_room_type, 
+	# 	initial_tile_coords, 
+	# 	transverse_tile_coords
+	# )
 	
+	# Temporary fallback to original logic
 	# Check if outside station bounds
 	var tile_data = TileMapManager.get_base_cell_tile_data(coords)
 	if tile_data == null:
@@ -277,6 +287,10 @@ func check_selection_valid(coords: Vector2i, check_price_and_size: bool = false)
 	return true
 
 func generate_unique_room_id() -> int:
+	# TODO: Re-enable when ValidationManager autoload is working
+	# return ValidationManager.generate_unique_room_id()
+	
+	# Temporary fallback to original logic
 	var unique_id = Global.station.rooms.size() + 1
 	while check_room_id_exists(unique_id):
 		unique_id += 1
@@ -286,6 +300,10 @@ func check_room_id_exists(room_id: int) -> bool:
 	return Global.station.rooms.any(func(room: Room): return room.data.id == room_id)
 	
 func is_on_room_edge_and_not_corner(coords: Vector2i) -> bool:
+	# TODO: Re-enable when ValidationManager autoload is working
+	# return ValidationManager.is_on_room_edge_and_not_corner(coords, initial_tile_coords, transverse_tile_coords)
+	
+	# Temporary fallback to original logic
 	var min_x = min(initial_tile_coords.x, transverse_tile_coords.x)
 	var max_x = max(initial_tile_coords.x, transverse_tile_coords.x)
 	var min_y = min(initial_tile_coords.y, transverse_tile_coords.y)
@@ -298,6 +316,10 @@ func is_on_room_edge_and_not_corner(coords: Vector2i) -> bool:
 	return !is_on_corner && (is_x_on_edge || is_y_on_edge)
 
 func is_blocking_door(coords: Vector2i) -> bool:
+	# TODO: Re-enable when ValidationManager autoload is working
+	# return ValidationManager.is_blocking_existing_door(coords)
+	
+	# Temporary fallback to original logic
 	for room in Global.station.rooms:
 		for door_tile in room.data.door_tiles:
 			if (abs(coords.x - door_tile.x) + abs(coords.y - door_tile.y)) == 1:

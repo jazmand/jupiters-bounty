@@ -1,10 +1,10 @@
 extends Node
 
-## Centralised tile map management
-# Tile map references - will be set when ready
-var base_tile_map: TileMap = null
-var build_tile_map: TileMap = null
-var furniture_tile_map: TileMap = null
+
+# Tile map references
+@onready var base_tile_map: TileMap = %BaseTileMap
+@onready var build_tile_map: TileMap = %BuildTileMap
+@onready var furniture_tile_map: TileMap = %FurnitureTileMap
 
 # Layer constants
 enum Layer {
@@ -16,11 +16,10 @@ enum Layer {
 	OVERLAY = 2
 }
 
-# Tileset constants - centralised for consistency
+# Tileset constants - centralized for consistency
 enum TilesetID {
 	SELECTION = 0,
-	DRAFTING = 1,  # Blue underlay tiles for room drafting
-	INVALID = 2, # Red
+	INVALID = 2,
 	MOCK_ROOM = 3,
 	DOOR = 4,
 	OVERLAY = 1
@@ -28,8 +27,6 @@ enum TilesetID {
 
 # Signal for when tile maps are updated
 signal tile_maps_updated
-# Signal for when the manager is ready
-signal manager_ready
 
 # Cached tile data for performance
 var _base_tile_map_data: Dictionary = {}
@@ -39,6 +36,39 @@ func _ready() -> void:
 	# Don't save state immediately - wait for tile maps to be ready
 	# The state will be saved when first accessed
 	pass
+
+## Initialization and Status
+
+func is_ready() -> bool:
+	return base_tile_map != null and build_tile_map != null and furniture_tile_map != null
+
+func initialise_when_ready() -> void:
+	# Call this when you know the tile maps are ready
+	if is_ready() and not _base_tile_map_saved:
+		save_base_tile_map_state()
+		print("TileMapManager: Successfully initialised")
+	else:
+		print("TileMapManager: Cannot initialise - tile maps not ready or already initialised")
+
+func wait_for_ready() -> void:
+	# Call this to wait for the manager to be ready
+	if is_ready():
+		initialise_when_ready()
+	else:
+		# Wait for the next frame and try again
+		# Note: This function should be called from an async context
+		print("TileMapManager: Not ready yet, call again next frame")
+
+func set_tile_maps(base: TileMap, build: TileMap, furniture: TileMap) -> void:
+	# Set the tile map references when they become available
+	base_tile_map = base
+	build_tile_map = build
+	furniture_tile_map = furniture
+	print("TileMapManager: Tile maps set successfully")
+	
+	# Now we can try to initialize
+	if not _base_tile_map_saved:
+		initialise_when_ready()
 
 ## Base Tile Map Operations
 
@@ -186,14 +216,14 @@ func set_base_cell(coords: Vector2i, tileset_id: int, atlas_coords: Vector2i) ->
 ## Utility Operations
 
 func get_global_mouse_position() -> Vector2i:
-	# Get mouse position in the base tile map co-ordinates
+	# Get mouse position in the base tile map coordinates
 	if not base_tile_map:
 		print("TileMapManager: Base tile map not ready")
 		return Vector2i.ZERO
 	return base_tile_map.local_to_map(base_tile_map.get_global_mouse_position())
 
 func get_global_mouse_position_for_tilemap(tilemap: TileMap) -> Vector2i:
-	# Get mouse position in any tile map co-ordinates
+	# Get mouse position in any tile map coordinates
 	if not tilemap:
 		print("TileMapManager: Tile map parameter is null")
 		return Vector2i.ZERO
@@ -232,17 +262,7 @@ func set_layer_modulate(tilemap: TileMap, layer: int, modulate: Color) -> void:
 func get_layer_modulate(tilemap: TileMap, layer: int) -> Color:
 	return tilemap.get_layer_modulate(layer)
 
-## Validation Helpers
 
-func is_coord_in_bounds(coords: Vector2i) -> bool:
-	var tile_data = get_base_cell_tile_data(coords)
-	return tile_data != null
-
-func is_coord_buildable(coords: Vector2i) -> bool:
-	var tile_data = get_base_cell_tile_data(coords)
-	if not tile_data:
-		return false
-	return tile_data.get_custom_data("is_buildable") == true
 
 ## Performance Monitoring
 
@@ -260,39 +280,3 @@ func get_total_tile_count() -> int:
 	for layer in range(base_tile_map.get_layers_count()):
 		total += get_tile_count(layer)
 	return total
-
-## Initialisation and Status
-
-func is_ready() -> bool:
-	return base_tile_map != null and build_tile_map != null and furniture_tile_map != null
-
-func initialise_when_ready() -> void:
-	# Call this when you know the tile maps are ready
-	if is_ready() and not _base_tile_map_saved:
-		save_base_tile_map_state()
-		manager_ready.emit()
-		print("TileMapManager: Successfully initialised")
-	else:
-		print("TileMapManager: Cannot initialise - tile maps not ready or already initialised")
-
-func wait_for_ready() -> void:
-	# Call this to wait for the manager to be ready
-	if is_ready():
-		initialise_when_ready()
-	else:
-		# Wait for the next frame and try again
-		# Note: This function should be called from an async context
-		print("TileMapManager: Not ready yet, call again next frame")
-
-func set_tile_maps(base: TileMap, build: TileMap, furniture: TileMap) -> void:
-	# Set the tile map references when they become available
-	base_tile_map = base
-	build_tile_map = build
-	furniture_tile_map = furniture
-	print("TileMapManager: Tile maps set successfully")
-	
-	# Now we can try to initialize
-	if not _base_tile_map_saved:
-		initialise_when_ready()
-
-

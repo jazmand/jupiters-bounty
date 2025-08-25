@@ -2,6 +2,9 @@ class_name FurnishingManager extends Node
 
 @onready var GUI: GUI = %GUI
 
+@onready var base_tile_map: TileMap = %BaseTileMap
+@onready var build_tile_map: TileMap = %BuildTileMap
+@onready var furniture_tile_map: TileMap = %FurnitureTileMap
 
 @onready var state_manager: StateChart = %StateManager
 
@@ -13,6 +16,10 @@ var selected_furnituretype: FurnitureType = null
 var _current_room_area: Array[Vector2i] = []
 var _current_room_type: RoomType = null
 
+var drafting_layer: int = 0
+var furnishing_layer: int = 1
+var no_placement_layer: int = 2
+var overlay_tileset_id: int = 1 #TEMPORARY
 
 enum StateEvent {FURNISHING_STOP, FURNISHING_START, FURNISHING_BACK, FURNISHING_FORWARD}
 
@@ -22,6 +29,7 @@ func _ready() -> void:
 	building_manager.room_built.connect(start_furnishing)
 	GUI.furniture_menu.action_completed.connect(on_furniture_menu_action)
 	
+	furniture_tile_map.set_layer_modulate(drafting_layer, Color(1, 1, 1, 0.5)) # Set drafting layer opacity to 50%
 	
 
 	
@@ -33,8 +41,6 @@ func start_furnishing(room_type: RoomType, room_area: Array[Vector2i]) -> void:
 	_current_room_area = room_area
 	_current_room_type = room_type
 	state_manager.send_event("furnishing_start")
-
-
 
 func on_furniture_menu_action(action: int, clicked_furnituretype: FurnitureType) -> void:
 	var event: String
@@ -56,7 +62,7 @@ func _on_selecting_furniture_state_entered():
 		_current_room_type = Global.selected_room.data.type
 	GUI.furniture_menu.show_furniture_panel(get_valid_furniture_for_room(_current_room_type))
 	GUI.room_info_panel.open(Global.selected_room)
-	# No need to show invalid overlay - furniture preview will show validity
+	show_invalid_overlay()
 
 func _on_selecting_furniture_state_input(event):
 	if event.is_action_pressed("cancel"):
@@ -64,10 +70,12 @@ func _on_selecting_furniture_state_input(event):
 
 func _on_selecting_furniture_state_exited() -> void:
 	GUI.furniture_menu.hide_furniture_panel()
-	GUI.room_info_panel.close()
+	GUI.room_info_panel.close() 
+	hide_invalid_overlay()
 
 func _on_placing_furniture_state_entered() -> void:
 	GUI.room_info_panel.open(Global.selected_room)
+	show_invalid_overlay()
 
 func _on_placing_furniture_state_input(event):
 	if event.is_action_pressed("select"):
@@ -83,6 +91,7 @@ func _on_placing_furniture_state_processing(delta) -> void:
 
 func _on_placing_furniture_state_exited() -> void:
 	TileMapManager.clear_furniture_drafting_layer()
+	hide_invalid_overlay()
 	GUI.room_info_panel.close() 
 
 func update_furniture_preview() -> void:
@@ -94,13 +103,10 @@ func update_furniture_preview() -> void:
 	if positions.size() != selected_furnituretype.tileset_coords.size():
 		return
 
-	# Always show the furniture preview
 	for i in positions.size():
 		var tile_pos = positions[i]
 		var tile_coord = selected_furnituretype.tileset_coords[i]
 		TileMapManager.set_furniture_drafting_cell(tile_pos, selected_furnituretype.tileset_id, tile_coord)
-	
-
 
 
 func place_furniture(event: InputEvent) -> void:
@@ -116,8 +122,16 @@ func place_furniture(event: InputEvent) -> void:
 			print("Tileset_coords size does not match width × height")
 			return
 
-		if not is_furniture_placement_valid(positions):
-			print("Invalid furniture placement")
+		if !are_tiles_in_room(positions):
+			print("Some tiles are outside the room area")
+			return
+
+		if are_tiles_occupied(positions):
+			print("Some tiles are already occupied")
+			return
+
+		if not has_enough_currency(selected_furnituretype.price):
+			print("Not enough currency to place this furniture")
 			return
 
 		# Place each tile of the furniture
@@ -130,27 +144,37 @@ func place_furniture(event: InputEvent) -> void:
 		print("Placed %s. Remaining currency: %d" % [selected_furnituretype.name, Global.station.currency])
 
 func are_tiles_in_room(positions: Array[Vector2i]) -> bool:
+	# TODO: Re-enable when ValidationManager autoload is working
+	# return ValidationManager.are_tiles_in_room(positions, _current_room_area)
+	
+	# Temporary fallback to original logic
 	for pos in positions:
 		if not _current_room_area.has(pos):
 			return false
 	return true
 
 func are_tiles_occupied(positions: Array[Vector2i]) -> bool:
+	# TODO: Re-enable when ValidationManager autoload is working
+	# return ValidationManager.are_furniture_tiles_occupied(positions)
+	
+	# Temporary fallback to original logic
 	for pos in positions:
 		if TileMapManager.is_furniture_cell_occupied(pos):
 			return true
 	return false
 
 func has_enough_currency(price: int) -> bool:
+	# TODO: Re-enable when ValidationManager autoload is working
+	# return ValidationManager.has_enough_currency(price)
+	
+	# Temporary fallback to original logic
 	return Global.station.currency >= price
 
-func is_furniture_placement_valid(positions: Array[Vector2i]) -> bool:
-	# Check if furniture placement is valid at the given positions
-	return are_tiles_in_room(positions) and not are_tiles_occupied(positions) and has_enough_currency(selected_furnituretype.price)
-
-
-
 func get_placement_positions_from_origin(origin: Vector2i, furniture: FurnitureType) -> Array[Vector2i]:
+	# TODO: Re-enable when ValidationManager autoload is working
+	# return ValidationManager.get_furniture_placement_positions(origin, furniture)
+	
+	# Temporary fallback to original logic
 	var positions: Array[Vector2i] = []
 	for y in range(furniture.height):
 		for x in range(furniture.width):
