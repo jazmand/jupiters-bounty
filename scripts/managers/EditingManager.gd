@@ -1,7 +1,7 @@
 ## DISCUSS: Do we need this?
 class_name EditingManager extends Node
 #
-#@onready var GUI: StationGUI = %GUI
+#@onready var GUI: GUI = %GUI
 #
 #@onready var base_tile_map: TileMap = %BaseTileMap
 #@onready var build_tile_map: TileMap = %BuildTileMap

@@ -1,4 +1,4 @@
-extends Node
+class_name Main extends Node
 
 @onready var manager: GameManager = %GameManager
 @onready var background: ColorRect = %Background

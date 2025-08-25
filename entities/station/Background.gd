@@ -1,4 +1,4 @@
-extends ColorRect
+class_name Background extends ColorRect
 
 func _ready() -> void:
 	GameTime.second.connect(rotate_jupiter)

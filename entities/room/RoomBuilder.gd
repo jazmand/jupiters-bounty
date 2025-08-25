@@ -1,6 +1,6 @@
 class_name RoomBuilder extends Node
 
-const ROOM_SCENE: PackedScene = preload("res://entities/room/room.tscn")
+const ROOM_SCENE: PackedScene = preload("res://entities/room/room_scene.tscn")
 
 signal action_completed(action: int)
 signal room_built(room_type, tiles)

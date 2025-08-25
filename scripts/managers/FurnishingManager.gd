@@ -1,6 +1,6 @@
 class_name FurnishingManager extends Node
 
-@onready var GUI: StationGUI = %GUI
+@onready var GUI: GUI = %GUI
 
 @onready var base_tile_map: TileMap = %BaseTileMap
 @onready var build_tile_map: TileMap = %BuildTileMap
@@ -127,7 +127,7 @@ func _on_placing_furniture_state_input(event):
 	if event.is_action_pressed("select"):
 		place_furniture(event)
 	elif event.is_action_pressed("cancel") or event.is_action_pressed("exit"):
-		state_manager.send_event(FURNISH_EVENTS[StateEvent.FURNISHING_BACK])
+		state_manager.send_event(FURNISH_EVENTS[StateEvent.FURNISHING_STOP])
 
 func _on_placing_furniture_state_processing(delta) -> void:
 	if selected_furnituretype == null:

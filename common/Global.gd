@@ -12,7 +12,7 @@ const ROOMTYPE: Dictionary = {
 	STORAGE_BAY = 3,
 }
 
-var station: Station = load("res://assets/station/station_resources.tres") as Station
+var station: Station = load("res://assets/resources/station_resources.tres") as Station
 
 var is_crew_input = false
 

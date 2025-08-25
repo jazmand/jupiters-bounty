@@ -1,4 +1,4 @@
-extends Camera2D
+class_name StationCamera extends Camera2D
 
 var input_direction: Vector2 = Vector2.ZERO
 var camera_motion: Vector2 = Vector2.ZERO
