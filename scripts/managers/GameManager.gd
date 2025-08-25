@@ -4,7 +4,9 @@ const CREW_SCENE: PackedScene = preload("res://entities/crew/crew_scene.tscn")
 
 @onready var camera: Camera2D = %Camera
 @onready var state_manager: StateChart = %StateManager
+@onready var base_tile_map: TileMap = %BaseTileMap
 @onready var build_tile_map: TileMap = %BuildTileMap
+@onready var furniture_tile_map: TileMap = %FurnitureTileMap
 
 @onready var navigation_region: NavigationRegion2D = %NavigationRegion
 
@@ -14,6 +16,9 @@ func _ready():
 	Events.gui_add_crew_pressed.connect(new_crew_member)
 	Global.crew_assigned.connect(crew_selected)
 	Global.station.rooms_updated.connect(update_navigation_region)
+	
+	# Set the tile maps in TileMapManager and initialise it
+	TileMapManager.set_tile_maps(base_tile_map, build_tile_map, furniture_tile_map)
 
 func new_crew_member(position_vector: Vector2 = Vector2(5000, 3000)) -> CrewMember:
 	var crew_member: CrewMember = CREW_SCENE.instantiate()

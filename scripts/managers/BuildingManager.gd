@@ -2,8 +2,6 @@ class_name BuildingManager extends Node
 
 @onready var GUI: GUI = %GUI
 
-@onready var base_tile_map: TileMap = %BaseTileMap
-@onready var build_tile_map: TileMap = %BuildTileMap
 @onready var room_builder: RoomBuilder = %RoomBuilder
 
 @onready var camera: Camera2D = %Camera
@@ -29,7 +27,7 @@ func _ready() -> void:
 	
 	# RoomBuilder now directly accesses ResourceManager.room_types
 	# No initialization needed
-
+	
 
 
 # TODO: refactor action handlers
