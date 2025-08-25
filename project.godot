@@ -20,6 +20,7 @@ config/icon="res://assets/sprites/flirty_pose.png"
 GameTime="*res://common/time/time.tscn"
 Global="*res://common/Global.gd"
 Events="*res://common/Events.gd"
+ResourceManager="*res://scripts/managers/ResourceManager.gd"
 
 [debug]
 

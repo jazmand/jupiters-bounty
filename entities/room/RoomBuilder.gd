@@ -29,8 +29,6 @@ var selected_room_type: RoomType
 
 var base_tile_map_data: Dictionary = {}
 
-var room_types: Array[RoomType]
-
 var popup_title: String = ""
 var popup_content: String = ""
 var popup_yes_text: String = "Yes"
@@ -39,7 +37,6 @@ var popup_no_text: String = "No"
 enum Action {BACK, FORWARD, COMPLETE}
 
 func _ready() -> void:
-	room_types = get_parent().room_types
 	Global.station.rooms_updated.connect(draw_rooms)
 	base_tile_map_data = save_base_tile_map_state()
 
@@ -223,7 +220,7 @@ func draw_room(room) -> void:
 		tileset_mapper[Vector2i(x, min_y)] = Vector2i(3, 0) # north east
 		tileset_mapper[Vector2i(x, max_y - 1)] = Vector2i(2, 2) # south west
 	
-	for room_type in room_types:
+	for room_type in ResourceManager.room_types:
 		if (room_type.id == room.type.id):
 #			var tileset_id = room_type.tileset_id
 			var tileset_id = mock_room_tileset_id # TEMPORARY
