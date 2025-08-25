@@ -2,7 +2,6 @@ class_name FurnishingManager extends Node
 
 @onready var GUI: GUI = %GUI
 
-# Use centralized tile map manager instead of direct references
 
 @onready var state_manager: StateChart = %StateManager
 
@@ -14,7 +13,6 @@ var selected_furnituretype: FurnitureType = null
 var _current_room_area: Array[Vector2i] = []
 var _current_room_type: RoomType = null
 
-# Use centralized tile map manager layer constants
 
 enum StateEvent {FURNISHING_STOP, FURNISHING_START, FURNISHING_BACK, FURNISHING_FORWARD}
 
@@ -24,7 +22,6 @@ func _ready() -> void:
 	building_manager.room_built.connect(start_furnishing)
 	GUI.furniture_menu.action_completed.connect(on_furniture_menu_action)
 	
-	# TileMapManager will be initialised by GameManager
 	
 
 	
