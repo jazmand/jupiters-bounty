@@ -91,6 +91,11 @@ func _on_placing_furniture_state_processing(delta) -> void:
 
 func _on_placing_furniture_state_exited() -> void:
 	TileMapManager.clear_furniture_drafting_layer()
+	
+	# Restore the drafting layer opacity to normal
+	if TileMapManager.furniture_tile_map:
+		TileMapManager.furniture_tile_map.set_layer_modulate(TileMapManager.Layer.DRAFTING, Color.WHITE)
+	
 	hide_invalid_overlay()
 	GUI.room_info_panel.close() 
 
@@ -103,11 +108,48 @@ func update_furniture_preview() -> void:
 	if positions.size() != selected_furnituretype.tileset_coords.size():
 		return
 
+	# Check if placement is valid at this position
+	var is_valid_placement = _is_furniture_placement_valid_at_position(positions)
+	
+	# Set the preview color based on validity
+	var preview_color: Color
+	if is_valid_placement:
+		# Valid placement: show true colors with good opacity
+		preview_color = Color.WHITE  # True colors
+	else:
+		# Invalid placement: show red with reduced opacity
+		preview_color = Color(1, 0, 0, 0.6)  # Red with 60% opacity
+
+	# Draw the preview tiles with the appropriate color
 	for i in positions.size():
 		var tile_pos = positions[i]
 		var tile_coord = selected_furnituretype.tileset_coords[i]
 		TileMapManager.set_furniture_drafting_cell(tile_pos, selected_furnituretype.tileset_id, tile_coord)
+		
+		# Apply the preview color to the drafting layer
+		# Note: We'll need to use modulate on the TileMap layer since we can't set individual tile colors easily
+		# For now, we'll use the TileMap's modulate property to show the preview color
+		if TileMapManager.furniture_tile_map:
+			TileMapManager.furniture_tile_map.set_layer_modulate(TileMapManager.Layer.DRAFTING, preview_color)
 
+func _is_furniture_placement_valid_at_position(positions: Array[Vector2i]) -> bool:
+	# Check if furniture placement is valid at the given positions
+	if not selected_furnituretype:
+		return false
+	
+	# Check if tiles are within the room
+	if not are_tiles_in_room(positions):
+		return false
+	
+	# Check if tiles are already occupied
+	if are_tiles_occupied(positions):
+		return false
+	
+	# Check if we have enough currency
+	if not has_enough_currency(selected_furnituretype.price):
+		return false
+	
+	return true
 
 func place_furniture(event: InputEvent) -> void:
 	if selected_furnituretype == null:
@@ -205,6 +247,8 @@ func hide_invalid_overlay():
 # --- Opacity Management ---
 
 var _original_opacities: Dictionary = {}
+var _furniture_preview: Node2D = null
+var _original_furniture_colors: Dictionary = {}
 
 func _store_original_opacities() -> void:
 	# Store the current opacity of the base tile map (only layer we'll change)
@@ -216,6 +260,9 @@ func _store_original_opacities() -> void:
 	
 	# Store the current opacity of all crew members
 	_store_crew_opacities()
+	
+	# Store furniture colors for preview management
+	_store_furniture_colors()
 
 func _store_crew_opacities() -> void:
 	# Store the current modulate (opacity) of all crew members
@@ -224,6 +271,13 @@ func _store_crew_opacities() -> void:
 			if crew_member and is_instance_valid(crew_member):
 				var crew_id = str(crew_member.get_instance_id())
 				_original_opacities["crew_" + crew_id] = crew_member.modulate
+
+func _store_furniture_colors() -> void:
+	# Store the original colors of all furniture types for preview purposes
+	if ResourceManager.furniture_types:
+		for furniture_type in ResourceManager.furniture_types:
+			if furniture_type:
+				_original_furniture_colors[furniture_type.id] = Color.WHITE  # Default white color
 
 func _lower_opacity_except_selected_room() -> void:
 	if not Global.selected_room:
