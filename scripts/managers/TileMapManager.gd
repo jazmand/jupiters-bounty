@@ -8,12 +8,12 @@ extends Node
 
 # Layer constants
 enum Layer {
-	BASE = 0,
-	BUILDING = 1,
-	DRAFTING = 0,  # Same as BASE for now, but can be changed
-	FURNISHING = 1, # Same as BUILDING for now, but can be changed
-	NO_PLACEMENT = 2,
-	OVERLAY = 2
+	BASE = 0,           # Base station tiles (background)
+	BUILDING = 1,       # Room building tiles (on BuildTileMap)
+	DRAFTING = 0,       # Room drafting preview tiles (on BuildTileMap)
+	FURNISHING = 1,     # Furniture placement tiles (on FurnitureTileMap)
+	NO_PLACEMENT = 2,   # Invalid placement overlay (on FurnitureTileMap)
+	OVERLAY = 2         # General overlay tiles (on FurnitureTileMap)
 }
 
 # Tileset constants - centralized for consistency

@@ -186,144 +186,46 @@ func draw_rooms() -> void:
 	#furniture_tile_map.clear_layer(hotspot_layer)
 	TileMapManager.restore_base_tile_map_state()
 	for room in Global.station.rooms:
-		draw_room(room.data)
+		room.draw_room()
 		
-func draw_room(room) -> void:
-	var min_x = min(room.top_left.x, room.bottom_right.x)
-	var max_x = max(room.top_left.x, room.bottom_right.x) + 1
-	var min_y = min(room.top_left.y, room.bottom_right.y)
-	var max_y = max(room.top_left.y, room.bottom_right.y) + 1
-	
-	var tileset_mapper = {
-	Vector2i(min_x, min_y): Vector2i(2, 0), # north corner
-	Vector2i(min_x, max_y - 1): Vector2i(0, 3), # west corner
-	Vector2i(max_x - 1, max_y - 1): Vector2i(3, 1), # south corner
-	Vector2i(max_x - 1, min_y): Vector2i(1, 0), # east corner
-	}
-	# Add mappings for a range of y values between min_y and max_y - 1
-	for y in range(min_y + 1, max_y - 1):
-		tileset_mapper[Vector2i(min_x, y)] = Vector2i(1, 1) # north west
-		tileset_mapper[Vector2i(max_x - 1, y)] = Vector2i(0, 2) # south east
-	# Add mappings for a range of x values between min_x and max_x - 1
-	for x in range(min_x + 1, max_x - 1):
-		tileset_mapper[Vector2i(x, min_y)] = Vector2i(3, 0) # north east
-		tileset_mapper[Vector2i(x, max_y - 1)] = Vector2i(2, 2) # south west
-	
-	for room_type in ResourceManager.room_types:
-		if (room_type.id == room.type.id):
-#			var tileset_id = room_type.tileset_id
-			var tileset_id = TileMapManager.TilesetID.MOCK_ROOM # TEMPORARY
-			# Iterate over the tiles within the room's boundaries and set them on the building layer
-			for x in range(min_x, max_x):
-				for y in range(min_y, max_y):
-					var tileset_coords = Vector2i(0, 0)
-					if tileset_mapper.has(Vector2i(x, y)):
-						tileset_coords = tileset_mapper[Vector2i(x, y)]
-					TileMapManager.set_building_cell(Vector2i(x, y), tileset_id, tileset_coords)
-					TileMapManager.erase_base_cell(Vector2i(x, y)) # Required for navigation. Sets wall bounds.
-						
-			for door_tile in room.door_tiles:
-				if door_tile.x == min_x:
-					TileMapManager.set_building_cell(door_tile, tileset_id, Vector2i(2, 1))
-				elif door_tile.x == max_x - 1:
-					TileMapManager.set_building_cell(door_tile, tileset_id, Vector2i(1, 2))
-				elif door_tile.y == min_y:
-					TileMapManager.set_building_cell(door_tile, tileset_id, Vector2i(0, 1))
-				elif door_tile.y == max_y - 1:
-					TileMapManager.set_building_cell(door_tile, tileset_id, Vector2i(3, 2))
-					
-			#for hotspot in room.hot_spots:
-				#furniture_tile_map.set_cell(0, hotspot, 0, Vector2(0, 1)) # TEMPORARY
-					
 
 
 # --- Helper functions ---
 
 func check_selection_valid(coords: Vector2i, check_price_and_size: bool = false) -> bool:
-	# TODO: Re-enable when ValidationManager autoload is working
-
-	# return ValidationManager.is_room_placement_valid(
-	# 	coords, 
-	# 	check_price_and_size, 
-	# 	selected_room_type, 
-	# 	initial_tile_coords, 
-	# 	transverse_tile_coords
-	# )
-	
-	# Temporary fallback to original logic
-	# Check if outside station bounds
-	var tile_data = TileMapManager.get_base_cell_tile_data(coords)
-	if tile_data == null:
-		return false
-		
-	# Check if on a non-buildable tile (see: tileset custom layer)
-	elif tile_data && !tile_data.get_custom_data("is_buildable"):
-		return false
-		
-	# Check if overlapping an existing room
-	elif TileMapManager.is_building_cell_occupied(coords):
-		return false
-		
-	# Check if blocking any existing doors
-	elif is_blocking_door(coords):
-		return false
-		
-	# Check if price and size are permissible
-	elif check_price_and_size:
-		var tile_count = Room.calculate_tile_count(initial_tile_coords, transverse_tile_coords)
-		# Prevent skinny rooms
-		var room_width = abs(transverse_tile_coords.x - initial_tile_coords.x) + 1
-		var room_height = abs(transverse_tile_coords.y - initial_tile_coords.y) + 1
-		
-		if (Room.calculate_room_price(selected_room_type.price, tile_count) >= Global.station.currency):
-			return false
-			
-		if (tile_count < selected_room_type.min_tiles or tile_count > selected_room_type.max_tiles):
-			return false
-			
-		if room_width <= 1 or room_height <= 1:
-			return false
-			
-	return true
+	# Use the new static method from Room class
+	return Room.is_room_placement_valid(
+		coords, 
+		check_price_and_size, 
+		selected_room_type, 
+		initial_tile_coords, 
+		transverse_tile_coords,
+		Global.station.currency
+	)
 
 func generate_unique_room_id() -> int:
-	# TODO: Re-enable when ValidationManager autoload is working
-	# return ValidationManager.generate_unique_room_id()
-	
-	# Temporary fallback to original logic
-	var unique_id = Global.station.rooms.size() + 1
-	while check_room_id_exists(unique_id):
-		unique_id += 1
-	return unique_id
+	# Use the new static method from Room class
+	return Room.generate_unique_room_id(Global.station.rooms)
 
-func check_room_id_exists(room_id: int) -> bool:
-	return Global.station.rooms.any(func(room: Room): return room.data.id == room_id)
-	
 func is_on_room_edge_and_not_corner(coords: Vector2i) -> bool:
-	# TODO: Re-enable when ValidationManager autoload is working
-	# return ValidationManager.is_on_room_edge_and_not_corner(coords, initial_tile_coords, transverse_tile_coords)
-	
-	# Temporary fallback to original logic
+	# This function is now available on the Room class
+	# For the current room being built, we need to calculate bounds here
 	var min_x = min(initial_tile_coords.x, transverse_tile_coords.x)
 	var max_x = max(initial_tile_coords.x, transverse_tile_coords.x)
 	var min_y = min(initial_tile_coords.y, transverse_tile_coords.y)
 	var max_y = max(initial_tile_coords.y, transverse_tile_coords.y)
 	
-	var is_x_on_edge = (coords.x == min_x || coords.x == max_x) && coords.y >= min_y && coords.y <= max_y
-	var is_y_on_edge = (coords.y == min_y || coords.y == max_y) && coords.x >= min_x && coords.x <= max_x
-	var is_on_corner = (coords.x == min_x || coords.x == max_x) && (coords.y == min_y || coords.y == max_y)
+	var is_x_on_edge = (coords.x == min_x or coords.x == max_x) and coords.y >= min_y and coords.y <= max_y
+	var is_y_on_edge = (coords.y == min_y or coords.y == max_y) and coords.x >= min_x and coords.x <= max_x
+	var is_on_corner = (coords.x == min_x or coords.x == max_x) and (coords.y == min_y or coords.y == max_y)
 	
-	return !is_on_corner && (is_x_on_edge || is_y_on_edge)
+	return not is_on_corner and (is_x_on_edge or is_y_on_edge)
 
-func is_blocking_door(coords: Vector2i) -> bool:
-	# TODO: Re-enable when ValidationManager autoload is working
-	# return ValidationManager.is_blocking_existing_door(coords)
-	
-	# Temporary fallback to original logic
+func is_blocking_existing_door(coords: Vector2i) -> bool:
+	# Check if the coordinates block any existing room's door
 	for room in Global.station.rooms:
-		for door_tile in room.data.door_tiles:
-			if (abs(coords.x - door_tile.x) + abs(coords.y - door_tile.y)) == 1:
-				return true
+		if room.is_blocking_door(coords):
+			return true
 	return false
 
 func update_cursor_with_room_info(room_cost: int, room_consumption: int, cursor_position: Vector2) -> void:

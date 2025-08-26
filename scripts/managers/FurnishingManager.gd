@@ -144,14 +144,18 @@ func place_furniture(event: InputEvent) -> void:
 		print("Placed %s. Remaining currency: %d" % [selected_furnituretype.name, Global.station.currency])
 
 func are_tiles_in_room(positions: Array[Vector2i]) -> bool:
-	# TODO: Re-enable when ValidationManager autoload is working
-	# return ValidationManager.are_tiles_in_room(positions, _current_room_area)
-	
-	# Temporary fallback to original logic
-	for pos in positions:
-		if not _current_room_area.has(pos):
-			return false
-	return true
+	# Use the Room class method to check if tiles are within the current room
+	if Global.selected_room:
+		for pos in positions:
+			if not Global.selected_room.is_coord_in_room(pos):
+				return false
+		return true
+	else:
+		# Fallback to old logic if no room is selected
+		for pos in positions:
+			if not _current_room_area.has(pos):
+				return false
+		return true
 
 func are_tiles_occupied(positions: Array[Vector2i]) -> bool:
 	# TODO: Re-enable when ValidationManager autoload is working
@@ -182,25 +186,108 @@ func get_placement_positions_from_origin(origin: Vector2i, furniture: FurnitureT
 	return positions
 
 func show_invalid_overlay():
-	TileMapManager.clear_furniture_overlay_layer()
-
-	if _current_room_area.is_empty():
+	# Instead of drawing red tiles, lower the opacity of everything except the selected room
+	# This prevents the red tiles from covering other rooms and interfering with their visibility
+	
+	if _current_room_area.is_empty() or not Global.selected_room:
 		return
-
-	var all_station_tiles := TileMapManager.get_used_cells(TileMapManager.Layer.BASE)
-	var built_tiles := TileMapManager.get_used_cells(TileMapManager.Layer.BUILDING) # Rooms are on layer 1 of build_tile_map
-
-	var combined_tiles := all_station_tiles.duplicate()
-	for pos in built_tiles:
-		if not combined_tiles.has(pos):
-			combined_tiles.append(pos)
-
-	for pos in combined_tiles:
-		if not _current_room_area.has(pos):
-			TileMapManager.set_furniture_overlay_cell(pos, TileMapManager.TilesetID.OVERLAY, Vector2i(0, 0))
+	
+	# Store the original opacity values for restoration later
+	_store_original_opacities()
+	
+	# Lower opacity of base tiles (everything except the selected room)
+	_lower_opacity_except_selected_room()
 
 func hide_invalid_overlay():
-	TileMapManager.clear_furniture_overlay_layer()
+	# Restore the original opacity values when hiding the overlay
+	_restore_original_opacities()
+
+# --- Opacity Management ---
+
+var _original_opacities: Dictionary = {}
+
+func _store_original_opacities() -> void:
+	# Store the current opacity of the base tile map (only layer we'll change)
+	if TileMapManager.base_tile_map:
+		_original_opacities["base"] = TileMapManager.base_tile_map.get_layer_modulate(TileMapManager.Layer.BASE)
+	
+	# No need to store building layer opacity since we won't change it
+	# Building layer stays at 100% opacity throughout
+	
+	# Store the current opacity of all crew members
+	_store_crew_opacities()
+
+func _store_crew_opacities() -> void:
+	# Store the current modulate (opacity) of all crew members
+	if Global.station and Global.station.crew:
+		for crew_member in Global.station.crew:
+			if crew_member and is_instance_valid(crew_member):
+				var crew_id = str(crew_member.get_instance_id())
+				_original_opacities["crew_" + crew_id] = crew_member.modulate
+
+func _lower_opacity_except_selected_room() -> void:
+	if not Global.selected_room:
+		return
+	
+	# Get the selected room's bounds (for reference, but we won't need them for this approach)
+	var room_bounds = Global.selected_room.get_room_bounds()
+	
+	# Create a 50% opacity reduction for the base layer only
+	var reduced_opacity = Color(1, 1, 1, 0.5)  # 50% opacity as requested
+	var normal_opacity = Color(1, 1, 1, 1.0)  # 100% opacity
+	
+	# Set reduced opacity for base tiles (background) only
+	if TileMapManager.base_tile_map:
+		TileMapManager.base_tile_map.set_layer_modulate(TileMapManager.Layer.BASE, reduced_opacity)
+	
+	# Leave the building layer (rooms) at 100% opacity
+	# This way the selected room will naturally stand out because it's brighter than the dimmed background
+	# No need to change building layer opacity at all
+	
+	# Lower the opacity of all crew members to focus attention on the room
+	_lower_crew_opacities()
+
+func _lower_crew_opacities() -> void:
+	# Lower the opacity of all crew members to 50% to focus attention on the selected room
+	if Global.station and Global.station.crew:
+		for crew_member in Global.station.crew:
+			if crew_member and is_instance_valid(crew_member):
+				# Set crew member opacity to 50% (same as background)
+				crew_member.modulate = Color(1, 1, 1, 0.5)
+
+func _create_dimming_overlay(room_bounds: Dictionary) -> void:
+	# This function is no longer needed - we're using only opacity changes
+	# No overlay tiles will be created
+	pass
+
+func _highlight_selected_room_area(room_bounds: Dictionary) -> void:
+	# This function is no longer needed - we don't want a border
+	# The selected room will stand out naturally due to the dimming of other areas
+	pass
+
+func _restore_original_opacities() -> void:
+	# Restore base tile map opacity (only layer we changed)
+	if TileMapManager.base_tile_map and _original_opacities.has("base"):
+		TileMapManager.base_tile_map.set_layer_modulate(TileMapManager.Layer.BASE, _original_opacities["base"])
+	
+	# No need to restore building layer opacity since we never changed it
+	# Building layer stays at 100% opacity throughout
+	
+	# Restore crew member opacities
+	_restore_crew_opacities()
+	
+	# Clear stored opacities
+	_original_opacities.clear()
+
+func _restore_crew_opacities() -> void:
+	# Restore the original modulate (opacity) of all crew members
+	if Global.station and Global.station.crew:
+		for crew_member in Global.station.crew:
+			if crew_member and is_instance_valid(crew_member):
+				var crew_id = str(crew_member.get_instance_id())
+				var opacity_key = "crew_" + crew_id
+				if _original_opacities.has(opacity_key):
+					crew_member.modulate = _original_opacities[opacity_key]
 
 
 
