@@ -141,7 +141,7 @@ func draft_room(initial_corner: Vector2i, opposite_corner: Vector2i) -> void:
 			if any_invalid:
 				tileset_id = TileMapManager.TilesetID.INVALID
 			else:
-				tileset_id = TileMapManager.TilesetID.OVERLAY  # Use OVERLAY (1) for blue drafting tiles
+				tileset_id = TileMapManager.TilesetID.INVALID  # TODO: Update this (blue)
 			TileMapManager.set_drafting_cell(coords, tileset_id, Vector2i(0, 0))
 
 func set_doors(coords: Vector2i) -> void:

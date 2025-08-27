@@ -58,7 +58,6 @@ var work_location: Vector2i
 
 func _ready() -> void:
 	data = CrewData.new()
-	print(data.name)
 	navigation_timer.timeout.connect(_on_timer_timeout)
 	call_deferred("actor_setup")
 	area.input_event.connect(_on_input_event)
@@ -170,14 +169,13 @@ func _on_walking_state_physics_processing(_delta: float) -> void:
 		#set_movement_target(Vector2(x,y))
 
 func _on_working_state_entered() -> void:
-	print(data.name, ": working...")
 	state = STATE.WORK
 
 func _on_working_state_physics_processing(_delta: float) -> void:
 	randomise_target_position_in_room()
 
 func _on_working_state_exited() -> void:
-	print(data.name, ": stopped working")
+	pass
 
 func can_assign() -> bool:
 	return Global.station.rooms.size() > 0
@@ -186,7 +184,6 @@ func assign(room: Room, center: Vector2) -> void:
 	workplace = room
 	work_location = center
 	state_manager.send_event(&"assigned")
-	print(data.name, " assigned to room: ", room.data.id, " tile: ", center)
 
 func go_to_work() -> void:
 	set_movement_target(work_location)

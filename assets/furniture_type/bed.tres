@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="FurnitureType" load_steps=2 format=3 uid="uid://j4k8wug0f5du"]
+[gd_resource type="Resource" script_class="FurnitureType" load_steps=2 format=3 uid="uid://b8k9xug1f6ev"]
 
 [ext_resource type="Script" path="res://entities/furniture/FurnitureType.gd" id="1_107aw"]
 
@@ -9,8 +9,10 @@ name = "Bed"
 price = 10
 power_consumption = 0
 simultaneous_users = 1
-tileset_id = 0
-tileset_coords = [Vector2(0, 0), Vector2(1, 2.08165e-12)]
+tileset_id = 2
+tileset_coords = [Vector2i(0, 0), Vector2i(3, 0)]
+tileset_coords_rotated = [Vector2i(1, 0), Vector2i(2, 0)]
 height = 2
 width = 1
 valid_room_types = [1]
+supports_rotation = true

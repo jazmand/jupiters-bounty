@@ -1,4 +1,4 @@
-[gd_scene load_steps=67 format=3 uid="uid://dhh5wq2ka1ay8"]
+[gd_scene load_steps=69 format=3 uid="uid://dhh5wq2ka1ay8"]
 
 [ext_resource type="Script" path="res://entities/station/Main.gd" id="1_7qny5"]
 [ext_resource type="PackedScene" uid="uid://cpi6duyqx08ba" path="res://entities/ui/gui_scene.tscn" id="2_o3d15"]
@@ -17,6 +17,7 @@
 [ext_resource type="Texture2D" uid="uid://k3hf5argnn4k" path="res://assets/tilesets/storage_bay.png" id="15_7x8jn"]
 [ext_resource type="Texture2D" uid="uid://qt1ul65p36gd" path="res://assets/tilesets/mock_furniture_tileset.png" id="16_ulmio"]
 [ext_resource type="Script" path="res://entities/station/Camera2D.gd" id="17_22vys"]
+[ext_resource type="Texture2D" uid="uid://dxw6sc2jiis0i" path="res://assets/tilesets/bed_tileset.png" id="17_83wa7"]
 [ext_resource type="Script" path="res://scripts/managers/BuildingManager.gd" id="18_pwhfs"]
 [ext_resource type="Script" path="res://entities/room/RoomBuilder.gd" id="19_3l3wh"]
 [ext_resource type="Script" path="res://scripts/managers/EditingManager.gd" id="20_oivyv"]
@@ -642,12 +643,21 @@ texture = ExtResource("10_1dhs5")
 texture_region_size = Vector2i(512, 512)
 0:0/0 = 0
 
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_md732"]
+texture = ExtResource("17_83wa7")
+texture_region_size = Vector2i(512, 512)
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
+
 [sub_resource type="TileSet" id="TileSet_4wgk6"]
 tile_shape = 1
 tile_layout = 5
 tile_size = Vector2i(512, 296)
 sources/0 = SubResource("TileSetAtlasSource_6o7ut")
 sources/1 = SubResource("TileSetAtlasSource_d1whw")
+sources/2 = SubResource("TileSetAtlasSource_md732")
 
 [sub_resource type="NavigationPolygon" id="NavigationPolygon_jelv3"]
 source_geometry_mode = 1
@@ -707,7 +717,6 @@ layer_1/z_index = 2
 layer_1/tile_data = PackedInt32Array()
 
 [node name="FurnitureTileMap" type="TileMap" parent="GameManager/BaseTileMap" groups=["navigation"]]
-unique_name_in_owner = true
 y_sort_enabled = true
 tile_set = SubResource("TileSet_4wgk6")
 format = 2

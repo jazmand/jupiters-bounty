@@ -6,7 +6,7 @@ const CREW_SCENE: PackedScene = preload("res://entities/crew/crew_scene.tscn")
 @onready var state_manager: StateChart = %StateManager
 @onready var base_tile_map: TileMap = %BaseTileMap
 @onready var build_tile_map: TileMap = %BuildTileMap
-@onready var furniture_tile_map: TileMap = %FurnitureTileMap
+# Note: furniture_tile_map is accessed through TileMapManager instead of @onready
 
 @onready var navigation_region: NavigationRegion2D = %NavigationRegion
 
@@ -16,6 +16,9 @@ func _ready():
 	Events.gui_add_crew_pressed.connect(new_crew_member)
 	Global.crew_assigned.connect(crew_selected)
 	Global.station.rooms_updated.connect(update_navigation_region)
+	
+	# Get the furniture tile map from the scene tree
+	var furniture_tile_map = get_node("BaseTileMap/FurnitureTileMap")
 	
 	# Set the tile maps in TileMapManager and initialise it
 	TileMapManager.set_tile_maps(base_tile_map, build_tile_map, furniture_tile_map)

@@ -77,53 +77,37 @@ func load_room_types() -> void:
 	print("Loaded %d room types" % room_types.size())
 
 func load_furniture_types() -> void:
-	if _furniture_types_loaded:
-		return
+	var furniture_type_dir = DirAccess.open("res://assets/furniture_type")
+	if furniture_type_dir:
+		furniture_type_dir.list_dir_begin()
+		var file_name = furniture_type_dir.get_next()
 		
-	furniture_types.clear()
-	var furniture_type_files = DirAccess.open(FURNITURE_TYPES_PATH)
-	
-	if not furniture_type_files:
-		push_error("Failed to open furniture types directory: " + FURNITURE_TYPES_PATH)
-		return
-	
-	# Iterate over each file in the folder
-	furniture_type_files.list_dir_begin()
-	var file_name = furniture_type_files.get_next()
-	
-	while file_name != "":
-		var file_path = FURNITURE_TYPES_PATH + file_name
-		
-		# Check if the file is a .tres resource
-		if file_name.ends_with(".tres"):
-			var furniture_type_resource = load(file_path)
+		while file_name != "":
+			if file_name.ends_with(".tres"):
+				var furniture_type_resource = load("res://assets/furniture_type/" + file_name) as FurnitureType
+				if furniture_type_resource:
+					var furniture_type_instance = FurnitureType.new()
+					furniture_type_instance.id = furniture_type_resource.id
+					furniture_type_instance.name = furniture_type_resource.name
+					furniture_type_instance.price = furniture_type_resource.price
+					furniture_type_instance.power_consumption = furniture_type_resource.power_consumption
+					furniture_type_instance.simultaneous_users = furniture_type_resource.simultaneous_users
+					furniture_type_instance.tileset_id = furniture_type_resource.tileset_id
+					furniture_type_instance.tileset_coords = furniture_type_resource.tileset_coords
+					furniture_type_instance.tileset_coords_rotated = furniture_type_resource.tileset_coords_rotated
+					furniture_type_instance.height = furniture_type_resource.height
+					furniture_type_instance.width = furniture_type_resource.width
+					furniture_type_instance.valid_room_types = furniture_type_resource.valid_room_types
+					furniture_type_instance.supports_rotation = furniture_type_resource.supports_rotation
+					
+					furniture_types.append(furniture_type_instance)
+					print("Loaded furniture type: ", file_name.get_basename())
 			
-			if furniture_type_resource:
-				# Create an instance of the FurnitureType class
-				var furniture_type_instance = FurnitureType.new()
-				
-				# Assign the property values to the instance
-				furniture_type_instance.id = furniture_type_resource.id
-				furniture_type_instance.name = furniture_type_resource.name
-				furniture_type_instance.price = furniture_type_resource.price
-				furniture_type_instance.power_consumption = furniture_type_resource.power_consumption
-				furniture_type_instance.simultaneous_users = furniture_type_resource.simultaneous_users
-				furniture_type_instance.height = furniture_type_resource.height
-				furniture_type_instance.width = furniture_type_resource.width
-				furniture_type_instance.tileset_id = furniture_type_resource.tileset_id
-				furniture_type_instance.tileset_coords = furniture_type_resource.tileset_coords
-				furniture_type_instance.valid_room_types = furniture_type_resource.valid_room_types
-				
-				# Add the furniture type instance to the list
-				furniture_types.append(furniture_type_instance)
-			else:
-				push_warning("Failed to load furniture type resource: " + file_path)
+			file_name = furniture_type_dir.get_next()
 		
-		file_name = furniture_type_files.get_next()
-	
-	furniture_type_files.list_dir_end()
-	_furniture_types_loaded = true
-	print("Loaded %d furniture types" % furniture_types.size())
+		furniture_type_dir.list_dir_end()
+	else:
+		print("Failed to open furniture_type directory")
 
 ## Utility methods for other managers
 

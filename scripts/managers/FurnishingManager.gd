@@ -4,7 +4,7 @@ class_name FurnishingManager extends Node
 
 @onready var base_tile_map: TileMap = %BaseTileMap
 @onready var build_tile_map: TileMap = %BuildTileMap
-@onready var furniture_tile_map: TileMap = %FurnitureTileMap
+# Note: furniture_tile_map is accessed through TileMapManager instead of @onready
 
 @onready var state_manager: StateChart = %StateManager
 
@@ -29,10 +29,15 @@ func _ready() -> void:
 	building_manager.room_built.connect(start_furnishing)
 	GUI.furniture_menu.action_completed.connect(on_furniture_menu_action)
 	
-	furniture_tile_map.set_layer_modulate(drafting_layer, Color(1, 1, 1, 0.5)) # Set drafting layer opacity to 50%
-	
+	# Note: Layer modulate will be set up when tile maps become available
 
-	
+func _setup_layer_modulate() -> void:
+	# Set the drafting layer opacity once the tile maps are ready
+	if TileMapManager.furniture_tile_map:
+		TileMapManager.furniture_tile_map.set_layer_modulate(drafting_layer, Color(1, 1, 1, 0.5)) # Set drafting layer opacity to 50%
+	else:
+		print("FurnishingManager: Furniture tile map not ready yet, skipping layer modulate setup")
+
 func get_valid_furniture_for_room(room_type: RoomType) -> Array[FurnitureType]:
 	return ResourceManager.get_valid_furniture_for_room(room_type)
 		
@@ -40,6 +45,11 @@ func start_furnishing(room_type: RoomType, room_area: Array[Vector2i]) -> void:
 	selected_furnituretype = null
 	_current_room_area = room_area
 	_current_room_type = room_type
+	_furniture_rotation = 0  # Reset rotation state when starting furnishing
+	
+	# Set up layer modulate now that we're starting furnishing (tile maps should be ready)
+	_setup_layer_modulate()
+	
 	state_manager.send_event("furnishing_start")
 
 func on_furniture_menu_action(action: int, clicked_furnituretype: FurnitureType) -> void:
@@ -55,9 +65,11 @@ func on_furniture_menu_action(action: int, clicked_furnituretype: FurnitureType)
 	state_manager.send_event(event)
 			
 
-func _on_selecting_furniture_state_entered():
-	if _current_room_area == null:
-		_current_room_area = [Global.selected_room.top_left, Global.selected_room.bottom_right]
+func _on_selecting_furniture_state_entered() -> void:
+	# Reset rotation when starting to select furniture
+	_furniture_rotation = 0
+	
+	_current_room_area = [Global.selected_room.data.top_left, Global.selected_room.data.bottom_right]
 	if _current_room_type == null:
 		_current_room_type = Global.selected_room.data.type
 	GUI.furniture_menu.show_furniture_panel(get_valid_furniture_for_room(_current_room_type))
@@ -82,6 +94,27 @@ func _on_placing_furniture_state_input(event):
 		place_furniture(event)
 	elif event.is_action_pressed("cancel") or event.is_action_pressed("exit"):
 		state_manager.send_event(FURNISH_EVENTS[StateEvent.FURNISHING_STOP])
+	elif event.is_action_pressed("rotate_furniture"):  # "R" key
+		rotate_furniture()
+
+func rotate_furniture() -> void:
+	if selected_furnituretype and selected_furnituretype.supports_rotation:
+		# Toggle between normal (0) and rotated (1) states
+		_furniture_rotation = (_furniture_rotation + 1) % 2
+		print("Furniture rotated to state: ", _furniture_rotation)
+		print("Furniture type: ", selected_furnituretype.name)
+		print("Supports rotation: ", selected_furnituretype.supports_rotation)
+		print("Tileset ID: ", selected_furnituretype.tileset_id)
+		print("Normal coords: ", selected_furnituretype.tileset_coords)
+		print("Rotated coords: ", selected_furnituretype.tileset_coords_rotated)
+		
+		# Force an immediate preview update to show the rotation instantly
+		print("Forcing immediate preview update...")
+		update_furniture_preview()
+		print("Preview update completed")
+	else:
+		print("Cannot rotate furniture - type: ", selected_furnituretype.name if selected_furnituretype else "null")
+		print("Supports rotation: ", selected_furnituretype.supports_rotation if selected_furnituretype else "N/A")
 
 func _on_placing_furniture_state_processing(delta) -> void:
 	if selected_furnituretype == null:
@@ -97,19 +130,35 @@ func _on_placing_furniture_state_exited() -> void:
 		TileMapManager.furniture_tile_map.set_layer_modulate(TileMapManager.Layer.DRAFTING, Color.WHITE)
 	
 	hide_invalid_overlay()
-	GUI.room_info_panel.close() 
+	GUI.room_info_panel.close()
+	_furniture_rotation = 0  # Reset rotation state when exiting
 
 func update_furniture_preview() -> void:
+	print("Current rotation state: ", _furniture_rotation)
+	print("Selected furniture type: ", selected_furnituretype.name if selected_furnituretype else "null")
+	print("Tileset ID: ", selected_furnituretype.tileset_id if selected_furnituretype else "N/A")
+	
 	TileMapManager.clear_furniture_drafting_layer()
 
 	var origin = TileMapManager.get_global_mouse_position_for_tilemap(TileMapManager.furniture_tile_map)
 	var positions = get_placement_positions_from_origin(origin, selected_furnituretype)
 
-	if positions.size() != selected_furnituretype.tileset_coords.size():
+	# Get the appropriate tileset coordinates based on rotation state
+	var tileset_coords_to_use: Array[Vector2i]
+	if selected_furnituretype.supports_rotation:
+		tileset_coords_to_use = selected_furnituretype.get_tileset_coords_for_rotation(_furniture_rotation == 1)
+		print("Preview - Rotation state: ", _furniture_rotation, ", Using coords: ", tileset_coords_to_use)
+	else:
+		tileset_coords_to_use = selected_furnituretype.tileset_coords
+		print("Preview - No rotation, Using coords: ", tileset_coords_to_use)
+
+	if positions.size() != tileset_coords_to_use.size():
+		print("Preview - Position count mismatch: positions=", positions.size(), " coords=", tileset_coords_to_use.size())
 		return
 
 	# Check if placement is valid at this position
 	var is_valid_placement = _is_furniture_placement_valid_at_position(positions)
+	print("Placement valid: ", is_valid_placement)
 	
 	# Set the preview color based on validity
 	var preview_color: Color
@@ -120,15 +169,14 @@ func update_furniture_preview() -> void:
 		# Invalid placement: show red with reduced opacity
 		preview_color = Color(1, 0, 0, 0.6)  # Red with 60% opacity
 
-	# Draw the preview tiles with the appropriate color
+	# Draw the preview tiles with the appropriate color and rotation
 	for i in positions.size():
 		var tile_pos = positions[i]
-		var tile_coord = selected_furnituretype.tileset_coords[i]
+		var tile_coord = tileset_coords_to_use[i]
+		print("Setting furniture drafting cell at ", tile_pos, " with tileset_id ", selected_furnituretype.tileset_id, " and coord ", tile_coord)
 		TileMapManager.set_furniture_drafting_cell(tile_pos, selected_furnituretype.tileset_id, tile_coord)
 		
 		# Apply the preview color to the drafting layer
-		# Note: We'll need to use modulate on the TileMap layer since we can't set individual tile colors easily
-		# For now, we'll use the TileMap's modulate property to show the preview color
 		if TileMapManager.furniture_tile_map:
 			TileMapManager.furniture_tile_map.set_layer_modulate(TileMapManager.Layer.DRAFTING, preview_color)
 
@@ -160,6 +208,7 @@ func place_furniture(event: InputEvent) -> void:
 		var origin = TileMapManager.get_global_mouse_position_for_tilemap(TileMapManager.furniture_tile_map)
 		var positions = get_placement_positions_from_origin(origin, selected_furnituretype)
 
+		# Check if positions match the expected count (should always match now with rotation support)
 		if positions.size() != selected_furnituretype.tileset_coords.size():
 			print("Tileset_coords size does not match width × height")
 			return
@@ -177,13 +226,20 @@ func place_furniture(event: InputEvent) -> void:
 			return
 
 		# Place each tile of the furniture
+		# Get the appropriate tileset coordinates based on rotation state
+		var tileset_coords_to_use: Array[Vector2i]
+		if selected_furnituretype.supports_rotation:
+			tileset_coords_to_use = selected_furnituretype.get_tileset_coords_for_rotation(_furniture_rotation == 1)
+		else:
+			tileset_coords_to_use = selected_furnituretype.tileset_coords
+		
 		for i in positions.size():
 			var world_tile = positions[i]
-			var tileset_coord = selected_furnituretype.tileset_coords[i]
+			var tileset_coord = tileset_coords_to_use[i]
 			TileMapManager.set_furniture_cell(world_tile, selected_furnituretype.tileset_id, tileset_coord)
 
 		Global.station.currency -= selected_furnituretype.price
-		print("Placed %s. Remaining currency: %d" % [selected_furnituretype.name, Global.station.currency])
+		print("Placed ", selected_furnituretype.name, ". Remaining currency: ", Global.station.currency)
 
 func are_tiles_in_room(positions: Array[Vector2i]) -> bool:
 	# Use the Room class method to check if tiles are within the current room
@@ -220,11 +276,26 @@ func get_placement_positions_from_origin(origin: Vector2i, furniture: FurnitureT
 	# TODO: Re-enable when ValidationManager autoload is working
 	# return ValidationManager.get_furniture_placement_positions(origin, furniture)
 	
-	# Temporary fallback to original logic
+	# Temporary fallback to original logic with rotation support
 	var positions: Array[Vector2i] = []
-	for y in range(furniture.height):
-		for x in range(furniture.width):
+	
+	# If furniture supports rotation and is currently rotated, swap width and height
+	var effective_width = furniture.width
+	var effective_height = furniture.height
+	
+	if furniture.supports_rotation and _furniture_rotation == 1:
+		# Swap width and height for rotated orientation
+		effective_width = furniture.height
+		effective_height = furniture.width
+		print("Placement - Rotated: using ", effective_width, "x", effective_height, " pattern")
+	else:
+		print("Placement - Normal: using ", effective_width, "x", effective_height, " pattern")
+	
+	# Generate positions based on effective dimensions
+	for y in range(effective_height):
+		for x in range(effective_width):
 			positions.append(origin + Vector2i(x, y))
+	
 	return positions
 
 func show_invalid_overlay():
@@ -249,6 +320,7 @@ func hide_invalid_overlay():
 var _original_opacities: Dictionary = {}
 var _furniture_preview: Node2D = null
 var _original_furniture_colors: Dictionary = {}
+var _furniture_rotation: int = 0  # 0 = normal, 1 = rotated
 
 func _store_original_opacities() -> void:
 	# Store the current opacity of the base tile map (only layer we'll change)
