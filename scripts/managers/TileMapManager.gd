@@ -10,23 +10,41 @@ var _base_tile_map: TileMap
 var _build_tile_map: TileMap
 var _furniture_tile_map: TileMap
 
-# Layer constants
+# Layer constants - organized by TileMap
 enum Layer {
+	# BaseTileMap layers
 	BASE = 0,           # Base station tiles (background)
+	
+	# BuildTileMap layers  
+	BUILD_DRAFTING = 0, # Room drafting preview tiles (on BuildTileMap)
 	BUILDING = 1,       # Room building tiles (on BuildTileMap)
-	DRAFTING = 0,       # Room drafting preview tiles (on BuildTileMap) - WARNING: Same as BASE!
-	FURNISHING = 1,     # Furniture placement tiles (on FurnitureTileMap)
-	NO_PLACEMENT = 2,   # Invalid placement overlay (on FurnitureTileMap)
-	OVERLAY = 2         # General overlay tiles (on FurnitureTileMap)
+	
+	# FurnitureTileMap layers
+	FURNITURE_DRAFTING = 0, # Furniture drafting preview tiles
+	FURNISHING = 1,         # Furniture placement tiles
+	NO_PLACEMENT = 2        # Invalid placement overlay
 }
 
-# Tileset constants
-enum TilesetID {
-	SELECTION = 0,
-	INVALID = 1,      # Invalid tileset is at source index 1 in the scene
-	BED = 2,          # Bed tileset is at source index 2 in the scene
-	MOCK_ROOM = 3,
-	DOOR = 4
+# Tileset constants - organized by TileMap with descriptive names
+enum BaseTileset {
+	STATION_BACKGROUND = 0  # Base station background tiles
+}
+
+enum BuildTileset {
+	SELECTION = 0,    # Blue tiles for valid room placements
+	DRAFTING = 1,     # Blue tiles for room drafting preview
+	INVALID = 2,      # Red tiles for invalid room placements
+	DOOR = 4,         # Door tiles for door placement
+	MOCK_ROOM = 3,    # Generic room tileset (for all room types)
+	CREW_QUARTERS = 6,    # Room type tilesets (for future use)
+	GENERATOR_ROOM = 7,
+	STORAGE_BAY = 8
+}
+
+enum FurnitureTileset {
+	MOCK_FURNITURE = 0,  # Generic furniture tiles
+	INVALID = 1,         # Red tiles for invalid furniture placement
+	BED = 2              # Bed furniture tiles
 }
 
 # Signal for when tile maps are updated
@@ -147,7 +165,7 @@ func clear_drafting_layer() -> void:
 	if not build_tile_map:
 		print("TileMapManager: Build tile map not ready")
 		return
-	build_tile_map.clear_layer(Layer.DRAFTING)
+	build_tile_map.clear_layer(Layer.BUILD_DRAFTING)
 
 func set_building_cell(coords: Vector2i, tileset_id: int, atlas_coords: Vector2i) -> void:
 	if not build_tile_map:
@@ -155,11 +173,17 @@ func set_building_cell(coords: Vector2i, tileset_id: int, atlas_coords: Vector2i
 		return
 	build_tile_map.set_cell(Layer.BUILDING, coords, tileset_id, atlas_coords)
 
+func set_building_drafting_cell(coords: Vector2i, tileset_id: int, atlas_coords: Vector2i) -> void:
+	if not build_tile_map:
+		print("TileMapManager: Build tile map not ready")
+		return
+	build_tile_map.set_cell(Layer.BUILD_DRAFTING, coords, tileset_id, atlas_coords)
+
 func set_drafting_cell(coords: Vector2i, tileset_id: int, atlas_coords: Vector2i) -> void:
 	if not build_tile_map:
 		print("TileMapManager: Build tile map not ready")
 		return
-	build_tile_map.set_cell(Layer.DRAFTING, coords, tileset_id, atlas_coords)
+	build_tile_map.set_cell(Layer.BUILD_DRAFTING, coords, tileset_id, atlas_coords)
 
 func get_building_cell_data(coords: Vector2i) -> TileData:
 	if not build_tile_map:
@@ -182,13 +206,13 @@ func clear_furniture_drafting_layer() -> void:
 	if not furniture_tile_map:
 		print("TileMapManager: Furniture tile map not ready")
 		return
-	furniture_tile_map.clear_layer(Layer.DRAFTING)
+	furniture_tile_map.clear_layer(Layer.FURNITURE_DRAFTING)
 
 func clear_furniture_overlay_layer() -> void:
 	if not furniture_tile_map:
 		print("TileMapManager: Furniture tile map not ready")
 		return
-	furniture_tile_map.clear_layer(Layer.OVERLAY)
+	furniture_tile_map.clear_layer(Layer.NO_PLACEMENT)
 
 func set_furniture_cell(coords: Vector2i, tileset_id: int, atlas_coords: Vector2i) -> void:
 	if not furniture_tile_map:
@@ -207,13 +231,13 @@ func set_furniture_drafting_cell(coords: Vector2i, tileset_id: int, atlas_coords
 		print("TileMapManager: Tileset has ", furniture_tile_map.tile_set.get_source_count(), " sources")
 		print("TileMapManager: Requested tileset_id ", tileset_id, " available: ", furniture_tile_map.tile_set.has_source(tileset_id))
 	
-	furniture_tile_map.set_cell(Layer.DRAFTING, coords, tileset_id, atlas_coords)
+	furniture_tile_map.set_cell(Layer.FURNITURE_DRAFTING, coords, tileset_id, atlas_coords)
 
 func set_furniture_overlay_cell(coords: Vector2i, tileset_id: int, atlas_coords: Vector2i) -> void:
 	if not furniture_tile_map:
 		print("TileMapManager: Furniture tile map not ready")
 		return
-	furniture_tile_map.set_cell(Layer.OVERLAY, coords, tileset_id, atlas_coords)
+	furniture_tile_map.set_cell(Layer.NO_PLACEMENT, coords, tileset_id, atlas_coords)
 
 func get_furniture_cell_source_id(coords: Vector2i) -> int:
 	if not furniture_tile_map:
@@ -260,7 +284,7 @@ func setup_bed_tileset() -> void:
 	atlas_source.texture_region_size = Vector2i(tile_width, tile_height)
 	
 	# Add the atlas source to the tileset
-	current_tileset.add_source(atlas_source, TilesetID.BED)
+	current_tileset.add_source(atlas_source, FurnitureTileset.BED)
 	
 	print("TileMapManager: Bed tileset set up successfully with tile size: %s" % Vector2i(tile_width, tile_height))
 
@@ -337,9 +361,9 @@ func get_bed_tileset_info() -> Dictionary:
 		"texture_path": "res://assets/tilesets/bed_tileset.png"
 	}
 	
-	if is_tileset_ready(TilesetID.BED):
+	if is_tileset_ready(FurnitureTileset.BED):
 		info.is_ready = true
-		info.tile_size = get_tileset_tile_size(TilesetID.BED)
+		info.tile_size = get_tileset_tile_size(FurnitureTileset.BED)
 	
 	return info
 
@@ -446,8 +470,8 @@ func setup_bed_tileset_properly() -> void:
 	print("TileMapManager: Bed tileset should already be configured in scene file")
 	
 	# Check if we have the bed tileset source
-	if tileset.get_source_count() > TilesetID.BED:
-		var existing_source = tileset.get_source(TilesetID.BED)
+	if tileset.get_source_count() > FurnitureTileset.BED:
+		var existing_source = tileset.get_source(FurnitureTileset.BED)
 		if existing_source and existing_source is TileSetAtlasSource:
 			var atlas_source = existing_source as TileSetAtlasSource
 			if atlas_source.texture:
@@ -466,11 +490,11 @@ func verify_bed_tileset() -> bool:
 		return false
 	
 	var tileset = furniture_tile_map.tile_set
-	if not tileset.has_source(TilesetID.BED):
+	if not tileset.has_source(FurnitureTileset.BED):
 		print("TileMapManager: Bed tileset source not found")
 		return false
 	
-	var source = tileset.get_source(TilesetID.BED)
+	var source = tileset.get_source(FurnitureTileset.BED)
 	if not source or not source is TileSetAtlasSource:
 		print("TileMapManager: Bed tileset source is not a TileSetAtlasSource")
 		return false

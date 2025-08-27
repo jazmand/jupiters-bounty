@@ -127,7 +127,7 @@ func _on_placing_furniture_state_exited() -> void:
 	
 	# Restore the drafting layer opacity to normal
 	if TileMapManager.furniture_tile_map:
-		TileMapManager.furniture_tile_map.set_layer_modulate(TileMapManager.Layer.DRAFTING, Color.WHITE)
+		TileMapManager.furniture_tile_map.set_layer_modulate(TileMapManager.Layer.FURNITURE_DRAFTING, Color.WHITE)
 	
 	hide_invalid_overlay()
 	GUI.room_info_panel.close()
@@ -178,7 +178,7 @@ func update_furniture_preview() -> void:
 		
 		# Apply the preview color to the drafting layer
 		if TileMapManager.furniture_tile_map:
-			TileMapManager.furniture_tile_map.set_layer_modulate(TileMapManager.Layer.DRAFTING, preview_color)
+			TileMapManager.furniture_tile_map.set_layer_modulate(TileMapManager.Layer.FURNITURE_DRAFTING, preview_color)
 
 func _is_furniture_placement_valid_at_position(positions: Array[Vector2i]) -> bool:
 	# Check if furniture placement is valid at the given positions

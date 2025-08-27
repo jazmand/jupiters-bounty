@@ -73,7 +73,7 @@ func draw_room() -> void:
 	for room_type in ResourceManager.room_types:
 		if (room_type.id == data.type.id):
 			# Use the temporary fix that was working
-			var tileset_id = TileMapManager.TilesetID.MOCK_ROOM # TEMPORARY
+			var tileset_id = TileMapManager.BuildTileset.MOCK_ROOM # Generic room tileset
 			
 			# Iterate over the tiles within the room's boundaries and set them on the building layer
 			for x in range(min_x, max_x):

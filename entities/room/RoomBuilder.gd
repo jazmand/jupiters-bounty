@@ -100,7 +100,7 @@ func setting_door_motion() -> void:
 	draft_room(initial_tile_coords, transverse_tile_coords)
 	# Check if the tile is within the room and on the room's edge
 	if is_on_room_edge_and_not_corner(coords):
-		TileMapManager.set_drafting_cell(coords, TileMapManager.TilesetID.DOOR, Vector2i(0, 0))
+		TileMapManager.set_building_drafting_cell(coords, TileMapManager.BuildTileset.DOOR, Vector2i(0, 0))  # Use door tileset for door placement
 
 # -- Selection and drawing functions
 
@@ -109,10 +109,10 @@ func select_tile(coords: Vector2i) -> void:
 	TileMapManager.clear_drafting_layer()
 	# Draw on tile
 	if check_selection_valid(coords):
-		TileMapManager.set_drafting_cell(coords, TileMapManager.TilesetID.SELECTION, Vector2i(0, 0))
+		TileMapManager.set_building_drafting_cell(coords, TileMapManager.BuildTileset.SELECTION, Vector2i(0, 0))
 		any_invalid = false
 	else:
-		TileMapManager.set_drafting_cell(coords, TileMapManager.TilesetID.INVALID, Vector2i(0, 0))
+		TileMapManager.set_building_drafting_cell(coords, TileMapManager.BuildTileset.INVALID, Vector2i(0, 0))
 		any_invalid = true
 
 func draft_room(initial_corner: Vector2i, opposite_corner: Vector2i) -> void:
@@ -139,10 +139,10 @@ func draft_room(initial_corner: Vector2i, opposite_corner: Vector2i) -> void:
 			var coords = Vector2i(x, y)
 			var tileset_id
 			if any_invalid:
-				tileset_id = TileMapManager.TilesetID.INVALID
+				tileset_id = TileMapManager.BuildTileset.INVALID  # Red for invalid placements
 			else:
-				tileset_id = TileMapManager.TilesetID.INVALID  # TODO: Update this (blue)
-			TileMapManager.set_drafting_cell(coords, tileset_id, Vector2i(0, 0))
+				tileset_id = TileMapManager.BuildTileset.SELECTION  # Blue for valid placements
+			TileMapManager.set_building_drafting_cell(coords, tileset_id, Vector2i(0, 0))
 
 func set_doors(coords: Vector2i) -> void:
 	temp_door_coords.append(coords)
