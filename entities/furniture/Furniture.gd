@@ -10,4 +10,3 @@ func _ready():
 func _on_area_input_event(viewport, event, shape_idx):
 	if event is InputEventMouseButton and event.pressed:
 		emit_signal("furniture_clicked")
-		print("Furniture clicked at ", position)

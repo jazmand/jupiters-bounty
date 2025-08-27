@@ -74,7 +74,6 @@ func load_room_types() -> void:
 	
 	room_type_files.list_dir_end()
 	_room_types_loaded = true
-	print("Loaded %d room types" % room_types.size())
 
 func load_furniture_types() -> void:
 	var furniture_type_dir = DirAccess.open("res://assets/furniture_type")
@@ -101,13 +100,12 @@ func load_furniture_types() -> void:
 					furniture_type_instance.supports_rotation = furniture_type_resource.supports_rotation
 					
 					furniture_types.append(furniture_type_instance)
-					print("Loaded furniture type: ", file_name.get_basename())
 			
 			file_name = furniture_type_dir.get_next()
 		
 		furniture_type_dir.list_dir_end()
 	else:
-		print("Failed to open furniture_type directory")
+		pass
 
 ## Utility methods for other managers
 

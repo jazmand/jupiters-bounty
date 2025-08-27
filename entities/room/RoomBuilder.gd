@@ -91,8 +91,6 @@ func setting_door() -> void:
 	if is_on_room_edge_and_not_corner(coords):
 		set_doors(coords)
 		confirm_room_details()
-	else:
-		print("Door must be on the edge of the room")
 
 func setting_door_motion() -> void:
 	var coords = TileMapManager.get_global_mouse_position()
@@ -125,23 +123,17 @@ func draft_room(initial_corner: Vector2i, opposite_corner: Vector2i) -> void:
 	var max_y = max(initial_corner.y, opposite_corner.y) + 1
 	any_invalid = false
 	
-	# Check validity of all coordinates between initial and traverse corners
+	# OPTIMIZED: Single loop that checks validity AND draws tiles simultaneously
 	for x in range(min_x, max_x):
 		for y in range(min_y, max_y):
 			var coords = Vector2i(x, y)
-			if !check_selection_valid(coords, true):
+			var is_valid = check_selection_valid(coords, true)
+			
+			if !is_valid:
 				any_invalid = true
-				break # If any tile is invalid, no need to continue checking
-				
-	# Redraw the entire selection based on whether any tile was invalid
-	for x in range(min_x, max_x):
-		for y in range(min_y, max_y):
-			var coords = Vector2i(x, y)
-			var tileset_id
-			if any_invalid:
-				tileset_id = TileMapManager.BuildTileset.INVALID  # Red for invalid placements
-			else:
-				tileset_id = TileMapManager.BuildTileset.SELECTION  # Blue for valid placements
+			
+			# Draw tile immediately with appropriate color
+			var tileset_id = TileMapManager.BuildTileset.INVALID if any_invalid else TileMapManager.BuildTileset.SELECTION
 			TileMapManager.set_building_drafting_cell(coords, tileset_id, Vector2i(0, 0))
 
 func set_doors(coords: Vector2i) -> void:
@@ -162,7 +154,6 @@ func confirm_build() -> void:
 	# Make deductions for buying rooms
 	var tile_count = Room.calculate_tile_count(initial_tile_coords, transverse_tile_coords)
 	Global.station.currency -= Room.calculate_room_price(selected_room_type.price, tile_count)
-	#print(Global.station.rooms, 'current rooms')
 	action_completed.emit(Action.COMPLETE)
 
 func cancel_build() -> void:
