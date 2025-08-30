@@ -212,16 +212,16 @@ func set_base_cell(coords: Vector2i, tileset_id: int, atlas_coords: Vector2i) ->
 ## Utility Operations
 
 func get_global_mouse_position() -> Vector2i:
-	# Get mouse position in the base tile map coordinates
+	# Get mouse position in the base tile map coordinates (accounting for canvas transforms)
 	if not base_tile_map:
 		return Vector2i.ZERO
-	return base_tile_map.local_to_map(base_tile_map.get_global_mouse_position())
+	return base_tile_map.local_to_map(base_tile_map.get_local_mouse_position())
 
 func get_global_mouse_position_for_tilemap(tilemap: TileMap) -> Vector2i:
-	# Get mouse position in any tile map coordinates
+	# Get mouse position in any tile map coordinates (accounting for canvas transforms)
 	if not tilemap:
 		return Vector2i.ZERO
-	return tilemap.local_to_map(tilemap.get_global_mouse_position())
+	return tilemap.local_to_map(tilemap.get_local_mouse_position())
 
 func get_used_cells(layer: int) -> Array[Vector2i]:
 	# Get all used cells in a specific layer

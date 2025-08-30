@@ -24,6 +24,7 @@
 [ext_resource type="Texture2D" uid="uid://dqhbp0k7cdmty" path="res://assets/GUI/crew_portrait_temp.png" id="20_f6383"]
 [ext_resource type="Script" path="res://entities/ui/RoomInfoPanel.gd" id="21_u5e38"]
 [ext_resource type="Script" path="res://entities/ui/CursorLabel.gd" id="22_vskqf"]
+[ext_resource type="Script" path="res://entities/ui/FurnitureInfoPanel.gd" id="23_furniture_info"]
 
 [sub_resource type="SystemFont" id="SystemFont_oc4iu"]
 font_names = PackedStringArray("Cascadia Code")
@@ -170,6 +171,7 @@ theme_override_styles/fill = SubResource("StyleBoxFlat_wegjk")
 show_percentage = false
 
 [node name="FurnitureMenu" type="Control" parent="GUIManager"]
+unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 0
 offset_right = 40.0
@@ -183,6 +185,17 @@ offset_left = 8.0
 offset_top = 975.0
 offset_right = 1079.0
 offset_bottom = 1073.0
+
+[node name="FurnitureOpenButton" type="Button" parent="GUIManager/FurnitureMenu"]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 975.0
+offset_right = 48.0
+offset_bottom = 1015.0
+scale = Vector2(0.15, 0.15)
+action_mode = 0
+icon = ExtResource("5_cbcuv")
+flat = true
 
 [node name="FurnitureCloseButton" type="Button" parent="GUIManager/FurnitureMenu/FurniturePanel"]
 layout_mode = 0
@@ -236,6 +249,7 @@ offset_bottom = 60.0
 label_settings = SubResource("LabelSettings_e4e6q")
 
 [node name="BuildMenu" type="Control" parent="GUIManager"]
+unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 0
 offset_left = 8.0
@@ -293,6 +307,7 @@ text = "Add Crew
 "
 
 [node name="CrewInfoPanel" type="PanelContainer" parent="GUIManager"]
+unique_name_in_owner = true
 visible = false
 layout_mode = 1
 anchors_preset = -1
@@ -305,6 +320,75 @@ offset_top = -0.320023
 offset_right = 0.319946
 offset_bottom = 0.279968
 script = ExtResource("20_d483j")
+
+[node name="FurnitureInfoPanel" type="PanelContainer" parent="GUIManager"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.767
+anchor_top = 0.229
+anchor_right = 0.929
+anchor_bottom = 0.634
+offset_left = -0.640015
+offset_top = -0.320023
+offset_right = 0.319946
+offset_bottom = 0.279968
+script = ExtResource("23_furniture_info")
+theme_override_styles/panel = SubResource("StyleBoxFlat_wegjk")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="GUIManager/FurnitureInfoPanel"]
+layout_mode = 2
+
+[node name="HeaderContainer" type="HBoxContainer" parent="GUIManager/FurnitureInfoPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="FurnitureName" type="Label" parent="GUIManager/FurnitureInfoPanel/VBoxContainer/HeaderContainer"]
+layout_mode = 2
+text = "Furniture Name"
+horizontal_alignment = 1
+
+[node name="CloseButton" type="Button" parent="GUIManager/FurnitureInfoPanel/VBoxContainer/HeaderContainer"]
+visible = false
+layout_mode = 2
+text = "X"
+
+[node name="FurnitureInfoContainer" type="VBoxContainer" parent="GUIManager/FurnitureInfoPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="InfoLabel" type="Label" parent="GUIManager/FurnitureInfoPanel/VBoxContainer/FurnitureInfoContainer"]
+layout_mode = 2
+text = "Furniture Information:"
+
+[node name="CrewAssignmentContainer" type="VBoxContainer" parent="GUIManager/FurnitureInfoPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="CapacityInfo" type="Label" parent="GUIManager/FurnitureInfoPanel/VBoxContainer/CrewAssignmentContainer"]
+layout_mode = 2
+text = "Crew: 0/1"
+horizontal_alignment = 1
+
+[node name="AvailableCrewContainer" type="VBoxContainer" parent="GUIManager/FurnitureInfoPanel/VBoxContainer/CrewAssignmentContainer"]
+layout_mode = 2
+
+[node name="AvailableLabel" type="Label" parent="GUIManager/FurnitureInfoPanel/VBoxContainer/CrewAssignmentContainer/AvailableCrewContainer"]
+layout_mode = 2
+text = "Available Crew:"
+
+[node name="AvailableCrewList" type="VBoxContainer" parent="GUIManager/FurnitureInfoPanel/VBoxContainer/CrewAssignmentContainer/AvailableCrewContainer"]
+layout_mode = 2
+
+[node name="AssignedCrewContainer" type="VBoxContainer" parent="GUIManager/FurnitureInfoPanel/VBoxContainer/CrewAssignmentContainer"]
+layout_mode = 2
+
+[node name="AssignedLabel" type="Label" parent="GUIManager/FurnitureInfoPanel/VBoxContainer/CrewAssignmentContainer/AssignedCrewContainer"]
+layout_mode = 2
+text = "Assigned Crew:"
+
+[node name="AssignedCrewList" type="VBoxContainer" parent="GUIManager/FurnitureInfoPanel/VBoxContainer/CrewAssignmentContainer/AssignedCrewContainer"]
+layout_mode = 2
+
+
 
 [node name="CrewInfoContainer" type="VBoxContainer" parent="GUIManager/CrewInfoPanel"]
 layout_mode = 2
@@ -321,6 +405,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 
 [node name="CloseButton" type="Button" parent="GUIManager/CrewInfoPanel/CrewInfoContainer/HeaderContainer"]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 20
@@ -371,15 +456,17 @@ layout_mode = 2
 size_flags_vertical = 3
 metadata/_edit_lock_ = true
 
-[node name="IdleButton" type="Button" parent="GUIManager/CrewInfoPanel/CrewInfoContainer/ActionContainer"]
+[node name="StatusLabel" type="Label" parent="GUIManager/CrewInfoPanel/CrewInfoContainer/ActionContainer"]
 layout_mode = 2
-text = "Idle"
+text = "Status: Idle"
+horizontal_alignment = 1
 
 [node name="AssignButton" type="Button" parent="GUIManager/CrewInfoPanel/CrewInfoContainer/ActionContainer"]
 layout_mode = 2
 text = "Assign"
 
 [node name="RoomInfoPanel" type="PanelContainer" parent="GUIManager"]
+unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.767
@@ -406,15 +493,6 @@ custom_minimum_size = Vector2(250, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 1
-
-[node name="CloseButton" type="Button" parent="GUIManager/RoomInfoPanel/RoomInfoContainer/HeaderContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 20
-theme_override_styles/normal = SubResource("StyleBoxFlat_c1g2s")
-theme_override_styles/hover = SubResource("StyleBoxFlat_sfqun")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_xynr2")
-text = "X"
 
 [node name="PortraitContainer" type="HBoxContainer" parent="GUIManager/RoomInfoPanel/RoomInfoContainer"]
 custom_minimum_size = Vector2(0, 150)
@@ -482,7 +560,8 @@ theme_override_constants/outline_size = 3
 theme_override_font_sizes/font_size = 25
 script = ExtResource("22_vskqf")
 
-[connection signal="pressed" from="GUIManager/FurnitureMenu/FurniturePanel/FurnitureCloseButton" to="GUIManager/BuildMenu" method="_on_build_close_button_pressed"]
+[connection signal="pressed" from="GUIManager/FurnitureMenu/FurnitureOpenButton" to="GUIManager/FurnitureMenu" method="_on_furniture_open_button_pressed"]
+[connection signal="pressed" from="GUIManager/FurnitureMenu/FurniturePanel/FurnitureCloseButton" to="GUIManager/FurnitureMenu" method="_on_furniture_close_button_pressed"]
 [connection signal="pressed" from="GUIManager/BuildMenu/BuildButton" to="GUIManager/BuildMenu" method="_on_build_button_pressed"]
 [connection signal="pressed" from="GUIManager/BuildMenu/RoomPanel/BuildCloseButton" to="GUIManager/BuildMenu" method="_on_build_close_button_pressed"]
 [connection signal="pressed" from="GUIManager/AddCrew" to="GUIManager" method="_on_add_crew_pressed"]

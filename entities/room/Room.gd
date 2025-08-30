@@ -37,12 +37,7 @@ static func calculate_room_price(price: int, tile_count: int) -> int:
 static func calculate_tile_count(vector1: Vector2, vector2: Vector2) -> int:
 	return (abs(vector2.x - vector1.x) + 1) * (abs(vector2.y - vector1.y) + 1)
 
-func can_assign_crew() -> bool:
-	return data.assigned_crew_ids.size() < data.hot_spots.size()
 
-func assign_crew(crew: CrewMember) -> Vector2:
-	data.assigned_crew_ids.append(crew.data.id)
-	return data.hot_spots[data.assigned_crew_ids.size() - 1]
 
 # --- Room Drawing and Rendering ---
 
@@ -138,6 +133,16 @@ func get_room_bounds() -> Dictionary:
 func get_room_area() -> int:
 	var bounds = get_room_bounds()
 	return (bounds.max_x - bounds.min_x + 1) * (bounds.max_y - bounds.min_y + 1)
+
+func get_occupied_tiles() -> Array[Vector2i]:
+	var bounds = get_room_bounds()
+	var tiles: Array[Vector2i] = []
+	
+	for x in range(bounds.min_x, bounds.max_x + 1):
+		for y in range(bounds.min_y, bounds.max_y + 1):
+			tiles.append(Vector2i(x, y))
+	
+	return tiles
 
 # --- Static Utility Methods for Managers ---
 

@@ -770,6 +770,7 @@ unique_name_in_owner = true
 script = ExtResource("21_of1mo")
 
 [node name="FurnishingManager" type="Node" parent="GameManager"]
+unique_name_in_owner = true
 script = ExtResource("22_hn45n")
 
 [node name="CanvasLayer" type="CanvasLayer" parent="GameManager"]
@@ -811,6 +812,16 @@ event = &"crew"
 script = ExtResource("27_alvqe")
 to = NodePath("../../Furnishing/SelectingFurniture")
 event = &"furnishing_start"
+
+[node name="ToInspectingCrew" type="Node" parent="GameManager/StateManager/GameState/Default"]
+script = ExtResource("27_alvqe")
+to = NodePath("../../InspectingCrew")
+event = &"inspect_crew"
+
+[node name="ToInspectingFurniture" type="Node" parent="GameManager/StateManager/GameState/Default"]
+script = ExtResource("27_alvqe")
+to = NodePath("../../InspectingFurniture")
+event = &"inspect_furniture"
 
 [node name="Building" type="Node" parent="GameManager/StateManager/GameState"]
 script = ExtResource("25_db6qp")
@@ -950,10 +961,20 @@ script = ExtResource("27_alvqe")
 to = NodePath("../../PlacingFurniture")
 event = &"furnishing_forward"
 
+[node name="ToInspectingFurniture" type="Node" parent="GameManager/StateManager/GameState/Furnishing/SelectingFurniture"]
+script = ExtResource("27_alvqe")
+to = NodePath("../../../InspectingFurniture")
+event = &"inspect_furniture"
+
 [node name="ToDefault" type="Node" parent="GameManager/StateManager/GameState/Furnishing/SelectingFurniture"]
 script = ExtResource("27_alvqe")
 to = NodePath("../../../Default")
 event = &"furnishing_stop"
+
+[node name="ToInspectingCrew" type="Node" parent="GameManager/StateManager/GameState/Furnishing/SelectingFurniture"]
+script = ExtResource("27_alvqe")
+to = NodePath("../../../InspectingCrew")
+event = &"inspect_crew"
 
 [node name="PlacingFurniture" type="Node" parent="GameManager/StateManager/GameState/Furnishing"]
 script = ExtResource("26_6q7yy")
@@ -968,6 +989,38 @@ script = ExtResource("27_alvqe")
 to = NodePath("../../SelectingFurniture")
 event = &"furnishing_back"
 
+[node name="InspectingFurniture" type="Node" parent="GameManager/StateManager/GameState"]
+script = ExtResource("26_6q7yy")
+
+[node name="ToFurnishing" type="Node" parent="GameManager/StateManager/GameState/InspectingFurniture"]
+script = ExtResource("27_alvqe")
+to = NodePath("../../Furnishing/SelectingFurniture")
+event = &"back_to_furnishing"
+
+[node name="ToDefault" type="Node" parent="GameManager/StateManager/GameState/InspectingFurniture"]
+script = ExtResource("27_alvqe")
+to = NodePath("../../Default")
+event = &"furnishing_stop"
+
+[node name="InspectingCrew" type="Node" parent="GameManager/StateManager/GameState"]
+script = ExtResource("26_6q7yy")
+
+[node name="ToDefault" type="Node" parent="GameManager/StateManager/GameState/InspectingCrew"]
+script = ExtResource("27_alvqe")
+to = NodePath("../../Default")
+event = &"crew_inspection_stop"
+
+[node name="ToFurnishing" type="Node" parent="GameManager/StateManager/GameState/InspectingCrew"]
+script = ExtResource("27_alvqe")
+to = NodePath("../../Furnishing/SelectingFurniture")
+event = &"furnishing_start"
+
+[node name="ToInspectingFurniture" type="Node" parent="GameManager/StateManager/GameState/InspectingCrew"]
+script = ExtResource("27_alvqe")
+to = NodePath("../../InspectingFurniture")
+event = &"inspect_furniture"
+
+[connection signal="state_entered" from="GameManager/StateManager/GameState/Default" to="GameManager" method="_on_default_state_entered"]
 [connection signal="state_unhandled_input" from="GameManager/StateManager/GameState/Default" to="GameManager" method="_on_default_state_unhandled_input"]
 [connection signal="state_entered" from="GameManager/StateManager/GameState/Building" to="GameManager/BuildingManager" method="_on_building_state_entered"]
 [connection signal="state_exited" from="GameManager/StateManager/GameState/Building" to="GameManager/BuildingManager" method="_on_building_state_exited"]
@@ -985,6 +1038,8 @@ event = &"furnishing_back"
 [connection signal="state_entered" from="GameManager/StateManager/GameState/Editing/DeletingRoom" to="GameManager/EditingManager" method="_on_deleting_room_state_entered"]
 [connection signal="state_exited" from="GameManager/StateManager/GameState/Editing/DeletingRoom" to="GameManager/EditingManager" method="_on_deleting_room_state_exited"]
 [connection signal="state_input" from="GameManager/StateManager/GameState/Editing/DeletingRoom" to="GameManager/EditingManager" method="_on_deleting_room_state_input"]
+[connection signal="state_entered" from="GameManager/StateManager/GameState/Crew" to="GameManager" method="_on_crew_state_entered"]
+[connection signal="state_exited" from="GameManager/StateManager/GameState/Crew" to="GameManager" method="_on_crew_state_exited"]
 [connection signal="state_input" from="GameManager/StateManager/GameState/Crew/SelectingRoom" to="GameManager" method="_on_selecting_room_state_input"]
 [connection signal="state_entered" from="GameManager/StateManager/GameState/Furnishing/SelectingFurniture" to="GameManager/FurnishingManager" method="_on_selecting_furniture_state_entered"]
 [connection signal="state_exited" from="GameManager/StateManager/GameState/Furnishing/SelectingFurniture" to="GameManager/FurnishingManager" method="_on_selecting_furniture_state_exited"]
@@ -993,3 +1048,9 @@ event = &"furnishing_back"
 [connection signal="state_exited" from="GameManager/StateManager/GameState/Furnishing/PlacingFurniture" to="GameManager/FurnishingManager" method="_on_placing_furniture_state_exited"]
 [connection signal="state_input" from="GameManager/StateManager/GameState/Furnishing/PlacingFurniture" to="GameManager/FurnishingManager" method="_on_placing_furniture_state_input"]
 [connection signal="state_processing" from="GameManager/StateManager/GameState/Furnishing/PlacingFurniture" to="GameManager/FurnishingManager" method="_on_placing_furniture_state_processing"]
+[connection signal="state_entered" from="GameManager/StateManager/GameState/InspectingFurniture" to="GameManager" method="_on_inspecting_furniture_state_entered"]
+[connection signal="state_exited" from="GameManager/StateManager/GameState/InspectingFurniture" to="GameManager" method="_on_inspecting_furniture_state_exited"]
+[connection signal="state_input" from="GameManager/StateManager/GameState/InspectingFurniture" to="GameManager" method="_on_inspecting_furniture_state_input"]
+[connection signal="state_entered" from="GameManager/StateManager/GameState/InspectingCrew" to="GameManager" method="_on_inspecting_crew_state_entered"]
+[connection signal="state_exited" from="GameManager/StateManager/GameState/InspectingCrew" to="GameManager" method="_on_inspecting_crew_state_exited"]
+[connection signal="state_input" from="GameManager/StateManager/GameState/InspectingCrew" to="GameManager" method="_on_inspecting_crew_state_input"]

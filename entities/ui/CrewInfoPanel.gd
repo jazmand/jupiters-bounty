@@ -9,38 +9,37 @@ class_name CrewInfoPanel extends PanelContainer
 @onready var info_age: Label = $CrewInfoContainer/InfoContainer/AgeLabel
 @onready var info_hometown: Label = $CrewInfoContainer/InfoContainer/HometownLabel
 
-@onready var idle_button: Button = $CrewInfoContainer/ActionContainer/IdleButton
+@onready var status_label: Label = $CrewInfoContainer/ActionContainer/StatusLabel
 @onready var assign_button: Button = $CrewInfoContainer/ActionContainer/AssignButton
 
 var crew: CrewMember = null
 
 func _ready() -> void:
+	# Enable mouse filtering to consume mouse events and prevent them from reaching game world
+	mouse_filter = Control.MOUSE_FILTER_STOP
 	hide()
-	Global.crew_selected.connect(open)
-	close_button.pressed.connect(close)
+	# CrewInfoPanel should open when entering inspecting_crew state
 	previous_button.pressed.connect(cycle_crew_members.bind(-1))
 	next_button.pressed.connect(cycle_crew_members.bind(1))
 
 func display_crew_info(crew_member: CrewMember) -> void:
-	idle_button.pressed.connect(start_idling)
 	assign_button.pressed.connect(start_assigning)
-	idle_button.disabled = crew_member.state == crew_member.STATE.IDLE
 	assign_button.disabled = false
 	name_edit.text = crew_member.data.name
 	info_age.text = "Age: %s" % crew_member.data.age
 	info_hometown.text = "Hometown: %s" % crew_member.data.hometown
+	update_status_display(crew_member.state)
 
 func reset_panel() -> void:
 	if crew == null:
 		return
-	idle_button.pressed.disconnect(start_idling)
 	assign_button.pressed.disconnect(start_assigning)
-	crew.state_transitioned.disconnect(update_available_actions)
+	crew.state_transitioned.disconnect(update_status_display)
 	crew = null
 
 func setup_new_panel(crew_member: CrewMember) -> void:
 	crew = crew_member
-	crew.state_transitioned.connect(update_available_actions)
+	crew.state_transitioned.connect(update_status_display)
 	display_crew_info(crew_member)
 
 func open(crew_member: CrewMember) -> void:
@@ -52,28 +51,36 @@ func close() -> void:
 	hide()
 	reset_panel()
 
-func start_idling() -> void:
-	crew.state_manager.send_event(&"idle")
-	idle_button.disabled = true
-	assign_button.disabled = !crew.can_assign()
-	hide()
 
 func start_assigning() -> void:
-	Global.crew_assigned.emit(crew)
-	idle_button.disabled = false
-	crew.state_manager.send_event(&"assign")
-	close()
+	# Instead of emitting crew_assigned (which just re-opens the panel),
+	# directly activate assignment mode in the GameManager
+	var game_manager = get_node("/root/Main/GameManager")
+	if game_manager and game_manager.has_method("activate_crew_assignment_mode"):
+		game_manager.activate_crew_assignment_mode(crew)
+		close()
+	else:
+		Global.crew_assigned.emit(crew)
+		crew.state_manager.send_event(&"assign")
+		close()
+	
+	# Consume the input event to prevent it from bubbling up to global handler
+	get_viewport().set_input_as_handled()
 
-func update_available_actions(state: StringName) -> void:
+func update_status_display(state: StringName) -> void:
+	## Update the status label to show crew's current activity
 	match state:
 		crew.STATE.IDLE:
-			idle_button.disabled = true
+			status_label.text = "Status: Idle"
 			assign_button.disabled = !crew.can_assign()
 		crew.STATE.WORK:
-			idle_button.disabled = false
+			status_label.text = "Status: Working"
 			assign_button.disabled = true
+		crew.STATE.WALK:
+			status_label.text = "Status: Moving"
+			assign_button.disabled = !crew.can_assign()
 		_:
-			idle_button.disabled = false
+			status_label.text = "Status: Unknown"
 			assign_button.disabled = !crew.can_assign()
 
 

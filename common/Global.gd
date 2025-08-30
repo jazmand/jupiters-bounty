@@ -17,6 +17,7 @@ var station: Station = load("res://assets/resources/station_resources.tres") as 
 var is_crew_input = false
 
 var selected_room: Room = null
+var inspected_furniture: Furniture = null
 
 func _ready() -> void:
 	GameTime.second.connect(station.update_hydrogen)

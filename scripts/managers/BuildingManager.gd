@@ -73,8 +73,10 @@ func _on_selecting_roomtype_state_exited() -> void:
 func _on_selecting_tile_state_input(event: InputEvent) -> void:
 	if event.is_action_pressed("select"):
 		room_builder.selecting_tile(selected_roomtype)
+		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("cancel"):
 		room_builder.clear_selected_roomtype()
+		get_viewport().set_input_as_handled()
 	elif event is InputEventMouseMotion:
 		room_builder.selecting_tile_motion()
 		
@@ -82,17 +84,21 @@ func _on_selecting_tile_state_input(event: InputEvent) -> void:
 func _on_drafting_room_state_input(event: InputEvent) -> void:
 	if event.is_action_pressed("select"):
 		room_builder.drafting_room()
+		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("cancel"):
 		room_builder.stop_drafting()
 		room_builder.selecting_tile_motion()
+		get_viewport().set_input_as_handled()
 	elif event is InputEventMouseMotion:
 		room_builder.drafting_room_motion()
 
 func _on_setting_door_state_input(event: InputEvent) -> void:
 	if event.is_action_pressed("select"):
 		room_builder.setting_door()
+		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("cancel"):
 		state_manager.send_event(BUILD_EVENTS[StateEvent.BUILDING_BACK])
+		get_viewport().set_input_as_handled()
 	elif event is InputEventMouseMotion:
 		room_builder.setting_door_motion()
 

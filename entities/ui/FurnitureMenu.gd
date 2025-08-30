@@ -18,11 +18,16 @@ func _on_room_edit_button_pressed():
 	pass
 
 func show_furniture_panel(furniture_types: Array[FurnitureType]) -> void:
+	# Ensure the panel and container consume mouse events to prevent them from bubbling to game world
+	furniture_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	furniture_container.mouse_filter = Control.MOUSE_FILTER_PASS  # Allow events to reach buttons
+
 	for furniture_type in furniture_types:
 		if furniture_type.name not in furniture_buttons:
 			furniture_buttons[furniture_type.name] = furniture_type
 			var button = Button.new()
 			button.text = furniture_type.name
+			button.mouse_filter = Control.MOUSE_FILTER_STOP  # Ensure button consumes mouse events
 			button.pressed.connect(_on_furniture_selected.bind(furniture_type)) # Must "bind" to pass param to a connect callback
 			furniture_container.add_child(button)
 	furniture_panel.show()

@@ -54,6 +54,7 @@ var idle_timer = 0.0
 var idle_time_limit = 2.0
 
 var workplace: Room
+var furniture_workplace: Furniture  # Store reference to assigned furniture
 var work_location: Vector2i
 
 func _ready() -> void:
@@ -185,13 +186,38 @@ func assign(room: Room, center: Vector2) -> void:
 	work_location = center
 	state_manager.send_event(&"assigned")
 
+func assign_to_furniture(furniture: Furniture, position: Vector2) -> void:
+	# Store furniture reference
+	furniture_workplace = furniture
+	work_location = position
+	state_manager.send_event(&"assigned")
+
+func unassign_from_furniture() -> void:
+	furniture_workplace = null
+	state_manager.send_event(&"unassigned")
+
 func go_to_work() -> void:
 	set_movement_target(work_location)
 	state_manager.set_expression_property(&"assignment", &"work")
 	state_manager.send_event(&"walk")
 	
 func is_assigned() -> bool:
-	return workplace != null
+	return workplace != null or furniture_workplace != null
+
+func get_assignment_type() -> String:
+	"""Get the type of assignment (room, furniture, or none)"""
+	if furniture_workplace != null:
+		return "furniture"
+	elif workplace != null:
+		return "room"
+	else:
+		return "none"
+
+func get_crew_info() -> Dictionary:
+	var info = {}
+	if data:
+		info["Name"] = data.name
+	return info
 	
 func is_within_working_hours() -> bool:
 	var current_time: int = GameTime.current_time_in_minutes()

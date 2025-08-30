@@ -1,7 +1,6 @@
 class_name RoomInfoPanel extends PanelContainer
 
 @onready var room_label: Label = $RoomInfoContainer/HeaderContainer/Label
-@onready var close_button: Button = $RoomInfoContainer/HeaderContainer/CloseButton
 
 @onready var previous_button: Button = $RoomInfoContainer/PortraitContainer/PreviousRoomButton
 @onready var next_button: Button = $RoomInfoContainer/PortraitContainer/NextRoomButton
@@ -22,8 +21,9 @@ var portraits: Dictionary = {
 var room: Room = null
 
 func _ready() -> void:
+	# Enable mouse filtering to consume mouse events and prevent them from reaching game world
+	mouse_filter = Control.MOUSE_FILTER_STOP
 	hide()
-	close_button.pressed.connect(close)
 	previous_button.pressed.connect(cycle_rooms.bind(-1))
 	next_button.pressed.connect(cycle_rooms.bind(1))
 	tab_container.set_tab_title(0, "Info")
