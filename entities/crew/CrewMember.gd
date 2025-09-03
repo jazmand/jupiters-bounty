@@ -2,7 +2,7 @@ class_name CrewMember extends CharacterBody2D
 
 signal state_transitioned(state: StringName)
 
-const DIRECTION = {
+const DIRECTIONS = {
 	UP = Vector2(0, -1),
 	UP_RIGHT = Vector2(1, -1),
 	RIGHT = Vector2(1, 0),
@@ -40,7 +40,9 @@ const STATE = {
 var data: CrewData
 
 var target = Vector2(0, 0)
-var current_direction = Vector2(0, 0)
+var current_move_direction = Vector2(0, 0)
+var current_animation_direction = Vector2(0, 0)
+var current_path_waypoint = Vector2(0, 0)
 
 var state = STATE.IDLE:
 	set(animation_state):
@@ -52,6 +54,20 @@ var current_animation = state + "_down"
 
 var idle_timer = 0.0
 var idle_time_limit = 2.0
+@export var idle_time_min: float = 0.8
+@export var idle_time_max: float = 3.0
+
+var speed_multiplier: float = 1.0
+
+@export var walk_segments_per_cycle_min: int = 1
+@export var walk_segments_per_cycle_max: int = 3
+
+var walk_segments_remaining: int = 0
+var assignment: StringName = &""
+
+const ANIMATION_SWITCH_ANGLE_DEGREES: float = 8.0
+const ANIMATION_SWITCH_ANGLE_COSINE: float = cos(deg_to_rad(ANIMATION_SWITCH_ANGLE_DEGREES))
+
 
 var workplace: Room
 var furniture_workplace: Furniture  # Store reference to assigned furniture
@@ -64,6 +80,13 @@ func _ready() -> void:
 	area.input_event.connect(_on_input_event)
 	area.mouse_entered.connect(func(): Global.is_crew_input = true)
 	area.mouse_exited.connect(func(): Global.is_crew_input = false)
+	# Randomise per-crew speed and initial idle phase to avoid synchronisation
+	speed_multiplier = randf_range(0.85, 1.15)
+	idle_time_limit = randf_range(idle_time_min, idle_time_max)
+	idle_timer = randf_range(0.0, idle_time_limit)
+	# Jitter the navigation timer start to spread work across framesß
+	navigation_timer.stop()
+	navigation_timer.start(randf_range(0.0, navigation_timer.wait_time))
 	
 func actor_setup():
 	await get_tree().physics_frame
@@ -81,29 +104,61 @@ func set_movement_target(movement_target: Vector2) -> void:
 	navigation_agent.target_position = movement_target
 
 func set_rounded_direction() -> void:
-	var direction = (navigation_agent.get_next_path_position() - global_position).normalized()
-	direction.x = roundi(direction.x)
-	direction.y = roundi(direction.y)
-	current_direction = direction
+	var to_next = (navigation_agent.get_next_path_position() - global_position)
+	# Movement direction (quantized) remains responsive
+	if to_next == Vector2.ZERO:
+		current_move_direction = Vector2.ZERO
+		return
+	var move_quantized = snap_to_eight_directions(to_next)
+	current_move_direction = move_quantized
+
+	# Lock animation direction to the current path segment: only change
+	# when the agent advances to a new next_path_position (i.e., a bend).
+	var next_pos = navigation_agent.get_next_path_position()
+	if current_animation_direction == Vector2.ZERO:
+		current_animation_direction = move_quantized
+		current_path_waypoint = next_pos
+		return
+	# If still on the same segment, keep current animation direction
+	if current_path_waypoint.distance_to(next_pos) <= 0.1:
+		return
+	# Segment changed: update animation direction to new segment and reset hold
+	current_animation_direction = move_quantized
+	current_path_waypoint = next_pos
+
+func snap_to_eight_directions(vec: Vector2) -> Vector2:
+	if vec == Vector2.ZERO:
+		return Vector2.ZERO
+	var v = vec.normalized()
+	var best_dir = DIRECTIONS.RIGHT
+	var best_dot = -INF
+	var dirs = [DIRECTIONS.RIGHT, DIRECTIONS.UP_RIGHT, DIRECTIONS.UP, DIRECTIONS.UP_LEFT, DIRECTIONS.LEFT, DIRECTIONS.DOWN_LEFT, DIRECTIONS.DOWN, DIRECTIONS.DOWN_RIGHT]
+	for d in dirs:
+		var dot = v.dot(d.normalized())
+		if dot > best_dot:
+			best_dot = dot
+			best_dir = d
+	return best_dir
 
 func set_current_animation() -> void:
 	var animation_state = STATE.WALK if state == STATE.WALK else STATE.IDLE
-	match current_direction:
-		DIRECTION.UP:
+	var dir_for_anim = current_animation_direction if current_animation_direction != Vector2.ZERO else current_move_direction
+	match dir_for_anim:
+		DIRECTIONS.UP:
 			current_animation = animation_state + "_up"
-		DIRECTION.UP_RIGHT:
+		DIRECTIONS.UP_RIGHT:
 			current_animation = animation_state + "_up_right"
-		DIRECTION.RIGHT:
+		DIRECTIONS.RIGHT:
 			current_animation = animation_state + "_right"
-		DIRECTION.DOWN_RIGHT:
+		DIRECTIONS.DOWN_RIGHT:
 			current_animation = animation_state + "_down_right"
-		DIRECTION.DOWN:
+		DIRECTIONS.DOWN:
 			current_animation = animation_state + "_down"
-		DIRECTION.DOWN_LEFT:
+		DIRECTIONS.DOWN_LEFT:
 			current_animation = animation_state + "_down_left"
-		DIRECTION.LEFT:
+		DIRECTIONS.LEFT:
 			current_animation = animation_state + "_left"
-		DIRECTION.UP_LEFT:
+		DIRECTIONS.UP_LEFT:
 			current_animation = animation_state + "_up_left"
 
 func set_sprite_visibility(animation_state: StringName) -> void:
@@ -133,18 +188,26 @@ func randomise_target_position_in_room() -> void:
 
 func _on_timer_timeout() -> void:
 	set_current_animation()
-	animation_player.play(current_animation)
+	if animation_player.current_animation != current_animation or not animation_player.is_playing():
+		animation_player.play(current_animation)
 
 func _on_idling_state_entered() -> void:
 	state = STATE.IDLE
 	navigation_agent.target_position = position
-	state_manager.set_expression_property(&"assignment", &"")
+	assignment = &""
+	state_manager.set_expression_property(&"assignment", assignment)
+	# Randomise idle duration each cycle
+	idle_time_limit = randf_range(idle_time_min, idle_time_max)
+	idle_timer = 0.0
+	current_animation_direction = Vector2.ZERO
 
 func _on_idling_state_physics_processing(delta: float) -> void:
 	idle_timer += delta
 	if idle_timer >= idle_time_limit:
 		state_manager.send_event(&"walk")
 		idle_timer = 0.0
+		# Set number of walk segments for this free-walk cycle
+		walk_segments_remaining = randi_range(walk_segments_per_cycle_min, walk_segments_per_cycle_max)
 		randomise_target_position()
 
 func _on_walking_state_entered() -> void:
@@ -152,12 +215,18 @@ func _on_walking_state_entered() -> void:
 
 func _on_walking_state_physics_processing(_delta: float) -> void:
 	if navigation_agent.is_navigation_finished():
-		state_manager.send_event(&"to_assignment")
-		return
+		# If walking freely (not heading to work), optionally chain additional targets
+		if assignment == &"" and walk_segments_remaining > 1:
+			walk_segments_remaining -= 1
+			randomise_target_position()
+			return
+		else:
+			state_manager.send_event(&"to_assignment")
+			return
 	
 	set_rounded_direction()
 	#velocity = velocity.lerp(current_direction.normalized() * speed, 1.0)
-	velocity = current_direction.normalized() * speed
+	velocity = current_move_direction.normalized() * (speed * speed_multiplier)
 	var collision = move_and_collide(velocity)
 	
 	#var collision = move_and_slide()
@@ -198,7 +267,10 @@ func unassign_from_furniture() -> void:
 
 func go_to_work() -> void:
 	set_movement_target(work_location)
-	state_manager.set_expression_property(&"assignment", &"work")
+	assignment = &"work"
+	state_manager.set_expression_property(&"assignment", assignment)
+	# Don't chain segments when heading to work
+	walk_segments_remaining = 1
 	state_manager.send_event(&"walk")
 	
 func is_assigned() -> bool:
