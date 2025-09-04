@@ -313,17 +313,16 @@ text = "Add Crew
 
 [node name="CrewInfoPanel" type="PanelContainer" parent="GUIManager"]
 unique_name_in_owner = true
-visible = false
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.767
 anchor_top = 0.229
 anchor_right = 0.929
 anchor_bottom = 0.634
-offset_left = -0.640015
-offset_top = -0.320023
-offset_right = 0.319946
-offset_bottom = 0.279968
+offset_left = 1500.0
+offset_top = 250.0
+offset_right = 1750.0
+offset_bottom = 670.0
 script = ExtResource("20_d483j")
 
 [node name="CrewInfoContainer" type="VBoxContainer" parent="GUIManager/CrewInfoPanel"]
@@ -403,17 +402,16 @@ text = "Assign"
 
 [node name="FurnitureInfoPanel" type="PanelContainer" parent="GUIManager"]
 unique_name_in_owner = true
-visible = false
 layout_mode = 1
 anchors_preset = -1
 anchor_left = 0.767
 anchor_top = 0.229
 anchor_right = 0.929
 anchor_bottom = 0.634
-offset_left = -0.640015
-offset_top = -0.320023
-offset_right = 0.319946
-offset_bottom = 0.279968
+offset_left = 1500.0
+offset_top = 250.0
+offset_right = 1675.0
+offset_bottom = 389.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_wegjk")
 script = ExtResource("23_furniture_info")
 

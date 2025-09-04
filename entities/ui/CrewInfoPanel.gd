@@ -12,6 +12,13 @@ class_name CrewInfoPanel extends PanelContainer
 @onready var status_label: Label = $CrewInfoContainer/ActionContainer/StatusLabel
 @onready var assign_button: Button = $CrewInfoContainer/ActionContainer/AssignButton
 
+@onready var info_container: VBoxContainer = $CrewInfoContainer/InfoContainer
+
+var _stats_built: bool = false
+var _vigour_bar: ProgressBar
+var _appetite_bar: ProgressBar
+var _contentment_bar: ProgressBar
+
 var crew: CrewMember = null
 
 func _ready() -> void:
@@ -26,8 +33,10 @@ func display_crew_info(crew_member: CrewMember) -> void:
 	assign_button.pressed.connect(start_assigning)
 	assign_button.disabled = false
 	name_edit.text = crew_member.data.name
-	info_age.text = "Age: %s" % crew_member.data.age
-	info_hometown.text = "Hometown: %s" % crew_member.data.hometown
+	# Build stat rows once, then update values each time
+	if not _stats_built:
+		_build_stat_rows()
+	_update_stat_rows(crew_member)
 	update_status_display(crew_member.state)
 
 func reset_panel() -> void:
@@ -101,3 +110,44 @@ func get_cycled_idx(next_idx: int, crew_size: int) -> int:
 	elif next_idx < 0:
 		next_idx += crew_size
 	return next_idx
+
+func _build_stat_rows() -> void:
+	# Hide legacy labels used for age/hometown
+	info_age.hide()
+	info_hometown.hide()
+
+	_vigour_bar = _make_stat_row("Vigour", Color(0.35, 0.8, 0.45))       # greenish
+	_appetite_bar = _make_stat_row("Appetite", Color(0.95, 0.6, 0.2))    # orange
+	_contentment_bar = _make_stat_row("Contentment", Color(0.45, 0.6, 0.95)) # blueish
+
+	_stats_built = true
+
+func _update_stat_rows(crew_member: CrewMember) -> void:
+	if not _stats_built:
+		return
+	_vigour_bar.value = int(crew_member.data.vigour)
+	_appetite_bar.value = int(crew_member.data.appetite)
+	_contentment_bar.value = int(crew_member.data.contentment)
+
+func _make_stat_row(label_text: String, fill_color: Color) -> ProgressBar:
+	var row := HBoxContainer.new()
+	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	row.alignment = BoxContainer.ALIGNMENT_BEGIN
+
+	var lbl := Label.new()
+	lbl.text = label_text
+	lbl.custom_minimum_size = Vector2(140, 0)
+	row.add_child(lbl)
+
+	var bar := ProgressBar.new()
+	bar.max_value = 10
+	bar.step = 1
+	bar.show_percentage = false
+	bar.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = fill_color
+	bar.add_theme_stylebox_override("fill", fill)
+	row.add_child(bar)
+
+	info_container.add_child(row)
+	return bar

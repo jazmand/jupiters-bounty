@@ -417,14 +417,16 @@ func _on_inspecting_crew_state_entered() -> void:
 	hide_all_panels()
 
 	# Show crew info panel for the selected crew
-	if gui.crew_info_panel and selected_crew:
-		gui.crew_info_panel.open(selected_crew)
+	var panel = _get_crew_info_panel()
+	if panel and selected_crew:
+		panel.open(selected_crew)
 		print("DEBUG: ✅ Opened crew info panel for: ", selected_crew.data.name)
 
 func _on_inspecting_crew_state_exited() -> void:
 	# Hide crew info panel
-	if gui.crew_info_panel:
-		gui.crew_info_panel.close()
+	var panel = _get_crew_info_panel()
+	if panel:
+		panel.close()
 	
 	# Clear selected crew and reset assignment mode
 	selected_crew = null
