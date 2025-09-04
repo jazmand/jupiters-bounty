@@ -11,6 +11,7 @@ font = SubResource("SystemFont_1dxa0")
 font_size = 25
 
 [node name="GUIPopup" type="Panel"]
+top_level = true
 offset_left = 640.0
 offset_top = 384.0
 offset_right = 1280.0
