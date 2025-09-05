@@ -28,6 +28,7 @@ func _ready() -> void:
 	# CrewInfoPanel should open when entering inspecting_crew state
 	previous_button.pressed.connect(cycle_crew_members.bind(-1))
 	next_button.pressed.connect(cycle_crew_members.bind(1))
+	set_process(true)
 
 func display_crew_info(crew_member: CrewMember) -> void:
 	assign_button.pressed.connect(start_assigning)
@@ -80,7 +81,7 @@ func update_status_display(state: StringName) -> void:
 	## Update the status label to show crew's current activity
 	match state:
 		crew.STATE.IDLE:
-			status_label.text = "Status: Idle"
+			status_label.text = "Status: Idle (Ready)"
 			assign_button.disabled = !crew.can_assign()
 		crew.STATE.WORK:
 			status_label.text = "Status: Working"
@@ -88,6 +89,12 @@ func update_status_display(state: StringName) -> void:
 		crew.STATE.WALK:
 			status_label.text = "Status: Moving"
 			assign_button.disabled = !crew.can_assign()
+		crew.STATE.REST:
+			if crew.data.vigour < 10:
+				status_label.text = "Status: Resting (Recovering Energy)"
+			else:
+				status_label.text = "Status: Resting (Fully Recovered)"
+			assign_button.disabled = true
 		_:
 			status_label.text = "Status: Unknown"
 			assign_button.disabled = !crew.can_assign()
@@ -110,6 +117,11 @@ func get_cycled_idx(next_idx: int, crew_size: int) -> int:
 	elif next_idx < 0:
 		next_idx += crew_size
 	return next_idx
+
+func _process(_delta: float) -> void:
+	# Live-update stat bars while panel is visible
+	if visible and crew != null and _stats_built:
+		_update_stat_rows(crew)
 
 func _build_stat_rows() -> void:
 	# Hide legacy labels used for age/hometown

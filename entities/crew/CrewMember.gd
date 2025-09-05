@@ -17,7 +17,8 @@ const STATE = {
 	IDLE = &"idle",
 	WALK = &"walk",
 	WORK = &"work",
-	CHAT = &"chat"
+	CHAT = &"chat",
+	REST = &"rest"
 }
 
 @export var speed: int = 5
@@ -67,8 +68,12 @@ var speed_multiplier: float = 1.0
 var walk_segments_remaining: int = 0
 var assignment: StringName = &""
 
-const ANIMATION_SWITCH_ANGLE_DEGREES: float = 8.0
-const ANIMATION_SWITCH_ANGLE_COSINE: float = cos(deg_to_rad(ANIMATION_SWITCH_ANGLE_DEGREES))
+# Vigour and fatigue tuning (quick rates for testing)
+const MAX_VIGOUR: int = 10
+const VIGOUR_LOW_THRESHOLD: int = 2
+const FATIGUE_SPEED_SCALE: float = 0.5
+const WALK_VIGOUR_TICK_S: float = 1.0
+const REST_VIGOUR_TICK_S: float = 0.2  # 4x faster than walking (0.8 / 4)
 
 
 var is_speaking: bool = false
@@ -76,6 +81,17 @@ var is_speaking: bool = false
 var workplace: Room
 var furniture_workplace: Furniture  # Store reference to assigned furniture
 var work_location: Vector2i
+
+var vigour_walk_accum: float = 0.0
+var vigour_rest_accum: float = 0.0
+var is_resting: bool = false
+var resting_direction: Vector2 = Vector2.ZERO
+
+# Minimum time guards to prevent rapid state cycling
+var rest_start_time: float = 0.0
+const MIN_REST_TIME: float = 2.0  # Minimum 2 seconds of rest
+var walk_start_time: float = 0.0
+const MIN_WALK_TIME: float = 1.0  # Minimum 1 second of walking
 
 func _ready() -> void:
 	data = CrewData.new()
@@ -147,9 +163,20 @@ func snap_to_eight_directions(vec: Vector2) -> Vector2:
 	return best_dir
 
 func set_current_animation() -> void:
-	var animation_state = STATE.WALK if state == STATE.WALK else STATE.IDLE
+	# Special handling for resting - use idle animation with resting direction
+	if is_resting:
+		var dir_for_anim = resting_direction if resting_direction != Vector2.ZERO else DIRECTIONS.DOWN
+		_set_animation_for_direction(STATE.IDLE, dir_for_anim)
+		return
+
+	var animation_state = STATE.IDLE  # Default to idle for all non-walking states
+	if state == STATE.WALK:
+		animation_state = STATE.WALK
 	var dir_for_anim = current_animation_direction if current_animation_direction != Vector2.ZERO else current_move_direction
-	match dir_for_anim:
+	_set_animation_for_direction(animation_state, dir_for_anim)
+
+func _set_animation_for_direction(animation_state: StringName, direction: Vector2) -> void:
+	match direction:
 		DIRECTIONS.UP:
 			current_animation = animation_state + "_up"
 		DIRECTIONS.UP_RIGHT:
@@ -167,6 +194,18 @@ func set_current_animation() -> void:
 		DIRECTIONS.UP_LEFT:
 			current_animation = animation_state + "_up_left"
 
+func _update_animation_speed() -> void:
+	# Adjust animation playback speed when fatigued or resting
+	if is_resting:
+		# Stop animation when resting
+		animation_player.speed_scale = 0.0
+	elif data.vigour <= VIGOUR_LOW_THRESHOLD:
+		# Slow animation when fatigued (vigour <= 2)
+		animation_player.speed_scale = FATIGUE_SPEED_SCALE
+	else:
+		# Normal animation speed
+		animation_player.speed_scale = 1.0
+
 func set_sprite_visibility(animation_state: StringName) -> void:
 	match animation_state:
 		STATE.IDLE:
@@ -178,13 +217,29 @@ func set_sprite_visibility(animation_state: StringName) -> void:
 		STATE.WORK:
 			sprite_idle.show()
 			sprite_walk.hide()
+		STATE.REST:
+			# Use idle visuals for resting (no dedicated rest sprites yet)
+			sprite_idle.show()
+			sprite_walk.hide()
 
 func randomise_target_position() -> void:
+	const MIN_DISTANCE = 200.0  # Minimum distance from current position
+	var attempts = 0
+	const MAX_ATTEMPTS = 10
+
+	while attempts < MAX_ATTEMPTS:
+		target = Vector2(randf_range(2500.0, 6500.0), randf_range(1500.0, 3000.0))
+
+		# Ensure target is far enough from current position
+		if position.distance_to(target) >= MIN_DISTANCE:
+			set_movement_target(target)
+			if navigation_agent.is_target_reachable():
+				return
+		attempts += 1
+
+	# Fallback: if we can't find a good target, use any reachable one
 	target = Vector2(randf_range(2500.0, 6500.0), randf_range(1500.0, 3000.0))
 	set_movement_target(target)
-	while !navigation_agent.is_target_reachable():
-		target = Vector2(randf_range(2500.0, 6500.0), randf_range(1500.0, 3000.0))
-		set_movement_target(target)
 
 func randomise_target_position_in_room() -> void:
 	# get crew member assigned room
@@ -196,6 +251,11 @@ func _on_timer_timeout() -> void:
 	set_current_animation()
 	if animation_player.current_animation != current_animation or not animation_player.is_playing():
 		animation_player.play(current_animation)
+	_update_animation_speed()
+	
+	# If resting, pause the animation to prevent walking in place
+	if is_resting:
+		animation_player.pause()
 
 func say(text: String, duration: float = 2.5) -> void:
 	if is_speaking:
@@ -312,9 +372,21 @@ func _on_idling_state_physics_processing(delta: float) -> void:
 		randomise_target_position()
 
 func _on_walking_state_entered() -> void:
-	state = STATE.WALK
+	# Don't override state if resting
+	if not is_resting:
+		state = STATE.WALK
+	walk_start_time = Time.get_ticks_msec() / 1000.0  # Convert to seconds
+	# Always generate a new target when entering walking state from rest
+	randomise_target_position()
+	walk_segments_remaining = randi_range(walk_segments_per_cycle_min, walk_segments_per_cycle_max)
 
 func _on_walking_state_physics_processing(_delta: float) -> void:
+	# Handle resting when vigour is 0 or already resting
+	if data.vigour == 0 or is_resting:
+		_handle_resting(_delta)
+		return
+	
+	# Handle navigation completion only if not exhausted
 	if navigation_agent.is_navigation_finished():
 		# If walking freely (not heading to work), optionally chain additional targets
 		if assignment == &"" and walk_segments_remaining > 1:
@@ -324,24 +396,106 @@ func _on_walking_state_physics_processing(_delta: float) -> void:
 		else:
 			state_manager.send_event(&"to_assignment")
 			return
-	
+
 	set_rounded_direction()
-	#velocity = velocity.lerp(current_direction.normalized() * speed, 1.0)
-	velocity = current_move_direction.normalized() * (speed * speed_multiplier)
+	var current_speed_scale = speed_multiplier
+	
+	# Apply speed scaling based on vigour level (only fatigue, since vigour=0 is handled above)
+	if data.vigour <= VIGOUR_LOW_THRESHOLD:
+		current_speed_scale *= FATIGUE_SPEED_SCALE
+	
+	velocity = current_move_direction.normalized() * (speed * current_speed_scale)
 	var collision = move_and_collide(velocity)
 	if collision:
 		_handle_collision_speech(collision)
-		#velocity = -current_direction.normalized() * speed
-		#move_and_collide(velocity)
-		#var x = -navigation_agent.target_position.x
-		#var y = -navigation_agent.target_position.y
-		#set_movement_target(Vector2(x,y))
+
+	# Fatigue: decrease vigour over time while walking
+	vigour_walk_accum += _delta
+	if vigour_walk_accum >= WALK_VIGOUR_TICK_S:
+		vigour_walk_accum = 0.0
+		data.vigour = max(0, data.vigour - 1)
+		state_manager.set_expression_property(&"vigour", data.vigour)
 
 func _on_working_state_entered() -> void:
 	state = STATE.WORK
 
 func _on_working_state_physics_processing(_delta: float) -> void:
 	randomise_target_position_in_room()
+
+func _on_resting_state_entered() -> void:
+	state = STATE.REST
+	rest_start_time = Time.get_ticks_msec() / 1000.0  # Convert to seconds
+	# Use idle visuals while resting
+	set_sprite_visibility(STATE.REST)
+	current_move_direction = Vector2.ZERO
+	current_animation_direction = Vector2.ZERO
+	# Cancel any current path and stop movement while resting
+	navigation_agent.target_position = position
+	velocity = Vector2.ZERO
+	vigour_walk_accum = 0.0
+	state_manager.set_expression_property(&"vigour", data.vigour)
+	current_animation = STATE.IDLE + "_down"
+	if animation_player.current_animation != current_animation or not animation_player.is_playing():
+		animation_player.play(current_animation)
+
+
+func _on_resting_state_physics_processing(delta: float) -> void:
+	_tick_resting(delta)
+
+func _tick_resting(delta: float) -> void:
+	# Recover vigour fully while resting, then unlock walking
+	vigour_rest_accum += delta
+	if vigour_rest_accum >= REST_VIGOUR_TICK_S:
+		vigour_rest_accum = 0.0
+		data.vigour = min(MAX_VIGOUR, data.vigour + 1)
+		state_manager.set_expression_property(&"vigour", data.vigour)
+
+	# Only transition back to walking when:
+	# 1. Fully recovered (vigour == 10) AND
+	# 2. Minimum rest time has passed (prevent rapid cycling)
+	var current_time = Time.get_ticks_msec() / 1000.0  # Convert to seconds
+	var rest_duration = current_time - rest_start_time
+
+	# This function is no longer used - resting is handled in _handle_resting()
+	# Removing the state transition to prevent conflicts
+
+func _handle_resting(delta: float) -> void:
+	# Start resting if not already
+	if not is_resting:
+		is_resting = true
+		# Store the current direction when entering rest
+		resting_direction = current_animation_direction if current_animation_direction != Vector2.ZERO else current_move_direction
+		if resting_direction == Vector2.ZERO:
+			resting_direction = DIRECTIONS.DOWN  # Default to facing down
+		# Emit state change to REST for UI updates
+		state_transitioned.emit(STATE.REST)
+	
+	# Stop all movement and show resting behavior
+	velocity = Vector2.ZERO
+	navigation_agent.target_position = position
+	current_move_direction = Vector2.ZERO
+	# Keep the same direction while resting
+	current_animation_direction = resting_direction
+	
+	# Recover vigour while resting
+	vigour_rest_accum += delta
+	if vigour_rest_accum >= REST_VIGOUR_TICK_S:
+		vigour_rest_accum = 0.0
+		data.vigour = min(MAX_VIGOUR, data.vigour + 1)
+		state_manager.set_expression_property(&"vigour", data.vigour)
+		
+		# When fully recovered, resume walking
+		if data.vigour >= MAX_VIGOUR:
+			is_resting = false
+			resting_direction = Vector2.ZERO  # Clear the resting direction
+			# Set state to WALK BEFORE updating animation
+			state = STATE.WALK
+			# Force immediate animation update to walking
+			set_current_animation()
+			animation_player.play(current_animation)
+			animation_player.speed_scale = 1.0
+			# Generate a new target to resume walking
+			randomise_target_position()
 
 func _on_working_state_exited() -> void:
 	pass
