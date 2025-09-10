@@ -39,6 +39,7 @@ const STATE = {
 @onready var sprite_idle: Sprite2D = $AgathaIdle
 @onready var sprite_walk: Sprite2D = $AgathaWalk
 @onready var area: Area2D = $BodyArea
+@onready var crew_vigour: CrewVigour = $CrewVigour
 
 var data: CrewData
 
@@ -68,12 +69,7 @@ var speed_multiplier: float = 1.0
 var walk_segments_remaining: int = 0
 var assignment: StringName = &""
 
-# Vigour and fatigue tuning (quick rates for testing)
-const MAX_VIGOUR: int = 10
-const VIGOUR_LOW_THRESHOLD: int = 2
-const FATIGUE_SPEED_SCALE: float = 0.5
-const WALK_VIGOUR_TICK_S: float = 1.0
-const REST_VIGOUR_TICK_S: float = 0.2  # 4x faster than walking (0.8 / 4)
+# Vigour constants moved to CrewVigour component
 
 
 var is_speaking: bool = false
@@ -82,14 +78,9 @@ var workplace: Room
 var furniture_workplace: Furniture  # Store reference to assigned furniture
 var work_location: Vector2i
 
-var vigour_walk_accum: float = 0.0
-var vigour_rest_accum: float = 0.0
-var is_resting: bool = false
-var resting_direction: Vector2 = Vector2.ZERO
+# Vigour variables moved to CrewVigour component
 
-# Minimum time guards to prevent rapid state cycling
-var rest_start_time: float = 0.0
-const MIN_REST_TIME: float = 2.0  # Minimum 2 seconds of rest
+# Walk timing (keep for now, may move to CrewMovement later)
 var walk_start_time: float = 0.0
 const MIN_WALK_TIME: float = 1.0  # Minimum 1 second of walking
 
@@ -100,6 +91,14 @@ func _ready() -> void:
 	area.input_event.connect(_on_input_event)
 	area.mouse_entered.connect(func(): Global.is_crew_input = true)
 	area.mouse_exited.connect(func(): Global.is_crew_input = false)
+	
+	# Initialize CrewVigour component
+	crew_vigour.initialize(data.vigour)
+	crew_vigour.vigour_changed.connect(_on_vigour_changed)
+	crew_vigour.resting_started.connect(_on_resting_started)
+	crew_vigour.resting_finished.connect(_on_resting_finished)
+	crew_vigour.fatigue_level_changed.connect(_on_fatigue_level_changed)
+	
 	# Randomise per-crew speed and initial idle phase to avoid synchronisation
 	speed_multiplier = randf_range(0.85, 1.15)
 	idle_time_limit = randf_range(idle_time_min, idle_time_max)
@@ -164,8 +163,10 @@ func snap_to_eight_directions(vec: Vector2) -> Vector2:
 
 func set_current_animation() -> void:
 	# Special handling for resting - use idle animation with resting direction
-	if is_resting:
-		var dir_for_anim = resting_direction if resting_direction != Vector2.ZERO else DIRECTIONS.DOWN
+	if crew_vigour.is_resting:
+		var dir_for_anim = crew_vigour.get_resting_direction()
+		if dir_for_anim == Vector2.ZERO:
+			dir_for_anim = DIRECTIONS.DOWN
 		_set_animation_for_direction(STATE.IDLE, dir_for_anim)
 		return
 
@@ -195,16 +196,9 @@ func _set_animation_for_direction(animation_state: StringName, direction: Vector
 			current_animation = animation_state + "_up_left"
 
 func _update_animation_speed() -> void:
-	# Adjust animation playback speed when fatigued or resting
-	if is_resting:
-		# Stop animation when resting
-		animation_player.speed_scale = 0.0
-	elif data.vigour <= VIGOUR_LOW_THRESHOLD:
-		# Slow animation when fatigued (vigour <= 2)
-		animation_player.speed_scale = FATIGUE_SPEED_SCALE
-	else:
-		# Normal animation speed
-		animation_player.speed_scale = 1.0
+	# Get animation speed from CrewVigour component
+	var speed_scale = crew_vigour.get_fatigue_scale()
+	animation_player.speed_scale = speed_scale
 
 func set_sprite_visibility(animation_state: StringName) -> void:
 	match animation_state:
@@ -254,7 +248,7 @@ func _on_timer_timeout() -> void:
 	_update_animation_speed()
 	
 	# If resting, pause the animation to prevent walking in place
-	if is_resting:
+	if crew_vigour.is_resting:
 		animation_player.pause()
 
 func say(text: String, duration: float = 2.5) -> void:
@@ -373,7 +367,7 @@ func _on_idling_state_physics_processing(delta: float) -> void:
 
 func _on_walking_state_entered() -> void:
 	# Don't override state if resting
-	if not is_resting:
+	if not crew_vigour.is_resting:
 		state = STATE.WALK
 	walk_start_time = Time.get_ticks_msec() / 1000.0  # Convert to seconds
 	# Always generate a new target when entering walking state from rest
@@ -382,8 +376,13 @@ func _on_walking_state_entered() -> void:
 
 func _on_walking_state_physics_processing(_delta: float) -> void:
 	# Handle resting when vigour is 0 or already resting
-	if data.vigour == 0 or is_resting:
-		_handle_resting(_delta)
+	if crew_vigour.should_rest() or crew_vigour.is_resting:
+		crew_vigour.process_resting(_delta, current_animation_direction, current_move_direction)
+		# Stop all movement during rest
+		velocity = Vector2.ZERO
+		navigation_agent.target_position = position
+		current_move_direction = Vector2.ZERO
+		current_animation_direction = crew_vigour.get_resting_direction()
 		return
 	
 	# Handle navigation completion only if not exhausted
@@ -398,23 +397,18 @@ func _on_walking_state_physics_processing(_delta: float) -> void:
 			return
 
 	set_rounded_direction()
-	var current_speed_scale = speed_multiplier
 	
-	# Apply speed scaling based on vigour level (only fatigue, since vigour=0 is handled above)
-	if data.vigour <= VIGOUR_LOW_THRESHOLD:
-		current_speed_scale *= FATIGUE_SPEED_SCALE
+	# Get speed scale from CrewVigour component (handles fatigue)
+	var fatigue_scale = crew_vigour.get_fatigue_scale()
+	var current_speed_scale = speed_multiplier * fatigue_scale
 	
 	velocity = current_move_direction.normalized() * (speed * current_speed_scale)
 	var collision = move_and_collide(velocity)
 	if collision:
 		_handle_collision_speech(collision)
 
-	# Fatigue: decrease vigour over time while walking
-	vigour_walk_accum += _delta
-	if vigour_walk_accum >= WALK_VIGOUR_TICK_S:
-		vigour_walk_accum = 0.0
-		data.vigour = max(0, data.vigour - 1)
-		state_manager.set_expression_property(&"vigour", data.vigour)
+	# Process vigour depletion while walking
+	crew_vigour.process_walking(_delta)
 
 func _on_working_state_entered() -> void:
 	state = STATE.WORK
@@ -422,80 +416,9 @@ func _on_working_state_entered() -> void:
 func _on_working_state_physics_processing(_delta: float) -> void:
 	randomise_target_position_in_room()
 
-func _on_resting_state_entered() -> void:
-	state = STATE.REST
-	rest_start_time = Time.get_ticks_msec() / 1000.0  # Convert to seconds
-	# Use idle visuals while resting
-	set_sprite_visibility(STATE.REST)
-	current_move_direction = Vector2.ZERO
-	current_animation_direction = Vector2.ZERO
-	# Cancel any current path and stop movement while resting
-	navigation_agent.target_position = position
-	velocity = Vector2.ZERO
-	vigour_walk_accum = 0.0
-	state_manager.set_expression_property(&"vigour", data.vigour)
-	current_animation = STATE.IDLE + "_down"
-	if animation_player.current_animation != current_animation or not animation_player.is_playing():
-		animation_player.play(current_animation)
+# Old resting functions removed - functionality moved to CrewVigour component
 
-
-func _on_resting_state_physics_processing(delta: float) -> void:
-	_tick_resting(delta)
-
-func _tick_resting(delta: float) -> void:
-	# Recover vigour fully while resting, then unlock walking
-	vigour_rest_accum += delta
-	if vigour_rest_accum >= REST_VIGOUR_TICK_S:
-		vigour_rest_accum = 0.0
-		data.vigour = min(MAX_VIGOUR, data.vigour + 1)
-		state_manager.set_expression_property(&"vigour", data.vigour)
-
-	# Only transition back to walking when:
-	# 1. Fully recovered (vigour == 10) AND
-	# 2. Minimum rest time has passed (prevent rapid cycling)
-	var current_time = Time.get_ticks_msec() / 1000.0  # Convert to seconds
-	var rest_duration = current_time - rest_start_time
-
-	# This function is no longer used - resting is handled in _handle_resting()
-	# Removing the state transition to prevent conflicts
-
-func _handle_resting(delta: float) -> void:
-	# Start resting if not already
-	if not is_resting:
-		is_resting = true
-		# Store the current direction when entering rest
-		resting_direction = current_animation_direction if current_animation_direction != Vector2.ZERO else current_move_direction
-		if resting_direction == Vector2.ZERO:
-			resting_direction = DIRECTIONS.DOWN  # Default to facing down
-		# Emit state change to REST for UI updates
-		state_transitioned.emit(STATE.REST)
-	
-	# Stop all movement and show resting behavior
-	velocity = Vector2.ZERO
-	navigation_agent.target_position = position
-	current_move_direction = Vector2.ZERO
-	# Keep the same direction while resting
-	current_animation_direction = resting_direction
-	
-	# Recover vigour while resting
-	vigour_rest_accum += delta
-	if vigour_rest_accum >= REST_VIGOUR_TICK_S:
-		vigour_rest_accum = 0.0
-		data.vigour = min(MAX_VIGOUR, data.vigour + 1)
-		state_manager.set_expression_property(&"vigour", data.vigour)
-		
-		# When fully recovered, resume walking
-		if data.vigour >= MAX_VIGOUR:
-			is_resting = false
-			resting_direction = Vector2.ZERO  # Clear the resting direction
-			# Set state to WALK BEFORE updating animation
-			state = STATE.WALK
-			# Force immediate animation update to walking
-			set_current_animation()
-			animation_player.play(current_animation)
-			animation_player.speed_scale = 1.0
-			# Generate a new target to resume walking
-			randomise_target_position()
+# _handle_resting function moved to CrewVigour component
 
 func _on_working_state_exited() -> void:
 	pass
@@ -530,7 +453,6 @@ func is_assigned() -> bool:
 	return workplace != null or furniture_workplace != null
 
 func get_assignment_type() -> String:
-	"""Get the type of assignment (room, furniture, or none)"""
 	if furniture_workplace != null:
 		return "furniture"
 	elif workplace != null:
@@ -550,3 +472,24 @@ func is_within_working_hours() -> bool:
 	var after_starts_work = current_time >= ((starts_work_hour * 60) + starts_work_minute)
 	var before_stops_work = current_time < ((stops_work_hour * 60) + stops_work_minute) 
 	return after_starts_work and before_stops_work
+
+# CrewVigour component signal handlers
+func _on_vigour_changed(new_vigour: int) -> void:
+	data.vigour = new_vigour
+	state_manager.set_expression_property(&"vigour", new_vigour)
+
+func _on_resting_started() -> void:
+	state_transitioned.emit(STATE.REST)
+
+func _on_resting_finished() -> void:
+	state = STATE.WALK
+	# Force immediate animation update to walking
+	set_current_animation()
+	animation_player.play(current_animation)
+	animation_player.speed_scale = 1.0
+	# Generate a new target to resume walking
+	randomise_target_position()
+
+func _on_fatigue_level_changed(is_fatigued: bool) -> void:
+	# Could be used for future fatigue effects
+	pass

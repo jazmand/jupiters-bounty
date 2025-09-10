@@ -1,4 +1,4 @@
-[gd_scene load_steps=39 format=3 uid="uid://6ddc1y0q3bhc"]
+[gd_scene load_steps=43 format=3 uid="uid://6ddc1y0q3bhc"]
 
 [ext_resource type="Script" path="res://entities/crew/CrewMember.gd" id="1_jot6k"]
 [ext_resource type="Texture2D" uid="uid://dhxmp0xpmlnfc" path="res://assets/sprites/idle_agatha.png" id="2_fs5c3"]
@@ -15,6 +15,10 @@
 [ext_resource type="Script" path="res://common/ai/utility/consideration/UtilityAICurveConsideration.gd" id="13_lbf4u"]
 [ext_resource type="Script" path="res://entities/crew/ai/actions/WorkAction.gd" id="14_e63tw"]
 [ext_resource type="Script" path="res://common/ai/utility/consideration/UtilityAIBooleanConsideration.gd" id="15_82tfv"]
+[ext_resource type="Script" path="res://entities/crew/components/CrewVigour.gd" id="16_vigour"]
+[ext_resource type="Script" path="res://entities/crew/components/CrewMovement.gd" id="17_movement"]
+[ext_resource type="Script" path="res://entities/crew/components/CrewAnimation.gd" id="18_animation"]
+[ext_resource type="Script" path="res://entities/crew/components/CrewSpeech.gd" id="19_speech"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_6x332"]
 radius = 40.0125
@@ -444,6 +448,18 @@ metadata/_edit_lock_ = true
 position = Vector2(-1, -123)
 shape = SubResource("CapsuleShape2D_ynwli")
 debug_color = Color(0.678431, 0.356863, 0.894118, 0.419608)
+
+[node name="CrewVigour" type="Node" parent="."]
+script = ExtResource("16_vigour")
+
+[node name="CrewMovement" type="Node" parent="."]
+script = ExtResource("17_movement")
+
+[node name="CrewAnimation" type="Node" parent="."]
+script = ExtResource("18_animation")
+
+[node name="CrewSpeech" type="Node" parent="."]
+script = ExtResource("19_speech")
 
 [node name="CrewAI" type="Node" parent="."]
 script = ExtResource("10_wsqwl")
