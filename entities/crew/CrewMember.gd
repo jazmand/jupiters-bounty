@@ -21,6 +21,12 @@ const STATE = {
 	REST = &"rest"
 }
 
+# Collision layer constants - simplified to single layer
+const COLLISION_LAYERS = {
+	OBSTACLES = 1,  # Layer 1: All obstacles (walls, furniture)
+	CREW = 2        # Layer 2: Crew members
+}
+
 @export var speed: int = 5
 
 # TODO: temporary solution, will improve later
@@ -69,6 +75,12 @@ var speed_multiplier: float = 1.0
 var walk_segments_remaining: int = 0
 var assignment: StringName = &""
 
+# Collision avoidance variables
+var _avoidance_offset: Vector2 = Vector2.ZERO
+var _avoidance_timer: float = 0.0
+const AVOIDANCE_DURATION: float = 0.5  # How long to maintain avoidance offset
+const AVOIDANCE_DISTANCE: float = 32.0  # Distance to side-step
+
 # Vigour constants moved to CrewVigour component
 
 
@@ -77,6 +89,22 @@ var is_speaking: bool = false
 var workplace: Room
 var furniture_workplace: Furniture  # Store reference to assigned furniture
 var work_location: Vector2i
+
+# Waypoint-based movement for multi-step navigation (e.g., via doors)
+var pending_waypoints: Array[Vector2] = []
+var _saved_path_max_distance: float = -1.0
+var _saved_avoidance_enabled: bool = true
+var _saved_postprocessing: int = -1
+var _last_logged_next_path: Vector2 = Vector2.ZERO
+var assignment_path: Array[Vector2] = []
+var assignment_path_idx: int = 0
+const ASSIGNMENT_WAYPOINT_EPS: float = 8.0
+
+func _is_on_assignment() -> bool:
+	return assignment == &"work" or furniture_workplace != null or not pending_waypoints.is_empty()
+
+func has_pending_assignment_path() -> bool:
+	return not pending_waypoints.is_empty()
 
 # Vigour variables moved to CrewVigour component
 
@@ -122,10 +150,111 @@ func select() -> void:
 	Global.crew_selected.emit(self)
 
 func set_movement_target(movement_target: Vector2) -> void:
-	navigation_agent.target_position = movement_target
+	# Check for static obstacles before setting target
+	if not check_path_for_static_obstacles(movement_target):
+		print("DEBUG: Path blocked by static obstacles, finding alternative route")
+		# Find an alternative route around the obstacle
+		var alternative_target = find_alternative_route(movement_target)
+		if alternative_target != Vector2.ZERO:
+			print("DEBUG: Using alternative route: ", alternative_target)
+			navigation_agent.target_position = alternative_target
+		else:
+			print("DEBUG: No alternative route found, using original target")
+			navigation_agent.target_position = movement_target
+	else:
+		navigation_agent.target_position = movement_target
+
+func find_alternative_route(blocked_target: Vector2) -> Vector2:
+	"""Find an alternative route around obstacles using multiple ray directions"""
+	var directions = [
+		Vector2(1, 0),   # Right
+		Vector2(-1, 0),  # Left
+		Vector2(0, 1),   # Down
+		Vector2(0, -1),  # Up
+		Vector2(1, 1),   # Down-right
+		Vector2(-1, 1),  # Down-left
+		Vector2(1, -1),  # Up-right
+		Vector2(-1, -1)  # Up-left
+	]
+	
+	var distance = global_position.distance_to(blocked_target)
+	var step_size = 128.0  # Check every 128 pixels for efficiency
+	var max_steps = 3  # Limit search to avoid performance issues
+	
+	# Try different directions at increasing distances
+	for direction in directions:
+		for i in range(1, min(max_steps, int(distance / step_size) + 1)):
+			var test_target = global_position + direction * (step_size * i)
+			if check_path_for_static_obstacles(test_target):
+				print("DEBUG: Found alternative path at: ", test_target)
+				return test_target
+	
+	return Vector2.ZERO
+
+func validate_current_path() -> void:
+	"""Continuously validate the current navigation path against physics obstacles"""
+	if navigation_agent.is_navigation_finished():
+		return
+		
+	var current_path = navigation_agent.get_current_navigation_path()
+	if current_path.size() < 2:
+		return
+		
+	# Check the next few path points for obstacles
+	var next_target = navigation_agent.get_next_path_position()
+	
+	# If the next target is blocked, find an alternative
+	if not check_path_for_static_obstacles(next_target):
+		print("DEBUG: Next path target blocked: ", next_target, " finding alternative")
+		
+		var alternative = find_alternative_route(next_target)
+		if alternative != Vector2.ZERO:
+			print("DEBUG: Redirecting to alternative: ", alternative)
+			navigation_agent.target_position = alternative
+		else:
+			# Try to find a route around the obstacle
+			var around_obstacle = find_route_around_obstacle(global_position, next_target)
+			if around_obstacle != Vector2.ZERO:
+				print("DEBUG: Redirecting around obstacle: ", around_obstacle)
+				navigation_agent.target_position = around_obstacle
+
+func find_route_around_obstacle(start: Vector2, blocked_end: Vector2) -> Vector2:
+	"""Find a route that goes around an obstacle"""
+	var direction_to_target = (blocked_end - start).normalized()
+	var perpendicular = Vector2(-direction_to_target.y, direction_to_target.x)
+	
+	# Try both sides of the obstacle
+	for side in [-1, 1]:
+		var around_point = start + perpendicular * side * 256.0
+		if check_path_for_static_obstacles(around_point):
+			return around_point
+	
+	return Vector2.ZERO
+
+func _force_navigation_rebake() -> void:
+	# Force rebake the navigation mesh
+	var nav_region = get_tree().get_first_node_in_group("navigation")
+	if nav_region and nav_region.has_method("bake_navigation_polygon"):
+		nav_region.bake_navigation_polygon()
+		print("DEBUG: Forced navigation rebake")
 
 func set_rounded_direction() -> void:
-	var to_next = (navigation_agent.get_next_path_position() - global_position)
+	var next_point: Vector2
+	# Prefer a frozen cached path during assignment to avoid per-tick re-planning
+	if _is_on_assignment() and assignment_path.size() > 0 and assignment_path_idx < assignment_path.size():
+		next_point = assignment_path[assignment_path_idx]
+		# Advance cached waypoint when close enough
+		if global_position.distance_to(next_point) <= ASSIGNMENT_WAYPOINT_EPS:
+			assignment_path_idx += 1
+			if assignment_path_idx < assignment_path.size():
+				next_point = assignment_path[assignment_path_idx]
+			else:
+				# No more cached points; fall back to agent
+				next_point = navigation_agent.get_next_path_position()
+	else:
+		next_point = navigation_agent.get_next_path_position()
+
+	var to_next = (next_point - global_position)
 	# Movement direction (quantized) remains responsive
 	if to_next == Vector2.ZERO:
 		current_move_direction = Vector2.ZERO
@@ -348,16 +477,18 @@ func _handle_collision_speech(collision: KinematicCollision2D) -> void:
 
 func _on_idling_state_entered() -> void:
 	state = STATE.IDLE
-	navigation_agent.target_position = position
-	assignment = &""
+	# Do not clear target or assignment while on an active assignment path
+	if not _is_on_assignment():
+		navigation_agent.target_position = position
+		assignment = &""
 	state_manager.set_expression_property(&"assignment", assignment)
 	# Randomise idle duration each cycle
 	idle_time_limit = randf_range(idle_time_min, idle_time_max)
 	idle_timer = 0.0
 	current_animation_direction = Vector2.ZERO
 
-func _on_idling_state_physics_processing(delta: float) -> void:
-	idle_timer += delta
+func _on_idling_state_physics_processing(_delta: float) -> void:
+	idle_timer += _delta
 	if idle_timer >= idle_time_limit:
 		state_manager.send_event(&"walk")
 		idle_timer = 0.0
@@ -370,9 +501,10 @@ func _on_walking_state_entered() -> void:
 	if not crew_vigour.is_resting:
 		state = STATE.WALK
 	walk_start_time = Time.get_ticks_msec() / 1000.0  # Convert to seconds
-	# Always generate a new target when entering walking state from rest
-	randomise_target_position()
-	walk_segments_remaining = randi_range(walk_segments_per_cycle_min, walk_segments_per_cycle_max)
+	# If walking freely, generate a new random target; otherwise keep assignment target/waypoint
+	if not _is_on_assignment():
+		randomise_target_position()
+		walk_segments_remaining = randi_range(walk_segments_per_cycle_min, walk_segments_per_cycle_max)
 
 func _on_walking_state_physics_processing(_delta: float) -> void:
 	# Handle resting when vigour is 0 or already resting
@@ -380,23 +512,56 @@ func _on_walking_state_physics_processing(_delta: float) -> void:
 		crew_vigour.process_resting(_delta, current_animation_direction, current_move_direction)
 		# Stop all movement during rest
 		velocity = Vector2.ZERO
-		navigation_agent.target_position = position
+		# Do not clear the agent target; keep target so path is preserved after rest
 		current_move_direction = Vector2.ZERO
 		current_animation_direction = crew_vigour.get_resting_direction()
 		return
 	
 	# Handle navigation completion only if not exhausted
-	if navigation_agent.is_navigation_finished():
+	var reached_leg := false
+	if _is_on_assignment() and assignment_path.size() > 0:
+		var leg_goal: Vector2 = assignment_path[assignment_path.size() - 1]
+		reached_leg = global_position.distance_to(leg_goal) <= ASSIGNMENT_WAYPOINT_EPS
+	else:
+		reached_leg = navigation_agent.is_navigation_finished()
+	if reached_leg:
+		# Continue along any pending waypoints before completing assignment
+		if not pending_waypoints.is_empty():
+			var next_target: Vector2 = pending_waypoints.pop_front()
+			set_movement_target(next_target)
+			# Freeze the next leg's path as well
+			await get_tree().physics_frame
+			_snapshot_agent_path()
+			return
 		# If walking freely (not heading to work), optionally chain additional targets
 		if assignment == &"" and walk_segments_remaining > 1:
 			walk_segments_remaining -= 1
 			randomise_target_position()
 			return
 		else:
+			# Restore path limit if we had overridden it for an assignment
+			if _saved_path_max_distance >= 0.0:
+				navigation_agent.path_max_distance = _saved_path_max_distance
+				_saved_path_max_distance = -1.0
+				# TEST: restore avoidance and postprocessing
+				navigation_agent.avoidance_enabled = _saved_avoidance_enabled
+				navigation_agent.path_postprocessing = _saved_postprocessing
+			# Arrived at final waypoint: stay at work location
 			state_manager.send_event(&"to_assignment")
 			return
 
 	set_rounded_direction()
+	
+	# Validate current path against obstacles
+	validate_current_path()
+	
+	# Update collision avoidance
+	update_avoidance(_delta)
+	
+	# Apply avoidance offset to movement direction
+	if _avoidance_offset != Vector2.ZERO:
+		print("DEBUG: Applying avoidance offset: ", _avoidance_offset)
+		current_move_direction += _avoidance_offset.normalized() * 0.3  # Blend avoidance with normal movement
 	
 	# Get speed scale from CrewVigour component (handles fatigue)
 	var fatigue_scale = crew_vigour.get_fatigue_scale()
@@ -407,8 +572,25 @@ func _on_walking_state_physics_processing(_delta: float) -> void:
 	if collision:
 		_handle_collision_speech(collision)
 
-	# Process vigour depletion while walking
-	crew_vigour.process_walking(_delta)
+	# TEST: log next path position changes while on assignment
+	if _is_on_assignment():
+		var np := navigation_agent.get_next_path_position()
+		if _last_logged_next_path.distance_to(np) > 4.0:
+			_last_logged_next_path = np
+
+func _snapshot_agent_path() -> void:
+	# Capture current computed path from the agent for this assignment leg
+	assignment_path.clear()
+	assignment_path_idx = 0
+	var path := navigation_agent.get_current_navigation_path()
+	for p in path:
+		assignment_path.append(p)
+	# Skip any initial points that are essentially our current position
+	while assignment_path.size() > 1 and assignment_path_idx < assignment_path.size() - 1:
+		if global_position.distance_to(assignment_path[assignment_path_idx]) <= ASSIGNMENT_WAYPOINT_EPS:
+			assignment_path_idx += 1
+		else:
+			break
 
 func _on_working_state_entered() -> void:
 	state = STATE.WORK
@@ -437,11 +619,53 @@ func assign_to_furniture(furniture: Furniture, position: Vector2) -> void:
 	work_location = position
 	state_manager.send_event(&"assigned")
 
+func assign_to_furniture_via_waypoints(furniture: Furniture, waypoints: Array[Vector2]) -> void:
+	# Set up a two-step (or multi-step) path, e.g., door tile then furniture
+	furniture_workplace = furniture
+	assignment = &"work"
+	state_manager.set_expression_property(&"assignment", assignment)
+	pending_waypoints = waypoints.duplicate()
+	# Set final work location to last waypoint (where crew should remain)
+	if not waypoints.is_empty():
+		var final_wp: Vector2 = waypoints[waypoints.size() - 1]
+		work_location = Vector2i(int(final_wp.x), int(final_wp.y))
+	if not pending_waypoints.is_empty():
+		var first_target: Vector2 = pending_waypoints.pop_front()
+		set_movement_target(first_target)
+		# Snapshot the initial computed path for this assignment leg (to freeze it)
+		await get_tree().physics_frame
+		_snapshot_agent_path()
+		print("DEBUG: agent.layers=", navigation_agent.navigation_layers, " reachable=", navigation_agent.is_target_reachable(), " path.len=", navigation_agent.get_current_navigation_path().size())
+	else:
+		# Fallback: go directly to stored work_location if no waypoints provided
+		set_movement_target(work_location)
+	# Notify UI/state that we've been assigned
+	state_manager.send_event(&"assigned")
+	# Ensure we are walking immediately
+	state_manager.send_event(&"walk")
+
+func override_path_limit_for_assignment() -> void:
+	# Save and remove path distance limit for long paths to door/furniture
+	if _saved_path_max_distance < 0.0:
+		_saved_path_max_distance = navigation_agent.path_max_distance
+		navigation_agent.path_max_distance = 0.0
+		# TEST: disable avoidance and postprocessing to stabilize next path point
+		_saved_avoidance_enabled = navigation_agent.avoidance_enabled
+		_saved_postprocessing = navigation_agent.path_postprocessing
+		navigation_agent.avoidance_enabled = false
+		navigation_agent.path_postprocessing = 0
+
 func unassign_from_furniture() -> void:
 	furniture_workplace = null
 	state_manager.send_event(&"unassigned")
 
 func go_to_work() -> void:
+	# Avoid retargeting while following a fixed assignment path
+	if has_pending_assignment_path():
+		return
+	# Avoid recomputing path if target is already set
+	if navigation_agent.target_position == Vector2(work_location.x, work_location.y):
+		return
 	set_movement_target(work_location)
 	assignment = &"work"
 	state_manager.set_expression_property(&"assignment", assignment)
@@ -487,8 +711,61 @@ func _on_resting_finished() -> void:
 	set_current_animation()
 	animation_player.play(current_animation)
 	animation_player.speed_scale = 1.0
-	# Generate a new target to resume walking
-	randomise_target_position()
+	# If we are on assignment (have pending waypoints or furniture target), do not randomise target
+
+## Collision Detection and Avoidance
+
+func check_path_for_static_obstacles(target_pos: Vector2) -> bool:
+	"""Check if path to target intersects static obstacles (walls/furniture)"""
+	var space_state = get_world_2d().direct_space_state
+	var query = PhysicsRayQueryParameters2D.create(global_position, target_pos)
+	query.collision_mask = COLLISION_LAYERS.OBSTACLES
+	query.exclude = [self]
+	
+	var result = space_state.intersect_ray(query)
+	if not result.is_empty():
+		print("DEBUG: Static obstacle detected: ", result.collider.name)
+		print("DEBUG: Query mask: ", query.collision_mask, " OBSTACLES: ", COLLISION_LAYERS.OBSTACLES)
+	return result.is_empty()
+
+func check_for_crew_collisions() -> Vector2:
+	"""Check for nearby crew members and return avoidance offset"""
+	var space_state = get_world_2d().direct_space_state
+	var query = PhysicsRayQueryParameters2D.create(global_position, global_position + current_move_direction * 64.0)
+	query.collision_mask = COLLISION_LAYERS.CREW
+	query.exclude = [self]
+	
+	var result = space_state.intersect_ray(query)
+	if not result.is_empty():
+		print("DEBUG: Collision detected with: ", result.collider.name)
+		# Check if it's a crew member by checking if it has collision_layer property
+		if result.collider.has_method("get") and result.collider.get("collision_layer") != null:
+			var collider_layer = result.collider.get("collision_layer")
+			if collider_layer & COLLISION_LAYERS.CREW:
+				print("DEBUG: Crew collision detected, applying avoidance")
+				# Calculate perpendicular direction for side-step
+				var perpendicular = Vector2(-current_move_direction.y, current_move_direction.x)
+				# Randomly choose left or right
+				if randf() < 0.5:
+					perpendicular = -perpendicular
+				return perpendicular * AVOIDANCE_DISTANCE
+	
+	return Vector2.ZERO
+
+func update_avoidance(_delta: float) -> void:
+	"""Update avoidance offset and timer"""
+	if _avoidance_timer > 0:
+		_avoidance_timer -= _delta
+		if _avoidance_timer <= 0:
+			_avoidance_offset = Vector2.ZERO
+			print("DEBUG: Avoidance timer expired, clearing offset")
+	else:
+		# Check for new crew collisions
+		var new_offset = check_for_crew_collisions()
+		if new_offset != Vector2.ZERO:
+			_avoidance_offset = new_offset
+			_avoidance_timer = AVOIDANCE_DURATION
+			print("DEBUG: Applied avoidance offset: ", new_offset)
 
 func _on_fatigue_level_changed(is_fatigued: bool) -> void:
 	# Could be used for future fatigue effects

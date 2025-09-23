@@ -1,4 +1,4 @@
-[gd_scene load_steps=69 format=3 uid="uid://dhh5wq2ka1ay8"]
+[gd_scene load_steps=58 format=3 uid="uid://dhh5wq2ka1ay8"]
 
 [ext_resource type="Script" path="res://entities/station/Main.gd" id="1_7qny5"]
 [ext_resource type="PackedScene" uid="uid://cpi6duyqx08ba" path="res://entities/ui/gui_scene.tscn" id="2_o3d15"]
@@ -29,7 +29,7 @@
 [ext_resource type="Script" path="res://addons/godot_state_charts/atomic_state.gd" id="26_6q7yy"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/transition.gd" id="27_alvqe"]
 
-[sub_resource type="NavigationPolygon" id="NavigationPolygon_w47eo"]
+[sub_resource type="NavigationPolygon" id="NavigationPolygon_yc0ef"]
 vertices = PackedVector2Array(256, 0, 0, 148, -256, 0, 0, -148)
 polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
 outlines = Array[PackedVector2Array]([PackedVector2Array(0, -148, -256, 0, 0, 148, 256, 0)])
@@ -193,7 +193,7 @@ texture_region_size = Vector2i(512, 512)
 0:2/0/physics_layer_0/angular_velocity = 0.0
 0:2/0/physics_layer_1/linear_velocity = Vector2(0, 0)
 0:2/0/physics_layer_1/angular_velocity = 0.0
-0:2/0/navigation_layer_0/polygon = SubResource("NavigationPolygon_w47eo")
+0:2/0/navigation_layer_0/polygon = SubResource("NavigationPolygon_yc0ef")
 0:2/0/custom_data_0 = true
 1:2/0 = 0
 1:2/0/physics_layer_0/linear_velocity = Vector2(0, 0)
@@ -427,7 +427,7 @@ tile_size = Vector2i(512, 296)
 physics_layer_0/collision_layer = 1
 physics_layer_0/collision_mask = 2
 physics_layer_1/collision_layer = 1
-navigation_layer_0/layers = 3
+navigation_layer_0/layers = 1
 custom_data_layer_0/name = "is_buildable"
 custom_data_layer_0/type = 1
 sources/0 = SubResource("TileSetAtlasSource_psmxa")
@@ -453,138 +453,56 @@ texture_region_size = Vector2i(512, 512)
 0:0/0/physics_layer_0/linear_velocity = Vector2(0, 0)
 0:0/0/physics_layer_0/angular_velocity = 0.0
 
-[sub_resource type="NavigationPolygon" id="NavigationPolygon_8nk3h"]
-vertices = PackedVector2Array(256, 0, 0, 148, -256, 0, 0, -148)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, -148, -256, 0, 0, 148, 256, 0)])
-source_geometry_group_name = &"navigation_polygon_source_group"
-agent_radius = 0.0
-
-[sub_resource type="NavigationPolygon" id="NavigationPolygon_enooa"]
-vertices = PackedVector2Array(256, 0, 0, 148, -256, 0, 0, -148)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, -148, -256, 0, 0, 148, 256, 0)])
-source_geometry_group_name = &"navigation_polygon_source_group"
-agent_radius = 0.0
-
-[sub_resource type="NavigationPolygon" id="NavigationPolygon_j6lu6"]
-vertices = PackedVector2Array(230, -15, -26, 133, -256, 0, 0, -148)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, -148, -256, 0, -25.6, 133.2, 230.4, -14.8)])
-source_geometry_group_name = &"navigation_polygon_source_group"
-agent_radius = 0.0
-
-[sub_resource type="NavigationPolygon" id="NavigationPolygon_bij33"]
-vertices = PackedVector2Array(256, 0, 26, 133, -205, 0, 26, -133)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(25.6, -133.2, -204.8, 0, 25.6, 133.2, 256, 0)])
-source_geometry_group_name = &"navigation_polygon_source_group"
-agent_radius = 0.0
-
-[sub_resource type="NavigationPolygon" id="NavigationPolygon_o7s2g"]
-vertices = PackedVector2Array(205, 0, -26, 133, -256, 0, -26, -133)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(-25.6, -133.2, -256, 0, -25.6, 133.2, 204.8, 0)])
-source_geometry_group_name = &"navigation_polygon_source_group"
-agent_radius = 0.0
-
-[sub_resource type="NavigationPolygon" id="NavigationPolygon_wx483"]
-vertices = PackedVector2Array(256, 0, 0, 148, -230, 15, 26, -133)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(25.6, -133.2, -230.4, 14.8, 0, 148, 256, 0)])
-source_geometry_group_name = &"navigation_polygon_source_group"
-agent_radius = 0.0
-
-[sub_resource type="NavigationPolygon" id="NavigationPolygon_pf06w"]
-vertices = PackedVector2Array(256, 0, 0, 148, -256, 0, 0, -148)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, -148, -256, 0, 0, 148, 256, 0)])
-source_geometry_group_name = &"navigation_polygon_source_group"
-agent_radius = 0.0
-
-[sub_resource type="NavigationPolygon" id="NavigationPolygon_8lwkx"]
-vertices = PackedVector2Array(230, 15, 0, 148, -230, 15, 0, -118)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, -118.4, -230.4, 14.8, 0, 148, 230.4, 14.8)])
-source_geometry_group_name = &"navigation_polygon_source_group"
-agent_radius = 0.0
-
-[sub_resource type="NavigationPolygon" id="NavigationPolygon_07w8g"]
-vertices = PackedVector2Array(256, 0, 26, 133, -230, -15, 0, -148)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, -148, -230.4, -14.8, 25.6, 133.2, 256, 0)])
-source_geometry_group_name = &"navigation_polygon_source_group"
-agent_radius = 0.0
-
-[sub_resource type="NavigationPolygon" id="NavigationPolygon_8oxw0"]
-vertices = PackedVector2Array(230, 15, 0, 148, -256, 0, -26, -133)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(-25.6, -133.2, -256, 0, 0, 148, 230.4, 14.8)])
-source_geometry_group_name = &"navigation_polygon_source_group"
-agent_radius = 0.0
-
-[sub_resource type="NavigationPolygon" id="NavigationPolygon_pnjpj"]
-vertices = PackedVector2Array(230, -15, 0, 118, -230, -15, 0, -148)
-polygons = Array[PackedInt32Array]([PackedInt32Array(0, 1, 2, 3)])
-outlines = Array[PackedVector2Array]([PackedVector2Array(0, -148, -230.4, -14.8, 0, 118.4, 230.4, -14.8)])
-source_geometry_group_name = &"navigation_polygon_source_group"
-agent_radius = 0.0
-
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_ulgmx"]
 texture = ExtResource("11_uyi2h")
 texture_region_size = Vector2i(512, 512)
 0:0/0 = 0
 0:0/0/physics_layer_0/linear_velocity = Vector2(0, 0)
 0:0/0/physics_layer_0/angular_velocity = 0.0
-0:0/0/navigation_layer_0/polygon = SubResource("NavigationPolygon_8nk3h")
 1:0/0 = 0
 1:0/0/physics_layer_0/linear_velocity = Vector2(0, 0)
 1:0/0/physics_layer_0/angular_velocity = 0.0
-1:0/0/navigation_layer_0/polygon = SubResource("NavigationPolygon_o7s2g")
+1:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(0, -148, -25.6, -133.2, 204.8, 0, -25.6, 133.2, 0, 148, 256, 0)
 2:0/0 = 0
 2:0/0/physics_layer_0/linear_velocity = Vector2(0, 0)
 2:0/0/physics_layer_0/angular_velocity = 0.0
-2:0/0/navigation_layer_0/polygon = SubResource("NavigationPolygon_8lwkx")
+2:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(0, -148, 256, 0, 230.4, 14.8, 0, -118.4, -230.4, 14.8, -256, 0)
 3:0/0 = 0
 3:0/0/physics_layer_0/linear_velocity = Vector2(0, 0)
 3:0/0/physics_layer_0/angular_velocity = 0.0
-3:0/0/navigation_layer_0/polygon = SubResource("NavigationPolygon_8oxw0")
+3:0/0/physics_layer_0/polygon_0/points = PackedVector2Array(0, -148, -25.6, -133.2, 230.4, 14.8, 256, 0)
 0:1/0 = 0
 0:1/0/physics_layer_0/linear_velocity = Vector2(0, 0)
 0:1/0/physics_layer_0/angular_velocity = 0.0
-0:1/0/navigation_layer_0/polygon = SubResource("NavigationPolygon_enooa")
 1:1/0 = 0
 1:1/0/physics_layer_0/linear_velocity = Vector2(0, 0)
 1:1/0/physics_layer_0/angular_velocity = 0.0
-1:1/0/navigation_layer_0/polygon = SubResource("NavigationPolygon_wx483")
+1:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(0, -148, 25.6, -133.2, -230.4, 14.8, -256, 0)
 2:1/0 = 0
 2:1/0/physics_layer_0/linear_velocity = Vector2(0, 0)
 2:1/0/physics_layer_0/angular_velocity = 0.0
-2:1/0/navigation_layer_0/polygon = SubResource("NavigationPolygon_pf06w")
 3:1/0 = 0
 3:1/0/physics_layer_0/linear_velocity = Vector2(0, 0)
 3:1/0/physics_layer_0/angular_velocity = 0.0
-3:1/0/navigation_layer_0/polygon = SubResource("NavigationPolygon_pnjpj")
+3:1/0/physics_layer_0/polygon_0/points = PackedVector2Array(0, 148, 256, 0, 230.4, -14.8, 0, 118.4, -230.4, -14.8, -256, 0)
 0:2/0 = 0
 0:2/0/physics_layer_0/linear_velocity = Vector2(0, 0)
 0:2/0/physics_layer_0/angular_velocity = 0.0
-0:2/0/navigation_layer_0/polygon = SubResource("NavigationPolygon_j6lu6")
+0:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(0, 148, -25.6, 133.2, 230.4, -14.8, 256, 0)
 1:2/0 = 0
 1:2/0/physics_layer_0/linear_velocity = Vector2(0, 0)
 1:2/0/physics_layer_0/angular_velocity = 0.0
-1:2/0/navigation_layer_0/polygon = SubResource("NavigationPolygon_pf06w")
 2:2/0 = 0
 2:2/0/physics_layer_0/linear_velocity = Vector2(0, 0)
 2:2/0/physics_layer_0/angular_velocity = 0.0
-2:2/0/navigation_layer_0/polygon = SubResource("NavigationPolygon_07w8g")
+2:2/0/physics_layer_0/polygon_0/points = PackedVector2Array(0, 148, 25.6, 133.2, -230.4, -14.8, -256, 0)
 3:2/0 = 0
 3:2/0/physics_layer_0/linear_velocity = Vector2(0, 0)
 3:2/0/physics_layer_0/angular_velocity = 0.0
-3:2/0/navigation_layer_0/polygon = SubResource("NavigationPolygon_pf06w")
 0:3/0 = 0
 0:3/0/physics_layer_0/linear_velocity = Vector2(0, 0)
 0:3/0/physics_layer_0/angular_velocity = 0.0
-0:3/0/navigation_layer_0/polygon = SubResource("NavigationPolygon_bij33")
+0:3/0/physics_layer_0/polygon_0/points = PackedVector2Array(0, -148, 25.6, -133.2, -204.8, 0, 25.6, 133.2, 0, 148, -256, 0)
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_aa86n"]
 texture = ExtResource("12_rjb2n")
@@ -619,9 +537,8 @@ tile_shape = 1
 tile_layout = 5
 tile_size = Vector2i(512, 296)
 physics_layer_0/collision_layer = 1
-physics_layer_0/collision_mask = 2
-navigation_layer_0/layers = 1
-navigation_layer_1/layers = 2
+physics_layer_0/collision_mask = 0
+navigation_layer_0/layers = 0
 sources/1 = SubResource("TileSetAtlasSource_teld1")
 sources/0 = SubResource("TileSetAtlasSource_w7dmn")
 sources/3 = SubResource("TileSetAtlasSource_ulgmx")
@@ -703,7 +620,7 @@ layer_0/name = "Base layer"
 layer_0/y_sort_enabled = true
 layer_0/tile_data = PackedInt32Array(-393207, 196608, 3, -327671, 0, 4, -393206, 131072, 4, -262135, 196608, 5, -196599, 458752, 4, -65527, 458752, 4, 196617, 458752, 4, 327689, 458752, 4, -393204, 393216, 4, -393202, 393216, 4, 65545, 0, 0, 9, 0, 1, -131063, 196608, 5, 131081, 196608, 5, 262153, 196608, 5, -393205, 131072, 5, -393203, 131072, 5, -393199, 131072, 5, -393198, 393216, 4, -393197, 131072, 5, -393196, 393216, 4, -393194, 131072, 3, -393195, 262144, 4, -327658, 393216, 3, 393225, 327680, 4, 458761, 327680, 3, 458762, 458752, 3, -393201, 131072, 1, -393200, 131072, 0, 458763, 327680, 5, 458765, 327680, 5, 458769, 327680, 5, 458771, 327680, 5, 458770, 65536, 5, 458772, 65536, 5, 458766, 65536, 5, 458764, 65536, 5, 458768, 393216, 0, 458767, 393216, 1, 458774, 262144, 3, 458773, 65536, 4, 393238, 196608, 4, 262166, 262144, 5, 131094, 262144, 5, -131050, 262144, 5, -262122, 262144, 5, 327702, 0, 5, 196630, 0, 5, -65514, 0, 5, -196586, 0, 5, 22, 262144, 1, 65558, 262144, 0, -327670, 458752, 5, -327659, 458752, 5, -262123, 393216, 5, -196587, 393216, 5, 327701, 393216, 5, 262165, 393216, 5, 393237, 0, 6, 393226, 0, 6, 327690, 393216, 5, 262154, 393216, 5, -262134, 393216, 5, -196598, 393216, 5, 196629, 458752, 5, 196618, 458752, 5, -131062, 0, 6, -131051, 0, 6, 65552, 196608, 6, 16, 262144, 6, 15, 131072, 6, 65551, 65536, 6, 131082, 327680, 2, 393227, 327680, 2, -65526, 196608, 2, -327669, 196608, 2, -327660, 131072, 2, -65515, 131072, 2, 131093, 262144, 2, 393236, 262144, 2, 393235, 65536, 3, 393234, 65536, 3, 393233, 65536, 3, 393232, 65536, 3, 393231, 65536, 3, 393230, 65536, 3, 393229, 65536, 3, 393228, 65536, 3, 327700, 0, 3, 262164, 0, 3, 196628, 0, 3, 65557, 0, 3, 21, 0, 3, -262124, 0, 3, -196588, 0, 3, -131052, 0, 3, -327661, 393216, 2, -327662, 393216, 2, -327663, 393216, 2, -327664, 393216, 2, -327665, 393216, 2, -327666, 393216, 2, -327667, 393216, 2, -327668, 393216, 2, -262133, 458752, 2, -196597, 458752, 2, -131061, 458752, 2, 10, 458752, 2, 65546, 458752, 2, 196619, 458752, 2, 262155, 458752, 2, 327691, 458752, 2, -65525, 65536, 2, 65547, 65536, 2, -65516, 65536, 2, 65556, 65536, 2, 20, 0, 2, 131092, 0, 2, 11, 0, 2, 131083, 0, 2, 131087, 393216, 5, 131088, 393216, 5, -65521, 393216, 5, -65520, 393216, 5, 65553, 458752, 5, 65550, 458752, 5, 17, 0, 6, 14, 0, 6, 131089, 196608, 2, 131086, 131072, 2, -65522, 262144, 2, -65519, 327680, 2, 65549, 0, 3, 13, 0, 3, 196623, 393216, 2, 196624, 393216, 2, 65554, 458752, 2, 18, 458752, 2, -131057, 65536, 3, -131056, 65536, 3, -262132, 0, 2, -196595, 0, 2, -262130, 0, 2, -196593, 0, 2, -262128, 0, 2, -196591, 0, 2, -262126, 0, 2, -196589, 0, 2, -131054, 0, 2, -65517, 0, 2, 65555, 65536, 2, 196627, 0, 2, 131090, 0, 2, 196625, 0, 2, 262162, 0, 2, 327699, 0, 2, 327697, 0, 2, 262160, 0, 2, 327695, 0, 2, 262158, 0, 2, 327693, 0, 2, 262156, 65536, 2, 196621, 0, 2, 131084, 0, 2, 12, 0, 2, -131060, 0, 2, -65523, 0, 2, -131058, 0, 2, 262163, 65536, 2, 196626, 65536, 2, 327698, 65536, 2, 262161, 65536, 2, 327696, 65536, 2, 262159, 65536, 2, 327694, 65536, 2, 196622, 65536, 2, 131085, 65536, 2, 262157, 65536, 2, 196620, 65536, 2, 327692, 65536, 2, 65548, 65536, 2, -65524, 65536, 2, -131059, 65536, 2, -196596, 65536, 2, -262131, 65536, 2, -196594, 65536, 2, -262129, 65536, 2, -196592, 65536, 2, -131055, 65536, 2, -65518, 65536, 2, 19, 65536, 2, 131091, 65536, 2, -131053, 65536, 2, -196590, 65536, 2, -262127, 65536, 2, -262125, 65536, 2)
 
-[node name="BuildTileMap" type="TileMap" parent="GameManager/BaseTileMap" groups=["navigation"]]
+[node name="BuildTileMap" type="TileMap" parent="GameManager/BaseTileMap"]
 unique_name_in_owner = true
 y_sort_enabled = true
 tile_set = SubResource("TileSet_ru5bf")
@@ -738,7 +655,6 @@ modulate = Color(0.356863, 0.533333, 1, 1)
 self_modulate = Color(0.145098, 1, 1, 1)
 position = Vector2(1, 0)
 navigation_polygon = SubResource("NavigationPolygon_jelv3")
-use_edge_connections = false
 
 [node name="Camera" type="Camera2D" parent="GameManager"]
 unique_name_in_owner = true

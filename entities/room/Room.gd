@@ -77,7 +77,6 @@ func draw_room() -> void:
 					if tileset_mapper.has(Vector2i(x, y)):
 						tileset_coords = tileset_mapper[Vector2i(x, y)]
 					TileMapManager.set_building_cell(Vector2i(x, y), tileset_id, tileset_coords)
-					TileMapManager.erase_base_cell(Vector2i(x, y)) # Required for navigation. Sets wall bounds.
 			
 			# Draw door tiles
 			for door_tile in data.door_tiles:

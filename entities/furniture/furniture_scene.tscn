@@ -17,6 +17,8 @@ script = ExtResource("1_8xwhq")
 shape = SubResource("RectangleShape2D_gof7b")
 
 [node name="StaticBody2D" type="StaticBody2D" parent="."]
+collision_layer = 1
+collision_mask = 0
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="StaticBody2D"]
 shape = SubResource("RectangleShape2D_e5n7v")

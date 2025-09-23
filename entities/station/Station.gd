@@ -79,12 +79,14 @@ func add_room(room: Room) -> void:
 	rooms.append(room)
 	update_max_hydrogen()
 	update_power()
+	rooms_updated.emit()
 
 func remove_room(room: Room) -> void:
 	rooms.erase(room)
 	room.queue_free()
 	update_max_hydrogen()
 	update_power()
+	rooms_updated.emit()
 
 func find_room_by_id(room_id: int) -> Room:
 	for room in rooms:

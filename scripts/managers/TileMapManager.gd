@@ -47,12 +47,8 @@ enum FurnitureTileset {
 	BED = 2              # Bed furniture tiles
 }
 
-# Signal for when tile maps are updated
-signal tile_maps_updated
+# Signal removed - no longer needed with simplified tile management
 
-# Cached tile data for performance
-var _base_tile_map_data: Dictionary = {}
-var _base_tile_map_saved: bool = false
 
 func _ready() -> void:
 	# Don't save state immediately - wait for tile maps to be ready
@@ -72,43 +68,7 @@ func set_tile_maps(base_tile_map: TileMap, build_tile_map: TileMap, furniture_ti
 	_furniture_tile_map = furniture_tile_map
 	
 
-## Base Tile Map Operations
-
-func save_base_tile_map_state() -> void:
-	if _base_tile_map_saved:
-		return
-		
-	# Check if tile maps are ready
-	if not base_tile_map or not build_tile_map or not furniture_tile_map:
-		return
-		
-	_base_tile_map_data.clear()
-	var used_rect = base_tile_map.get_used_rect()
-	
-	if used_rect.size == Vector2i.ZERO:
-		_base_tile_map_saved = true
-		return
-	
-	for x in range(used_rect.position.x, used_rect.position.x + used_rect.size.x):
-		for y in range(used_rect.position.y, used_rect.position.y + used_rect.size.y):
-			var coords = Vector2i(x, y)
-			var cell_atlas_data = base_tile_map.get_cell_atlas_coords(Layer.BASE, coords)
-			if cell_atlas_data != Vector2i(-1, -1):
-				_base_tile_map_data[coords] = cell_atlas_data
-	
-	_base_tile_map_saved = true
-
-func restore_base_tile_map_state() -> void:
-	if not _base_tile_map_saved:
-		return
-		
-	if not base_tile_map:
-		return
-		
-	base_tile_map.clear()
-	for coords in _base_tile_map_data.keys():
-		var atlas_coords = _base_tile_map_data[coords]
-		base_tile_map.set_cell(Layer.BASE, coords, 0, atlas_coords)
+## Base Tile Map Operations - simplified since base layer stays intact
 
 ## Building Tile Map Operations
 
@@ -199,10 +159,7 @@ func get_base_cell_tile_data(coords: Vector2i) -> TileData:
 		return null
 	return base_tile_map.get_cell_tile_data(Layer.BASE, coords)
 
-func erase_base_cell(coords: Vector2i) -> void:
-	if not base_tile_map:
-		return
-	base_tile_map.erase_cell(Layer.BASE, coords)
+# erase_base_cell removed - base layer stays intact
 
 func set_base_cell(coords: Vector2i, tileset_id: int, atlas_coords: Vector2i) -> void:
 	if not base_tile_map:

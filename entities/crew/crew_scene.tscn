@@ -315,7 +315,7 @@ _data = {
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_ynwli"]
 radius = 39.0
-height = 324.0
+height = 146.0
 
 [sub_resource type="Curve" id="Curve_j4pgs"]
 _data = [Vector2(0, 0.200045), 0.0, 0.0, 0, 0]

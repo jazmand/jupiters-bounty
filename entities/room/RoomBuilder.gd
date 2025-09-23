@@ -28,7 +28,7 @@ enum Action {BACK, FORWARD, COMPLETE}
 func _ready() -> void:
 	Global.station.rooms_updated.connect(draw_rooms)
 
-
+	
 	draw_rooms()
 
 func create_room(
@@ -151,10 +151,17 @@ func confirm_room_details() -> void:
 func confirm_build() -> void:
 	save_room()
 	draw_rooms()
+	# Navigation rebaking disabled - using physics-based path validation instead
+	# if Global.station and Global.station.rooms_updated:
+	#	Global.station.rooms_updated.emit()
+	# Force all crew to recalculate their paths
+	call_deferred("_force_crew_repath")
 	# Make deductions for buying rooms
 	var tile_count = Room.calculate_tile_count(initial_tile_coords, transverse_tile_coords)
 	Global.station.currency -= Room.calculate_room_price(selected_room_type.price, tile_count)
 	action_completed.emit(Action.COMPLETE)
+	# Notify others that a room has been built
+	room_built.emit(selected_room_type, get_selected_tiles())
 
 func cancel_build() -> void:
 	stop_drafting()
@@ -175,7 +182,6 @@ func draw_rooms() -> void:
 	TileMapManager.clear_drafting_layer()
 	TileMapManager.clear_building_layer()
 	#furniture_tile_map.clear_layer(hotspot_layer)
-	TileMapManager.restore_base_tile_map_state()
 	for room in Global.station.rooms:
 		room.draw_room()
 		
@@ -197,6 +203,15 @@ func check_selection_valid(coords: Vector2i, check_price_and_size: bool = false)
 func generate_unique_room_id() -> int:
 	# Use the new static method from Room class
 	return Room.generate_unique_room_id(Global.station.rooms)
+
+func _force_crew_repath() -> void:
+	# Force all crew members to recalculate their navigation paths
+	var crew_members = get_tree().get_nodes_in_group("crew")
+	for crew in crew_members:
+		if crew.has_method("navigation_agent") and crew.navigation_agent:
+			# Force the navigation agent to recalculate
+			crew.navigation_agent.target_position = crew.navigation_agent.target_position
+			print("DEBUG: Forced crew repath: ", crew.name)
 
 func is_on_room_edge_and_not_corner(coords: Vector2i) -> bool:
 	# This function is now available on the Room class

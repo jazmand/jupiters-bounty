@@ -21,7 +21,8 @@ func _ready() -> void:
 	Events.gui_add_crew_pressed.connect(new_crew_member)
 	Global.crew_assigned.connect(crew_selected)
 	Global.crew_selected.connect(crew_selected)
-	Global.station.rooms_updated.connect(update_navigation_region)
+	# Navigation rebaking disabled - using physics-based path validation instead
+	# Global.station.rooms_updated.connect(update_navigation_region)
 
 	# Set up global input processing to handle crew/room/furniture clicks from any state
 	set_process_input(true)
@@ -248,17 +249,97 @@ func _assign_crew_to_furniture(furniture: Furniture, crew_member: CrewMember) ->
 	# Assign a crew member to furniture and handle the movement
 	var success = furniture.assign_crew(crew_member)
 	if success:
-		# TODO: This is not working.		
-		# Make the crew member walk to a position near the furniture
-		var adjacent_tile = furniture.find_adjacent_tile()
-		var world_position = build_tile_map.map_to_local(adjacent_tile)
-		crew_member.assign_to_furniture(furniture, to_global(world_position))
+		# Determine the containing room (parent or overlap fallback)
+		var room := _get_room_for_furniture(furniture)
+		if room == null or room.data.door_tiles.is_empty():
+			# Fallback: go near furniture as before
+			var fallback_adj := furniture.find_adjacent_tile()
+			var fallback_world := build_tile_map.to_global(build_tile_map.map_to_local(fallback_adj))
+			crew_member.override_path_limit_for_assignment()
+			crew_member.assign_to_furniture_via_waypoints(furniture, [fallback_world])
+			return true
+
+		# Choose nearest door to crew
+		var door_tile := _get_closest_door_tile(room, crew_member.global_position)
+		# Compute outside-of-door tile for head-on approach
+		var approach := _compute_door_approach_tiles(room, door_tile)
+		# Waypoint world positions should be at the CENTER of tiles
+		var outside_world := _tile_center_world(approach["outside"])
+		var door_world := _tile_center_world(approach["door"])
+		print("DEBUG: doorway waypoints outside=", outside_world, " door=", door_world)
+		# Log region nav map RID
+		if navigation_region:
+			print("DEBUG: region.map=", navigation_region.get_navigation_map())
+		# Then go to an inside-adjacent tile near the furniture (stay there)
+		var inside_adj := _get_adjacent_tile_inside_room(furniture, room)
+		var inside_adj_world := _tile_center_world(inside_adj)
+
+		# Remove temporary seam link: we rely on base-layer nav only
+
+		# Temporarily remove path length limit and send fixed waypoints (no recalculation): outside -> door -> inside-adj
+		crew_member.override_path_limit_for_assignment()
+		crew_member.assign_to_furniture_via_waypoints(furniture, [outside_world, door_world, inside_adj_world])
 		
 		return true
 	else:
 		# TODO: Show error to users via UI
 		print("Failed to assign crew member to furniture - may be at capacity")
 		return false
+
+# --- Assignment helpers ---
+
+func _get_room_for_furniture(furniture: Furniture) -> Room:
+	if furniture.get_parent() is Room:
+		return furniture.get_parent()
+	var occupied := furniture.get_occupied_tiles()
+	for r in Global.station.rooms:
+		for t in occupied:
+			if r.is_coord_in_room(t):
+				return r
+	return null
+
+func _get_closest_door_tile(room: Room, crew_world_pos: Vector2) -> Vector2i:
+	var best: Vector2i = room.data.door_tiles[0]
+	var best_d := INF
+	for d in room.data.door_tiles:
+		var dw := to_global(build_tile_map.map_to_local(d))
+		var dist := crew_world_pos.distance_to(dw)
+		if dist < best_d:
+			best_d = dist
+			best = d
+	return best
+
+func _compute_door_approach_tiles(room: Room, door: Vector2i) -> Dictionary:
+	var b := room.get_room_bounds()
+	var outside := door
+	if door.x == b.min_x:
+		outside = door + Vector2i(-1, 0)
+	elif door.x == b.max_x:
+		outside = door + Vector2i(1, 0)
+	elif door.y == b.min_y:
+		outside = door + Vector2i(0, -1)
+	elif door.y == b.max_y:
+		outside = door + Vector2i(0, 1)
+	return {
+		"outside": outside,
+		"door": door
+	}
+
+func _tile_center_world(tile: Vector2i) -> Vector2:
+	# Convert tile coords to world position centered in tile (BuildTileMap space)
+	var local := build_tile_map.map_to_local(tile)
+	return build_tile_map.to_global(local)
+
+func _get_adjacent_tile_inside_room(furniture: Furniture, room: Room) -> Vector2i:
+	var dirs := [Vector2i(0,-1), Vector2i(1,0), Vector2i(0,1), Vector2i(-1,0),
+		Vector2i(1,-1), Vector2i(1,1), Vector2i(-1,1), Vector2i(-1,-1)]
+	for t in furniture.get_occupied_tiles():
+		for d in dirs:
+			var c: Vector2i = t + d
+			if room.is_coord_in_room(c) and not furniture.is_tile_occupied(c):
+				return c
+	# Fallback: use any tile adjacent to furniture even if boundary is tight
+	return furniture.get_center_tile()
 
 func _on_furniture_crew_assigned(furniture: Furniture, crew_member: Node) -> void:
 	if selected_crew:
@@ -444,5 +525,12 @@ func _on_inspecting_crew_state_input(event: InputEvent) -> void:
 			return
 
 func update_navigation_region() -> void:
+	# Defer baking to ensure TileMap edits are committed
+	call_deferred("_deferred_bake_navigation")
+
+func _deferred_bake_navigation() -> void:
+	# Wait one physics frame for safety, then bake
+	await get_tree().physics_frame
 	navigation_region.bake_navigation_polygon()
+
 

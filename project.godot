@@ -117,5 +117,4 @@ rotate_furniture={
 
 [layer_names]
 
-2d_physics/layer_1="station"
-2d_physics/layer_2="crew"
+2d_physics/layer_1="obstacles"
