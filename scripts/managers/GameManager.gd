@@ -48,8 +48,7 @@ func _input(event: InputEvent) -> void:
 			# Mouse is over a UI control, let the UI handle it
 			return
 
-		var mouse_position: Vector2 = local_mouse_position(event.position, camera)
-		var selected_tile: Vector2i = build_tile_map.local_to_map(mouse_position)
+		var selected_tile: Vector2i = TileMapManager.get_global_mouse_position()
 
 		# Note: PlacingFurniture state has its own input handler for placement clicks
 		# This global handler only manages state-transition clicks (crew, furniture, rooms, base layer)
@@ -172,8 +171,7 @@ func local_mouse_position(event_position: Vector2, game_camera: Camera2D) -> Vec
 func _on_inspecting_furniture_state_input(event: InputEvent) -> void:
 	# Handle input while inspecting furniture
 	if event.is_action_pressed(&"select"):
-		var mouse_position: Vector2 = local_mouse_position(event.position, camera)
-		var selected_tile: Vector2i = build_tile_map.local_to_map(mouse_position)
+		var selected_tile: Vector2i = TileMapManager.get_global_mouse_position()
 
 		# Check if we clicked on furniture
 		if furnishing_manager:
