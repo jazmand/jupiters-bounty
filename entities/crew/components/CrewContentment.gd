@@ -37,7 +37,7 @@ var environment_bonus: int = 0
 var social_bonus: int = 0
 
 # Component references
-var crew_member: CrewMember
+var crew_member: Node
 var crew_speech: CrewSpeech
 
 func _ready() -> void:
@@ -62,7 +62,7 @@ func evaluate_environment(room: Room) -> void:
 	# TODO: Check room quality, furniture, lighting, etc.
 	pass
 
-func evaluate_social_interaction(interaction_type: String, other_crew: CrewMember) -> void:
+func evaluate_social_interaction(interaction_type: String, other_crew: Node) -> void:
 	# TODO: Handle crew interactions, teamwork, conflicts
 	pass
 

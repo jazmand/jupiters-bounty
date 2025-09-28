@@ -30,13 +30,13 @@ const COLLISION_LAYERS = {
 @export var speed: int = 5
 
 # TODO: temporary solution, will improve later
-@export_category("Working Hours")
+# @export_category("Working Hours")
 @export var starts_work_hour: int = 2
 @export var starts_work_minute: int = 10
 @export var stops_work_hour: int = 2
 @export var stops_work_minute: int = 25
 
-@onready var state_manager: StateChart = $CrewStateManager
+@onready var state_manager = $CrewStateManager
 @onready var navigation_agent: NavigationAgent2D = $Navigation/NavigationAgent2D
 @onready var navigation_timer: Timer = $Navigation/Timer
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
@@ -80,6 +80,13 @@ var _avoidance_offset: Vector2 = Vector2.ZERO
 var _avoidance_timer: float = 0.0
 const AVOIDANCE_DURATION: float = 0.5  # How long to maintain avoidance offset
 const AVOIDANCE_DISTANCE: float = 32.0  # Distance to side-step
+
+# Wall collision handling
+var _wall_collision_timer: float = 0.0
+var _wall_collision_count: int = 0
+var _original_target: Vector2 = Vector2.ZERO
+const WALL_COLLISION_PAUSE: float = 1.0
+const MAX_WALL_COLLISIONS: int = 2
 
 # Vigour constants moved to CrewVigour component
 
@@ -150,19 +157,12 @@ func select() -> void:
 	Global.crew_selected.emit(self)
 
 func set_movement_target(movement_target: Vector2) -> void:
-	# Check for static obstacles before setting target
-	if not check_path_for_static_obstacles(movement_target):
-		print("DEBUG: Path blocked by static obstacles, finding alternative route")
-		# Find an alternative route around the obstacle
-		var alternative_target = find_alternative_route(movement_target)
-		if alternative_target != Vector2.ZERO:
-			print("DEBUG: Using alternative route: ", alternative_target)
-			navigation_agent.target_position = alternative_target
-		else:
-			print("DEBUG: No alternative route found, using original target")
-			navigation_agent.target_position = movement_target
-	else:
-		navigation_agent.target_position = movement_target
+	# Store the original target for repathing if needed
+	_original_target = movement_target
+	_wall_collision_count = 0
+	_wall_collision_timer = 0.0
+	
+	navigation_agent.target_position = movement_target
 
 func find_alternative_route(blocked_target: Vector2) -> Vector2:
 	"""Find an alternative route around obstacles using multiple ray directions"""
@@ -186,7 +186,6 @@ func find_alternative_route(blocked_target: Vector2) -> Vector2:
 		for i in range(1, min(max_steps, int(distance / step_size) + 1)):
 			var test_target = global_position + direction * (step_size * i)
 			if check_path_for_static_obstacles(test_target):
-				print("DEBUG: Found alternative path at: ", test_target)
 				return test_target
 	
 	return Vector2.ZERO
@@ -205,17 +204,13 @@ func validate_current_path() -> void:
 	
 	# If the next target is blocked, find an alternative
 	if not check_path_for_static_obstacles(next_target):
-		print("DEBUG: Next path target blocked: ", next_target, " finding alternative")
-		
 		var alternative = find_alternative_route(next_target)
 		if alternative != Vector2.ZERO:
-			print("DEBUG: Redirecting to alternative: ", alternative)
 			navigation_agent.target_position = alternative
 		else:
 			# Try to find a route around the obstacle
 			var around_obstacle = find_route_around_obstacle(global_position, next_target)
 			if around_obstacle != Vector2.ZERO:
-				print("DEBUG: Redirecting around obstacle: ", around_obstacle)
 				navigation_agent.target_position = around_obstacle
 
 func find_route_around_obstacle(start: Vector2, blocked_end: Vector2) -> Vector2:
@@ -236,7 +231,6 @@ func _force_navigation_rebake() -> void:
 	var nav_region = get_tree().get_first_node_in_group("navigation")
 	if nav_region and nav_region.has_method("bake_navigation_polygon"):
 		nav_region.bake_navigation_polygon()
-		print("DEBUG: Forced navigation rebake")
 
 func set_rounded_direction() -> void:
 	var next_point: Vector2
@@ -467,7 +461,7 @@ func _handle_collision_speech(collision: KinematicCollision2D) -> void:
 	# Do not speak again while current message is in progress
 	if is_speaking:
 		return
-	if other is CrewMember:
+	if other.has_method("say"):
 		if randi() % 2 == 0:
 			say("Excuse me.", 2.5)
 		else:
@@ -481,11 +475,11 @@ func _on_idling_state_entered() -> void:
 	if not _is_on_assignment():
 		navigation_agent.target_position = position
 		assignment = &""
-	state_manager.set_expression_property(&"assignment", assignment)
-	# Randomise idle duration each cycle
-	idle_time_limit = randf_range(idle_time_min, idle_time_max)
-	idle_timer = 0.0
-	current_animation_direction = Vector2.ZERO
+		state_manager.set_expression_property(&"assignment", assignment)
+		# Randomise idle duration each cycle
+		idle_time_limit = randf_range(idle_time_min, idle_time_max)
+		idle_timer = 0.0
+		current_animation_direction = Vector2.ZERO
 
 func _on_idling_state_physics_processing(_delta: float) -> void:
 	idle_timer += _delta
@@ -507,6 +501,15 @@ func _on_walking_state_entered() -> void:
 		walk_segments_remaining = randi_range(walk_segments_per_cycle_min, walk_segments_per_cycle_max)
 
 func _on_walking_state_physics_processing(_delta: float) -> void:
+	# Handle wall collision pause
+	if _wall_collision_timer > 0:
+		_wall_collision_timer -= _delta
+		# Stop movement and animation during pause
+		velocity = Vector2.ZERO
+		current_move_direction = Vector2.ZERO
+		current_animation_direction = Vector2.ZERO
+		return
+	
 	# Handle resting when vigour is 0 or already resting
 	if crew_vigour.should_rest() or crew_vigour.is_resting:
 		crew_vigour.process_resting(_delta, current_animation_direction, current_move_direction)
@@ -560,7 +563,6 @@ func _on_walking_state_physics_processing(_delta: float) -> void:
 	
 	# Apply avoidance offset to movement direction
 	if _avoidance_offset != Vector2.ZERO:
-		print("DEBUG: Applying avoidance offset: ", _avoidance_offset)
 		current_move_direction += _avoidance_offset.normalized() * 0.3  # Blend avoidance with normal movement
 	
 	# Get speed scale from CrewVigour component (handles fatigue)
@@ -570,6 +572,7 @@ func _on_walking_state_physics_processing(_delta: float) -> void:
 	velocity = current_move_direction.normalized() * (speed * current_speed_scale)
 	var collision = move_and_collide(velocity)
 	if collision:
+		_handle_wall_collision(collision)
 		_handle_collision_speech(collision)
 
 	# TEST: log next path position changes while on assignment
@@ -635,7 +638,6 @@ func assign_to_furniture_via_waypoints(furniture: Furniture, waypoints: Array[Ve
 		# Snapshot the initial computed path for this assignment leg (to freeze it)
 		await get_tree().physics_frame
 		_snapshot_agent_path()
-		print("DEBUG: agent.layers=", navigation_agent.navigation_layers, " reachable=", navigation_agent.is_target_reachable(), " path.len=", navigation_agent.get_current_navigation_path().size())
 	else:
 		# Fallback: go directly to stored work_location if no waypoints provided
 		set_movement_target(work_location)
@@ -737,12 +739,10 @@ func check_for_crew_collisions() -> Vector2:
 	
 	var result = space_state.intersect_ray(query)
 	if not result.is_empty():
-		print("DEBUG: Collision detected with: ", result.collider.name)
 		# Check if it's a crew member by checking if it has collision_layer property
 		if result.collider.has_method("get") and result.collider.get("collision_layer") != null:
 			var collider_layer = result.collider.get("collision_layer")
 			if collider_layer & COLLISION_LAYERS.CREW:
-				print("DEBUG: Crew collision detected, applying avoidance")
 				# Calculate perpendicular direction for side-step
 				var perpendicular = Vector2(-current_move_direction.y, current_move_direction.x)
 				# Randomly choose left or right
@@ -758,14 +758,101 @@ func update_avoidance(_delta: float) -> void:
 		_avoidance_timer -= _delta
 		if _avoidance_timer <= 0:
 			_avoidance_offset = Vector2.ZERO
-			print("DEBUG: Avoidance timer expired, clearing offset")
 	else:
 		# Check for new crew collisions
 		var new_offset = check_for_crew_collisions()
 		if new_offset != Vector2.ZERO:
 			_avoidance_offset = new_offset
 			_avoidance_timer = AVOIDANCE_DURATION
-			print("DEBUG: Applied avoidance offset: ", new_offset)
+
+func _handle_wall_collision(collision: KinematicCollision2D) -> void:
+	"""Handle collision with walls - pause and repath if needed"""
+	var collider = collision.get_collider()
+	
+	# Check if collision is with a wall/obstacle (not another crew)
+	var is_wall_collision = false
+	
+	if collider is TileMap:
+		# TileMap objects (room walls) are always obstacles
+		is_wall_collision = true
+	elif collider and collider.has_method("get") and collider.get("collision_layer") != null:
+		# Other objects with collision_layer property
+		var collider_layer = collider.get("collision_layer")
+		
+		if collider_layer & COLLISION_LAYERS.OBSTACLES:
+			is_wall_collision = true
+	
+	if is_wall_collision:
+		# Only increment collision count if not currently paused
+		if _wall_collision_timer <= 0:
+			_wall_collision_count += 1
+			
+			if _wall_collision_count <= MAX_WALL_COLLISIONS:
+				# First collision: pause for 1 second
+				_wall_collision_timer = WALL_COLLISION_PAUSE
+			else:
+				# Second collision: try to repath around the obstacle
+				_attempt_repath_around_obstacle()
+
+func _attempt_repath_around_obstacle() -> void:
+	"""Try to find an alternative route around the obstacle to reach the same destination"""
+	# Try multiple strategies to find a circuitous route to the same destination
+	var alternative_target = _find_circuitous_route(_original_target)
+	
+	if alternative_target != Vector2.ZERO:
+		navigation_agent.target_position = alternative_target
+		_wall_collision_count = 0  # Reset collision count
+	else:
+		# Fallback to nearby alternative if circuitous route fails
+		alternative_target = find_alternative_route(_original_target)
+		if alternative_target != Vector2.ZERO:
+			navigation_agent.target_position = alternative_target
+			_wall_collision_count = 0
+		else:
+			# Stop trying to move to avoid infinite collision loop
+			navigation_agent.target_position = global_position
+
+func _find_circuitous_route(destination: Vector2) -> Vector2:
+	"""Find a circuitous route around obstacles to reach the same destination"""
+	var directions = [
+		Vector2(1, 0),   # Right
+		Vector2(-1, 0),  # Left
+		Vector2(0, 1),   # Down
+		Vector2(0, -1),  # Up
+		Vector2(1, 1),   # Down-right
+		Vector2(-1, 1),  # Down-left
+		Vector2(1, -1),  # Up-right
+		Vector2(-1, -1)  # Up-left
+	]
+	
+	var current_pos = global_position
+	var distance_to_dest = current_pos.distance_to(destination)
+	var step_size = 128.0  # Check every 128 pixels
+	var max_steps = 5  # Allow for more circuitous routes
+	
+	# Try different directions at increasing distances
+	for direction in directions:
+		for i in range(1, max_steps + 1):
+			var test_target = current_pos + direction * (step_size * i)
+			
+			# Check if this intermediate point is clear
+			if check_path_for_static_obstacles(test_target):
+				# Check if we can reach the final destination from this intermediate point
+				if _can_reach_destination_from(test_target, destination):
+					return test_target
+	
+	return Vector2.ZERO
+
+func _can_reach_destination_from(start: Vector2, destination: Vector2) -> bool:
+	"""Check if we can reach the destination from the given start point"""
+	# Use a simple ray cast to check if there's a clear path
+	var space_state = get_world_2d().direct_space_state
+	var query = PhysicsRayQueryParameters2D.create(start, destination)
+	query.collision_mask = COLLISION_LAYERS.OBSTACLES
+	query.exclude = [self]
+	
+	var result = space_state.intersect_ray(query)
+	return result.is_empty()
 
 func _on_fatigue_level_changed(is_fatigued: bool) -> void:
 	# Could be used for future fatigue effects

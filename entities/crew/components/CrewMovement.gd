@@ -32,7 +32,7 @@ var walk_segments_remaining: int = 0
 @export var walk_segments_per_cycle_max: int = 3
 
 # Component references
-var crew_member: CrewMember
+var crew_member: Node
 var navigation_agent: NavigationAgent2D
 
 func _ready() -> void:

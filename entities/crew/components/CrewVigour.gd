@@ -26,10 +26,10 @@ var vigour_rest_accum: float = 0.0
 var zzz_timer: float = 0.0
 
 # Component references
-var crew_member: CrewMember
+var crew_member: Node
 
 func _ready() -> void:
-	crew_member = get_parent() as CrewMember
+	crew_member = get_parent()
 
 func initialize(starting_vigour: int = MAX_VIGOUR) -> void:
 	current_vigour = starting_vigour

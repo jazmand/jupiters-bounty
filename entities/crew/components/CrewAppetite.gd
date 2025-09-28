@@ -28,7 +28,7 @@ var appetite_eat_accum: float = 0.0
 var hunger_complaint_timer: float = 0.0
 
 # Component references
-var crew_member: CrewMember
+var crew_member: Node
 var crew_speech: CrewSpeech
 
 func _ready() -> void:

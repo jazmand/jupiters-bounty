@@ -18,7 +18,7 @@ var current_animation: String = "idle_down"
 var current_state: StringName = STATE.IDLE
 
 # Component references
-var crew_member: CrewMember
+var crew_member: Node
 var animation_player: AnimationPlayer
 var sprite_idle: Sprite2D
 var sprite_walk: Sprite2D

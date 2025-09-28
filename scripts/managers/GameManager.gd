@@ -264,10 +264,6 @@ func _assign_crew_to_furniture(furniture: Furniture, crew_member: CrewMember) ->
 		# Waypoint world positions should be at the CENTER of tiles
 		var outside_world := _tile_center_world(approach["outside"])
 		var door_world := _tile_center_world(approach["door"])
-		print("DEBUG: doorway waypoints outside=", outside_world, " door=", door_world)
-		# Log region nav map RID
-		if navigation_region:
-			print("DEBUG: region.map=", navigation_region.get_navigation_map())
 		# Then go to an inside-adjacent tile near the furniture (stay there)
 		var inside_adj := _get_adjacent_tile_inside_room(furniture, room)
 		var inside_adj_world := _tile_center_world(inside_adj)

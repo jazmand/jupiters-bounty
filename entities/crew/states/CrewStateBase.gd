@@ -8,7 +8,7 @@ signal state_transition_requested(new_state: String, data: Dictionary)
 var state_name: String = ""
 
 # Component references
-var crew_member: CrewMember
+var crew_member: Node
 var crew_movement: CrewMovement
 var crew_animation: CrewAnimation
 var crew_vigour: CrewVigour
@@ -20,7 +20,7 @@ func _ready() -> void:
 	# Will be set by state manager when implemented
 	pass
 
-func initialize(member: CrewMember) -> void:
+func initialize(member: Node) -> void:
 	"""Initialize state with crew member and component references"""
 	crew_member = member
 	# TODO: Get component references when implemented

@@ -1,6 +1,6 @@
 class_name IdleAction extends UtilityAIAction
 
-@onready var crew_member: CrewMember = owner as CrewMember
+@onready var crew_member: Node = owner
 
 @onready var state_manager: StateChart = %CrewStateManager as StateChart
 

@@ -1,6 +1,6 @@
 class_name WorkAction extends UtilityAIAction
 
-@onready var crew_member: CrewMember = owner as CrewMember
+@onready var crew_member: Node = owner
 
 func execute() -> void:
 	# Skip while following a fixed assignment path (door/furniture waypoints)

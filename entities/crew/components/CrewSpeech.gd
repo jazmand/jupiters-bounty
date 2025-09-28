@@ -19,7 +19,7 @@ const RANDOM_PHRASES := [
 var is_speaking: bool = false
 
 # Component references
-var crew_member: CrewMember
+var crew_member: Node
 var speech_label: Label
 var speech_timer: Timer
 

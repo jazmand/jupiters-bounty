@@ -1,7 +1,7 @@
 extends Node
 
-signal crew_assigned(crew: CrewMember)
-signal crew_selected(crew: CrewMember)
+signal crew_assigned(crew: Node)
+signal crew_selected(crew: Node)
 
 signal update_cursor_label(text: String, position: Vector2)
 signal hide_cursor_label()
