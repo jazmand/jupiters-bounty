@@ -88,6 +88,16 @@ var _original_target: Vector2 = Vector2.ZERO
 const WALL_COLLISION_PAUSE: float = 1.0
 const MAX_WALL_COLLISIONS: int = 2
 
+# Performance optimization for pathfinding
+var _pathfinding_cooldown: float = 0.0
+const PATHFINDING_COOLDOWN: float = 0.5  # Minimum time between pathfinding attempts
+var _last_pathfinding_time: float = 0.0
+
+# Multi-waypoint pathfinding system
+var _alternative_waypoints: Array[Vector2] = []
+var _current_waypoint_index: int = 0
+var _final_destination: Vector2 = Vector2.ZERO
+
 # Vigour constants moved to CrewVigour component
 
 
@@ -159,8 +169,11 @@ func select() -> void:
 func set_movement_target(movement_target: Vector2) -> void:
 	# Store the original target for repathing if needed
 	_original_target = movement_target
+	_final_destination = movement_target
 	_wall_collision_count = 0
 	_wall_collision_timer = 0.0
+	_alternative_waypoints.clear()
+	_current_waypoint_index = 0
 	
 	navigation_agent.target_position = movement_target
 
@@ -204,8 +217,14 @@ func validate_current_path() -> void:
 	
 	# If the next target is blocked, find an alternative
 	if not check_path_for_static_obstacles(next_target):
-		var alternative = find_alternative_route(next_target)
+		# Use the new smart pathfinding system
+		var alternative = _find_smart_alternative_route(_final_destination)
 		if alternative != Vector2.ZERO:
+			# Set up waypoint system: intermediate point -> final destination
+			_alternative_waypoints.clear()
+			_alternative_waypoints.append(alternative)
+			_alternative_waypoints.append(_final_destination)
+			_current_waypoint_index = 0
 			navigation_agent.target_position = alternative
 		else:
 			# Try to find a route around the obstacle
@@ -536,6 +555,13 @@ func _on_walking_state_physics_processing(_delta: float) -> void:
 			await get_tree().physics_frame
 			_snapshot_agent_path()
 			return
+		
+		# Handle alternative waypoints for obstacle avoidance
+		if not _alternative_waypoints.is_empty() and _current_waypoint_index < _alternative_waypoints.size():
+			var next_waypoint = _alternative_waypoints[_current_waypoint_index]
+			_current_waypoint_index += 1
+			navigation_agent.target_position = next_waypoint
+			return
 		# If walking freely (not heading to work), optionally chain additional targets
 		if assignment == &"" and walk_segments_remaining > 1:
 			walk_segments_remaining -= 1
@@ -725,9 +751,6 @@ func check_path_for_static_obstacles(target_pos: Vector2) -> bool:
 	query.exclude = [self]
 	
 	var result = space_state.intersect_ray(query)
-	if not result.is_empty():
-		print("DEBUG: Static obstacle detected: ", result.collider.name)
-		print("DEBUG: Query mask: ", query.collision_mask, " OBSTACLES: ", COLLISION_LAYERS.OBSTACLES)
 	return result.is_empty()
 
 func check_for_crew_collisions() -> Vector2:
@@ -796,17 +819,37 @@ func _handle_wall_collision(collision: KinematicCollision2D) -> void:
 
 func _attempt_repath_around_obstacle() -> void:
 	"""Try to find an alternative route around the obstacle to reach the same destination"""
+	# Performance optimization: limit pathfinding frequency
+	var current_time = Time.get_time_dict_from_system()
+	var time_since_last = current_time.second - _last_pathfinding_time
+	if time_since_last < PATHFINDING_COOLDOWN:
+		return
+	
+	_last_pathfinding_time = current_time.second
+	
 	# Try multiple strategies to find a circuitous route to the same destination
-	var alternative_target = _find_circuitous_route(_original_target)
+	var alternative_target = _find_smart_alternative_route(_final_destination)
 	
 	if alternative_target != Vector2.ZERO:
+		# Set up waypoint system: intermediate point -> final destination
+		_alternative_waypoints.clear()
+		_alternative_waypoints.append(alternative_target)
+		_alternative_waypoints.append(_final_destination)
+		_current_waypoint_index = 0
+		
 		navigation_agent.target_position = alternative_target
 		_wall_collision_count = 0  # Reset collision count
 	else:
-		# Fallback to nearby alternative if circuitous route fails
-		alternative_target = find_alternative_route(_original_target)
-		if alternative_target != Vector2.ZERO:
-			navigation_agent.target_position = alternative_target
+		# Fallback to closest reachable point if no valid route exists
+		var closest_reachable = _find_closest_reachable_point(_final_destination)
+		if closest_reachable != Vector2.ZERO:
+			# Set up waypoint system: closest point -> final destination
+			_alternative_waypoints.clear()
+			_alternative_waypoints.append(closest_reachable)
+			_alternative_waypoints.append(_final_destination)
+			_current_waypoint_index = 0
+			
+			navigation_agent.target_position = closest_reachable
 			_wall_collision_count = 0
 		else:
 			# Stop trying to move to avoid infinite collision loop
@@ -853,6 +896,149 @@ func _can_reach_destination_from(start: Vector2, destination: Vector2) -> bool:
 	
 	var result = space_state.intersect_ray(query)
 	return result.is_empty()
+
+func _find_smart_alternative_route(destination: Vector2) -> Vector2:
+	"""Find an intelligent alternative route that prioritizes obstacle avoidance"""
+	var current_pos = global_position
+	
+	# First, try room-based pathfinding if destination is in a room
+	var room_based_route = _try_room_based_pathfinding(current_pos, destination)
+	if room_based_route != Vector2.ZERO:
+		return room_based_route
+	
+	# If room-based fails, try multi-step pathfinding with obstacle avoidance
+	return _find_multi_step_route_with_avoidance(current_pos, destination)
+
+func _try_room_based_pathfinding(start: Vector2, destination: Vector2) -> Vector2:
+	"""Try to find a route using room entrances and common paths"""
+	# Find the room containing the destination
+	var dest_room = _get_room_containing_point(destination)
+	if dest_room == null:
+		return Vector2.ZERO
+	
+	# Find the room containing the start position
+	var start_room = _get_room_containing_point(start)
+	if start_room == null:
+		return Vector2.ZERO
+	
+	# If we're already in the same room, try direct path
+	if start_room == dest_room:
+		if check_path_for_static_obstacles(destination):
+			return destination
+		return Vector2.ZERO
+	
+	# Try to find a route through room entrances
+	var entrance_route = _find_route_via_room_entrances(start_room, dest_room, start, destination)
+	if entrance_route != Vector2.ZERO:
+		return entrance_route
+	
+	return Vector2.ZERO
+
+func _get_room_containing_point(point: Vector2) -> Room:
+	"""Get the room that contains the given point"""
+	# Query for rooms at the given point
+	var space_state = get_world_2d().direct_space_state
+	var query = PhysicsPointQueryParameters2D.new()
+	query.position = point
+	query.collision_mask = COLLISION_LAYERS.OBSTACLES
+	
+	var result = space_state.intersect_point(query)
+	for hit in result:
+		if hit.collider is Room:
+			return hit.collider as Room
+	
+	return null
+
+func _find_route_via_room_entrances(start_room: Room, dest_room: Room, start: Vector2, destination: Vector2) -> Vector2:
+	"""Find a route that goes through room entrances"""
+	# This is a simplified version - in a full implementation, you'd have
+	# a graph of room connections and find the shortest path through entrances
+	# For now, try to find the nearest entrance to the destination room
+	
+	# Get all room entrances (this would need to be implemented based on your room system)
+	var entrances = _get_room_entrances(dest_room)
+	if entrances.is_empty():
+		return Vector2.ZERO
+	
+	# Find the entrance closest to our current position that we can reach
+	var best_entrance = Vector2.ZERO
+	var best_distance = INF
+	
+	for entrance in entrances:
+		if check_path_for_static_obstacles(entrance):
+			var distance = start.distance_to(entrance)
+			if distance < best_distance:
+				best_distance = distance
+				best_entrance = entrance
+	
+	return best_entrance
+
+func _get_room_entrances(room: Room) -> Array[Vector2]:
+	"""Get the entrance points for a room"""
+	# This would need to be implemented based on your room system
+	# For now, return empty array - you'd implement this based on how
+	# doors and entrances are defined in your room system
+	return []
+
+func _find_multi_step_route_with_avoidance(start: Vector2, destination: Vector2) -> Vector2:
+	"""Find a multi-step route that avoids obstacles"""
+	var directions = [
+		Vector2(1, 0),   # Right
+		Vector2(-1, 0),  # Left
+		Vector2(0, 1),   # Down
+		Vector2(0, -1),  # Up
+		Vector2(1, 1),   # Down-right
+		Vector2(-1, 1),  # Down-left
+		Vector2(1, -1),  # Up-right
+		Vector2(-1, -1)  # Up-left
+	]
+	
+	var step_size = 128.0
+	var max_steps = 6  # Reduced for performance with 150 crew members
+	
+	# Try different directions with increasing distances
+	for direction in directions:
+		for i in range(1, max_steps + 1):
+			var test_target = start + direction * (step_size * i)
+			
+			# Check if this intermediate point is clear
+			if check_path_for_static_obstacles(test_target):
+				# Check if we can reach the final destination from this intermediate point
+				if _can_reach_destination_from(test_target, destination):
+					# Also check if the path from start to intermediate point is clear
+					if check_path_for_static_obstacles(test_target):
+						return test_target
+	
+	return Vector2.ZERO
+
+func _find_closest_reachable_point(destination: Vector2) -> Vector2:
+	"""Find the closest point to the destination that is actually reachable"""
+	var current_pos = global_position
+	var search_radius = 256.0  # Start with 256 pixel radius
+	var max_radius = 768.0     # Reduced maximum search radius for performance
+	var step_size = 128.0      # Increased search resolution for performance
+	
+	while search_radius <= max_radius:
+		# Search in a spiral pattern around the destination
+		var angle = 0.0
+		var angle_step = PI / 4.0  # 4 directions per radius for performance
+		
+		while angle < 2 * PI:
+			var offset = Vector2(cos(angle), sin(angle)) * search_radius
+			var test_point = destination + offset
+			
+			# Check if this point is reachable
+			if check_path_for_static_obstacles(test_point):
+				# Double-check that we can reach it from our current position
+				if check_path_for_static_obstacles(test_point):
+					return test_point
+			
+			angle += angle_step
+		
+		search_radius += step_size
+	
+	# If no reachable point found, return current position
+	return current_pos
 
 func _on_fatigue_level_changed(is_fatigued: bool) -> void:
 	# Could be used for future fatigue effects

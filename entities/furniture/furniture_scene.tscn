@@ -7,6 +7,7 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_e5n7v"]
 
 [node name="Furniture" type="Node2D"]
+y_sort_enabled = true
 script = ExtResource("1_8xwhq")
 
 [node name="Sprite2D" type="Sprite2D" parent="."]
