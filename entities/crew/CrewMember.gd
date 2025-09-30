@@ -85,12 +85,12 @@ const AVOIDANCE_DISTANCE: float = 32.0  # Distance to side-step
 var _wall_collision_timer: float = 0.0
 var _wall_collision_count: int = 0
 var _original_target: Vector2 = Vector2.ZERO
-const WALL_COLLISION_PAUSE: float = 1.0
-const MAX_WALL_COLLISIONS: int = 2
+const WALL_COLLISION_PAUSE: float = 0.3  # Reduced from 1.0 to 0.3 seconds for faster redirection
+const MAX_WALL_COLLISIONS: int = 1  # Reduced from 2 to 1 for more responsive redirection
 
 # Performance optimization for pathfinding
 var _pathfinding_cooldown: float = 0.0
-const PATHFINDING_COOLDOWN: float = 0.5  # Minimum time between pathfinding attempts
+const PATHFINDING_COOLDOWN: float = 0.1  # Reduced from 0.5 to 0.1 seconds for more responsive redirection
 var _last_pathfinding_time: float = 0.0
 
 # Multi-waypoint pathfinding system
@@ -191,7 +191,7 @@ func find_alternative_route(blocked_target: Vector2) -> Vector2:
 	]
 	
 	var distance = global_position.distance_to(blocked_target)
-	var step_size = 128.0  # Check every 128 pixels for efficiency
+	var step_size = 200.0  # Increased from 128 to step back further
 	var max_steps = 3  # Limit search to avoid performance issues
 	
 	# Try different directions at increasing distances
@@ -239,7 +239,7 @@ func find_route_around_obstacle(start: Vector2, blocked_end: Vector2) -> Vector2
 	
 	# Try both sides of the obstacle
 	for side in [-1, 1]:
-		var around_point = start + perpendicular * side * 256.0
+		var around_point = start + perpendicular * side * 400.0  # Increased from 256 to step back further
 		if check_path_for_static_obstacles(around_point):
 			return around_point
 	
@@ -501,6 +501,9 @@ func _on_idling_state_entered() -> void:
 		current_animation_direction = Vector2.ZERO
 
 func _on_idling_state_physics_processing(_delta: float) -> void:
+	# Update z_index based on Y position for proper depth sorting
+	_update_depth_sorting()
+	
 	idle_timer += _delta
 	if idle_timer >= idle_time_limit:
 		state_manager.send_event(&"walk")
@@ -520,6 +523,9 @@ func _on_walking_state_entered() -> void:
 		walk_segments_remaining = randi_range(walk_segments_per_cycle_min, walk_segments_per_cycle_max)
 
 func _on_walking_state_physics_processing(_delta: float) -> void:
+	# Update z_index based on Y position for proper depth sorting
+	_update_depth_sorting()
+	
 	# Handle wall collision pause
 	if _wall_collision_timer > 0:
 		_wall_collision_timer -= _delta
@@ -819,7 +825,7 @@ func _handle_wall_collision(collision: KinematicCollision2D) -> void:
 
 func _attempt_repath_around_obstacle() -> void:
 	"""Try to find an alternative route around the obstacle to reach the same destination"""
-	# Performance optimization: limit pathfinding frequency
+	# Performance optimization: limit pathfinding frequency using delta time
 	var current_time = Time.get_time_dict_from_system()
 	var time_since_last = current_time.second - _last_pathfinding_time
 	if time_since_last < PATHFINDING_COOLDOWN:
@@ -870,7 +876,7 @@ func _find_circuitous_route(destination: Vector2) -> Vector2:
 	
 	var current_pos = global_position
 	var distance_to_dest = current_pos.distance_to(destination)
-	var step_size = 128.0  # Check every 128 pixels
+	var step_size = 200.0  # Increased from 128 to step back further
 	var max_steps = 5  # Allow for more circuitous routes
 	
 	# Try different directions at increasing distances
@@ -993,7 +999,7 @@ func _find_multi_step_route_with_avoidance(start: Vector2, destination: Vector2)
 		Vector2(-1, -1)  # Up-left
 	]
 	
-	var step_size = 128.0
+	var step_size = 200.0  # Increased from 128 to step back further
 	var max_steps = 6  # Reduced for performance with 150 crew members
 	
 	# Try different directions with increasing distances
@@ -1043,3 +1049,16 @@ func _find_closest_reachable_point(destination: Vector2) -> Vector2:
 func _on_fatigue_level_changed(is_fatigued: bool) -> void:
 	# Could be used for future fatigue effects
 	pass
+
+func _update_depth_sorting() -> void:
+	"""Update z_index based on Y position for proper depth sorting"""
+	# Convert world position to tile coordinates
+	var tile_map = get_tree().get_first_node_in_group("navigation")
+	if tile_map and tile_map is TileMap:
+		var tile_pos = tile_map.local_to_map(tile_map.to_local(global_position))
+		# Higher Y values (further down) should have higher z_index (appear in front)
+		# Crew should appear above furniture (which has z_index = tile_y + 15), so add a higher base offset
+		z_index = tile_pos.y + 25  # Base offset to ensure crew appears above furniture
+	else:
+		# Fallback: use Y position directly
+		z_index = int(global_position.y / 64) + 25

@@ -80,6 +80,11 @@ func _set_position_from_tiles() -> void:
 	# Convert tile coordinates to world position
 	var tile_size = 64  # Assuming 64x64 tiles, adjust if different
 	position = Vector2(center_tile.x * tile_size, center_tile.y * tile_size)
+	
+	# Set z_index based on tile Y position for proper depth sorting
+	# Higher Y values (further down) should have higher z_index (appear in front)
+	# Furniture tile map has z_index = 5, so furniture instances should be above that
+	z_index = center_tile.y + 15  # Base offset to ensure furniture appears above tile map and rooms
 
 func _on_area_input_event(viewport, event, shape_idx):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
