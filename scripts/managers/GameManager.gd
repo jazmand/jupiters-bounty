@@ -31,9 +31,10 @@ func _ready() -> void:
 	var base_tile_map_node: TileMap = get_node("BaseTileMap")
 	var build_tile_map_node: TileMap = get_node("BaseTileMap/BuildTileMap")
 	var furniture_tile_map_node: TileMap = get_node("BaseTileMap/FurnitureTileMap")
+	var special_furniture_tile_map_node: TileMap = get_node("BaseTileMap/SpecialFurnitureTileMap")
 
 	# Set the tile maps in TileMapManager and initialise it
-	TileMapManager.set_tile_maps(base_tile_map_node, build_tile_map_node, furniture_tile_map_node)
+	TileMapManager.set_tile_maps(base_tile_map_node, build_tile_map_node, furniture_tile_map_node, special_furniture_tile_map_node)
 
 func _input(event: InputEvent) -> void:
 	## Global input handler for crew/room/furniture clicks from any state
@@ -60,7 +61,6 @@ func _input(event: InputEvent) -> void:
 				if crew_member and is_instance_valid(crew_member):
 					var crew_tile = build_tile_map.local_to_map(crew_member.position)
 					if crew_tile == selected_tile:
-						print("DEBUG: Clicked on crew member - transitioning to inspecting_crew")
 						start_inspecting_crew(crew_member)
 						return
 
@@ -72,15 +72,20 @@ func _input(event: InputEvent) -> void:
 				
 				# If in crew assignment mode, assign the crew and then inspect the furniture
 				if is_in_crew_assignment_mode and selected_crew:
-					print("DEBUG: Assigning crew to furniture and transitioning to inspecting_furniture")
 					_assign_crew_to_furniture(furniture, selected_crew)
 					is_in_crew_assignment_mode = false
 					start_inspecting_furniture(furniture)
 					return
 				else:
-					print("DEBUG: Clicked on furniture - transitioning to inspecting_furniture")
 					start_inspecting_furniture(furniture)
 					return
+
+		# Check for special furniture (pumps) clicks
+		var pump_at_tile = _get_pump_at_tile(selected_tile)
+		if pump_at_tile:
+			# Handle pump click - could show pump info panel or trigger special actions
+			_handle_pump_click(pump_at_tile)
+			return
 
 		# Check for room selection (lower priority than crew and furniture)
 		var room_id: int = Room.find_tile_room_id(selected_tile)
@@ -113,7 +118,6 @@ func _input(event: InputEvent) -> void:
 			return
 
 		# Fallback: already in default or another non-handled state
-		print("DEBUG: Clicked on empty space (base layer) - no state change needed")
 
 func _is_mouse_over_ui() -> bool:
 	## Check if mouse is currently over any UI element
@@ -406,6 +410,10 @@ func apply_furniture_inspection_effects() -> void:
 	if TileMapManager.furniture_tile_map:
 		TileMapManager.furniture_tile_map.set_layer_modulate(TileMapManager.Layer.FURNISHING, Color(1, 1, 1, 0.3))
 	
+	# Lower opacity of special furniture layer (pumps, etc.)
+	if TileMapManager.special_furniture_tile_map:
+		TileMapManager.special_furniture_tile_map.set_layer_modulate(TileMapManager.Layer.SPECIAL_FURNITURE, Color(1, 1, 1, 0.3))
+	
 	# Lower opacity of crew members
 	if Global.station and Global.station.crew:
 		for crew_member in Global.station.crew:
@@ -428,6 +436,10 @@ func restore_normal_opacity() -> void:
 	if TileMapManager.furniture_tile_map:
 		TileMapManager.furniture_tile_map.set_layer_modulate(TileMapManager.Layer.FURNISHING, Color(1, 1, 1, 1.0))
 	
+	# Restore special furniture layer
+	if TileMapManager.special_furniture_tile_map:
+		TileMapManager.special_furniture_tile_map.set_layer_modulate(TileMapManager.Layer.SPECIAL_FURNITURE, Color(1, 1, 1, 1.0))
+	
 	# Restore crew members
 	if Global.station and Global.station.crew:
 		for crew_member in Global.station.crew:
@@ -443,6 +455,8 @@ func store_original_opacities() -> void:
 		_original_opacities["build"] = TileMapManager.build_tile_map.get_layer_modulate(TileMapManager.Layer.BUILDING)
 	if TileMapManager.furniture_tile_map:
 		_original_opacities["furniture"] = TileMapManager.furniture_tile_map.get_layer_modulate(TileMapManager.Layer.FURNISHING)
+	if TileMapManager.special_furniture_tile_map:
+		_original_opacities["special_furniture"] = TileMapManager.special_furniture_tile_map.get_layer_modulate(TileMapManager.Layer.SPECIAL_FURNITURE)
 
 func hide_all_panels() -> void:
 	var room_panel = _get_room_info_panel()
@@ -485,9 +499,24 @@ func _get_crew_info_panel() -> Node:
 func _get_furniture_menu() -> Node:
 	return gui.get_node_or_null("GUIManager/FurnitureMenu")
 
+func _get_pump_at_tile(tile: Vector2i) -> Pump:
+	# Find pump at the specified tile
+	var pumps = get_tree().get_nodes_in_group("pumps")
+	for pump in pumps:
+		if pump is Pump and pump.is_tile_occupied(tile):
+			return pump
+	return null
+
+func _handle_pump_click(pump: Pump) -> void:
+	# Handle pump click - show pump model information
+	print("=== PUMP INFORMATION ===")
+	print("Model: ", pump.pump_data.get_full_name())
+	print("Description: ", pump.pump_data.get_description())
+	print("Position: ", pump.position_tiles)
+	print("========================")
+
 func _on_inspecting_crew_state_entered() -> void:
 	## Handle entering crew inspection state
-	print("DEBUG: ✅ Entered inspecting_crew state")
 	# Ensure only crew info panel is visible
 	hide_all_panels()
 
@@ -495,7 +524,6 @@ func _on_inspecting_crew_state_entered() -> void:
 	var panel = _get_crew_info_panel()
 	if panel and selected_crew:
 		panel.open(selected_crew)
-		print("DEBUG: ✅ Opened crew info panel for: ", selected_crew.data.name)
 
 func _on_inspecting_crew_state_exited() -> void:
 	# Hide crew info panel

@@ -211,7 +211,6 @@ func _force_crew_repath() -> void:
 		if crew.has_method("navigation_agent") and crew.navigation_agent:
 			# Force the navigation agent to recalculate
 			crew.navigation_agent.target_position = crew.navigation_agent.target_position
-			print("DEBUG: Forced crew repath: ", crew.name)
 
 func is_on_room_edge_and_not_corner(coords: Vector2i) -> bool:
 	# This function is now available on the Room class

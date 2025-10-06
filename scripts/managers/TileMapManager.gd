@@ -4,11 +4,13 @@ extends Node
 var base_tile_map: TileMap
 var build_tile_map: TileMap
 var furniture_tile_map: TileMap
+var special_furniture_tile_map: TileMap
 
 # Private tile map references for internal functions
 var _base_tile_map: TileMap
 var _build_tile_map: TileMap
 var _furniture_tile_map: TileMap
+var _special_furniture_tile_map: TileMap
 
 # Layer constants - organized by TileMap
 enum Layer {
@@ -22,7 +24,10 @@ enum Layer {
 	# FurnitureTileMap layers
 	FURNITURE_DRAFTING = 0, # Furniture drafting preview tiles
 	FURNISHING = 1,         # Furniture placement tiles
-	NO_PLACEMENT = 2        # Invalid placement overlay
+	NO_PLACEMENT = 2,       # Invalid placement overlay
+	
+	# SpecialFurnitureTileMap layers
+	SPECIAL_FURNITURE = 0    # Special furniture like pumps
 }
 
 # Tileset constants - organized by TileMap with descriptive names
@@ -47,6 +52,10 @@ enum FurnitureTileset {
 	BED = 2              # Bed furniture tiles
 }
 
+enum SpecialFurnitureTileset {
+	PUMP = 0             # Pump tiles
+}
+
 # Signal removed - no longer needed with simplified tile management
 
 
@@ -57,15 +66,17 @@ func _ready() -> void:
 
 ## Initialization and Status
 
-func set_tile_maps(base_tile_map: TileMap, build_tile_map: TileMap, furniture_tile_map: TileMap) -> void:
+func set_tile_maps(base_tile_map: TileMap, build_tile_map: TileMap, furniture_tile_map: TileMap, special_furniture_tile_map: TileMap) -> void:
 	# Set both public and private references
 	self.base_tile_map = base_tile_map
 	self.build_tile_map = build_tile_map
 	self.furniture_tile_map = furniture_tile_map
+	self.special_furniture_tile_map = special_furniture_tile_map
 	
 	_base_tile_map = base_tile_map
 	_build_tile_map = build_tile_map
 	_furniture_tile_map = furniture_tile_map
+	_special_furniture_tile_map = special_furniture_tile_map
 	
 
 ## Base Tile Map Operations - simplified since base layer stays intact
@@ -147,6 +158,28 @@ func is_furniture_cell_occupied(coords: Vector2i) -> bool:
 	if not furniture_tile_map:
 		return false
 	return furniture_tile_map.get_cell_source_id(Layer.FURNISHING, coords) != -1
+
+## Special Furniture Tile Map Operations
+
+func clear_special_furniture_layer() -> void:
+	if not special_furniture_tile_map:
+		return
+	special_furniture_tile_map.clear_layer(Layer.SPECIAL_FURNITURE)
+
+func set_special_furniture_cell(coords: Vector2i, tileset_id: int, atlas_coords: Vector2i) -> void:
+	if not special_furniture_tile_map:
+		return
+	special_furniture_tile_map.set_cell(Layer.SPECIAL_FURNITURE, coords, tileset_id, atlas_coords)
+
+func get_special_furniture_cell_source_id(coords: Vector2i) -> int:
+	if not special_furniture_tile_map:
+		return -1
+	return special_furniture_tile_map.get_cell_source_id(Layer.SPECIAL_FURNITURE, coords)
+
+func is_special_furniture_cell_occupied(coords: Vector2i) -> bool:
+	if not special_furniture_tile_map:
+		return false
+	return special_furniture_tile_map.get_cell_source_id(Layer.SPECIAL_FURNITURE, coords) != -1
 
 
 
