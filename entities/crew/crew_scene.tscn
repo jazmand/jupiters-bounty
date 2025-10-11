@@ -1,8 +1,8 @@
 [gd_scene load_steps=43 format=3 uid="uid://6ddc1y0q3bhc"]
 
 [ext_resource type="Script" path="res://entities/crew/CrewMember.gd" id="1_jot6k"]
-[ext_resource type="Texture2D" uid="uid://dhxmp0xpmlnfc" path="res://assets/sprites/idle_agatha.png" id="2_fs5c3"]
-[ext_resource type="Texture2D" uid="uid://dl20q4t7m3dex" path="res://assets/sprites/walk_agatha.png" id="3_irob2"]
+[ext_resource type="Texture2D" uid="uid://dhxmp0xpmlnfc" path="res://assets/sprites/crew/idle_agatha.png" id="2_fs5c3"]
+[ext_resource type="Texture2D" uid="uid://dl20q4t7m3dex" path="res://assets/sprites/crew/walk_agatha.png" id="3_irob2"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/state_chart.gd" id="4_0j6fd"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/parallel_state.gd" id="5_yryhh"]
 [ext_resource type="Script" path="res://addons/godot_state_charts/compound_state.gd" id="6_7dl77"]
@@ -315,7 +315,7 @@ _data = {
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_ynwli"]
 radius = 39.0
-height = 146.0
+height = 172.0
 
 [sub_resource type="Curve" id="Curve_j4pgs"]
 _data = [Vector2(0, 0.200045), 0.0, 0.0, 0, 0]
@@ -445,7 +445,7 @@ collision_mask = 32768
 metadata/_edit_lock_ = true
 
 [node name="BodyCollisionShape" type="CollisionShape2D" parent="BodyArea"]
-position = Vector2(-1, -123)
+position = Vector2(-1, -147)
 shape = SubResource("CapsuleShape2D_ynwli")
 debug_color = Color(0.678431, 0.356863, 0.894118, 0.419608)
 

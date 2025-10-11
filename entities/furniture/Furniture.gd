@@ -19,6 +19,17 @@ var max_crew_capacity: int = 1
 # Visual and interaction
 var is_hovered: bool = false
 var is_selected: bool = false
+var is_preview: bool = false:
+	set(value):
+		is_preview = value
+		if is_preview:
+			# Disable collision for preview furniture
+			var static_body = get_node_or_null("StaticBody2D")
+			if static_body:
+				static_body.set_collision_layer_value(1, false)
+				static_body.set_collision_mask_value(1, false)
+var is_valid_preview: bool = true
+var hover_tween: Tween
 
 func _ready():
 	area.connect("input_event", self._on_area_input_event)
@@ -36,6 +47,9 @@ func initialize(furniture_type_data: FurnitureType, tiles: Array[Vector2i], rota
 	
 	# Set the furniture's position to the center of the occupied tiles
 	_set_position_from_tiles()
+	
+	# Set up sprite representation instead of tiles
+	_setup_sprite_representation()
 
 func _setup_collision_shape() -> void:
 	if not collision_shape or position_tiles.is_empty():
@@ -53,58 +67,227 @@ func _setup_collision_shape() -> void:
 		min_y = min(min_y, tile.y)
 		max_y = max(max_y, tile.y)
 	
-	# Create collision shape covering all tiles
-	var rect_shape = RectangleShape2D.new()
-	var tile_size = 64  # Assuming 64x64 tiles, adjust if different
-	var width = (max_x - min_x + 1) * tile_size
-	var height = (max_y - min_y + 1) * tile_size
+	# Create collision shape covering all tiles using a polygon
+	# For isometric tiles, we need to create a parallelogram shape
 	
-	rect_shape.size = Vector2(width, height)
-	collision_shape.shape = rect_shape
+	# Calculate how many tiles in each direction
+	var num_tiles_x = (max_x - min_x + 1)
+	var num_tiles_y = (max_y - min_y + 1)
 	
-	# Position collision shape relative to furniture center
-	var center_offset = Vector2(width, height) / 2
-	collision_shape.position = center_offset
+	# Isometric tile dimensions (from tileset)
+	# Each tile is a diamond: 256 pixels wide (half of 512) by 148 pixels tall (half of 296)
+	var tile_half_width = 256.0
+	var tile_half_height = 148.0
+	
+	# Create a convex polygon shape that matches the tile footprint
+	var polygon_shape = ConvexPolygonShape2D.new()
+	
+	# For isometric tiles arranged in a grid:
+	# - Moving right (+X) moves right by tile_half_width and down by tile_half_height
+	# - Moving down (+Y) moves left by tile_half_width and down by tile_half_height
+	
+	var points = PackedVector2Array()
+	
+	# Top point (at 0,0 in tile space)
+	points.append(Vector2(0, 0))
+	# Right point (moved right by num_tiles_x)
+	points.append(Vector2(tile_half_width * num_tiles_x, tile_half_height * num_tiles_x))
+	# Bottom point (moved right by num_tiles_x, then down by num_tiles_y)
+	points.append(Vector2(
+		tile_half_width * num_tiles_x - tile_half_width * num_tiles_y,
+		tile_half_height * num_tiles_x + tile_half_height * num_tiles_y
+	))
+	# Left point (moved down by num_tiles_y)
+	points.append(Vector2(-tile_half_width * num_tiles_y, tile_half_height * num_tiles_y))
+	
+	polygon_shape.points = points
+	collision_shape.shape = polygon_shape
+	# Offset collision shape up by half the tile height to align with furniture tiles
+	collision_shape.position = Vector2(0, -tile_half_height)
+	collision_shape.rotation = 0  # No rotation needed - polygon is already in correct shape
+	
+	# Also set up the StaticBody2D collision shape for crew collision
+	var static_body = get_node("StaticBody2D")
+	var static_collision = static_body.get_node("CollisionShape2D")
+	if static_collision:
+		var static_polygon_shape = ConvexPolygonShape2D.new()
+		static_polygon_shape.points = points
+		static_collision.shape = static_polygon_shape
+		# Offset collision shape up by half the tile height to align with furniture tiles
+		static_collision.position = Vector2(0, -tile_half_height)
+		static_collision.rotation = 0
 
 func _set_position_from_tiles() -> void:
 	if position_tiles.is_empty():
 		return
 	
-	# Calculate center of all occupied tiles
-	var center_tile = Vector2i.ZERO
+	# Find the top-left tile (minimum x and y coordinates)
+	var min_x = position_tiles[0].x
+	var min_y = position_tiles[0].y
+	
 	for tile in position_tiles:
-		center_tile += tile
+		min_x = min(min_x, tile.x)
+		min_y = min(min_y, tile.y)
 	
-	center_tile = center_tile / position_tiles.size()
+	# Get the tile map to convert tile coordinates to world position
+	var tile_map = get_tree().get_first_node_in_group("navigation")
+	if tile_map and tile_map is TileMap:
+		# Use TileMap's map_to_local to get the world position of the tile center
+		var tile_center_local = tile_map.map_to_local(Vector2i(min_x, min_y))
+		# Convert to global position
+		var tile_center_global = tile_map.to_global(tile_center_local)
+		
+		# If this furniture is a child of a room, convert global to local
+		if get_parent():
+			global_position = tile_center_global
+		else:
+			position = tile_center_global
+	else:
+		# Fallback to manual calculation
+		var tile_size = 64
+		position = Vector2(min_x * tile_size, min_y * tile_size)
 	
-	# Convert tile coordinates to world position
-	var tile_size = 64  # Assuming 64x64 tiles, adjust if different
-	position = Vector2(center_tile.x * tile_size, center_tile.y * tile_size)
+	# Set z_index based on the maximum Y tile position for proper depth sorting
+	var max_y = position_tiles[0].y
+	for tile in position_tiles:
+		max_y = max(max_y, tile.y)
 	
-	# Set z_index based on tile Y position for proper depth sorting
-	# Higher Y values (further down) should have higher z_index (appear in front)
-	# Furniture tile map has z_index = 5, so furniture instances should be above that
-	z_index = center_tile.y + 15  # Base offset to ensure furniture appears above tile map and rooms
+	# Furniture z_index: tile_y + 22 (below crew at tile_y + 25, above rooms at z_index = 2)
+	z_index = max_y + 22
+
+func _setup_sprite_representation() -> void:
+	# Get the sprite node
+	var sprite = get_node("Sprite2D")
+	if not sprite:
+		push_error("Furniture scene missing Sprite2D node")
+		return
+	
+	# Ensure sprite is centered
+	sprite.centered = true
+	
+	# Load the appropriate texture based on furniture type and rotation
+	var texture_path = _get_furniture_texture_path()
+	if texture_path:
+		sprite.texture = load(texture_path)
+	
+	# Set sprite position to center of occupied tiles relative to furniture position
+	# The furniture's position is at the top-left tile (via global_position)
+	# We need to position the sprite at the center of all occupied tiles
+	var tile_size = 64
+	var min_x = position_tiles[0].x
+	var max_x = position_tiles[0].x
+	var min_y = position_tiles[0].y
+	var max_y = position_tiles[0].y
+	
+	for tile in position_tiles:
+		min_x = min(min_x, tile.x)
+		max_x = max(max_x, tile.x)
+		min_y = min(min_y, tile.y)
+		max_y = max(max_y, tile.y)
+	
+	# Calculate offset from top-left tile to center
+	# The furniture node is positioned at (min_x, min_y) in tile coordinates
+	# We need to offset to the center of the occupied tile area
+	var width_in_tiles = max_x - min_x + 1
+	var height_in_tiles = max_y - min_y + 1
+	
+	# Sprite position is in local coordinates relative to furniture node
+	# Base position: center of occupied tiles
+	var base_x = width_in_tiles * tile_size / 2.0
+	var base_y = height_in_tiles * tile_size / 2.0 - 25  # Offset up by 25 pixels to prevent overlapping tiles
+	
+	# Apply furniture-specific offsets based on type and rotation
+	var offset_x = -100.0  # Move left by 100px
+	var offset_y = 20.0    # Move down by 20px
+	
+	if furniture_type.id == 1:  # Bed
+		if furniture_type.supports_rotation and rotation_state == 1:
+			# bed_e (vertical): additional adjustments
+			offset_x += 30
+			offset_y += 30
+		else:
+			# bed_w (horizontal): additional adjustments
+			offset_x += -30
+			offset_y += 30
+	
+	sprite.position = Vector2(base_x + offset_x, base_y + offset_y)
+	
+	# Scale sprite uniformly
+	# All furniture sprites are 512x512 with perfect proportions
+	# We scale uniformly to maintain aspect ratio and make them visible
+	if sprite.texture:
+		# Uniform scale - don't squish the sprite based on tile dimensions
+		# The sprite already has the correct proportions for the furniture
+		var uniform_scale = 1.6  # Scale factor for 512x512 sprites (will result in ~819x819 on screen)
+		sprite.scale = Vector2(uniform_scale, uniform_scale)
+	
+	# No need to rotate sprite - we use different sprite files for different orientations
+
+func _get_furniture_texture_path() -> String:
+	# Map furniture types to their texture paths
+	# bed_e = horizontal (east-west), bed_w = vertical (rotated)
+	
+	match furniture_type.id:
+		1:  # Bed
+			if furniture_type.supports_rotation and rotation_state == 1:
+				return "res://assets/sprites/furniture/bed_e.png"  # bed_e is vertical (rotated)
+			else:
+				return "res://assets/sprites/furniture/bed_w.png"  # bed_w is horizontal (default)
+		0:  # Canister
+			return "res://assets/tilesets/mock_items_tileset.png"
+		_:
+			# Fallback to generic furniture texture
+			return "res://assets/tilesets/mock_furniture_tileset.png"
 
 func _on_area_input_event(viewport, event, shape_idx):
+	# Don't handle input for preview furniture
+	if is_preview:
+		return
+		
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		emit_signal("furniture_clicked")
 
 func _on_mouse_entered():
+	# Don't handle hover for preview furniture
+	if is_preview:
+		return
+		
 	is_hovered = true
 	_update_visual_state()
 
 func _on_mouse_exited():
+	# Don't handle hover for preview furniture
+	if is_preview:
+		return
+		
 	is_hovered = false
 	_update_visual_state()
 
 func _update_visual_state():
-	if is_selected:
-		modulate = Color(1.2, 1.2, 1.0)
+	# Create smooth fade transition for hover effect
+	if hover_tween:
+		hover_tween.kill()
+	
+	hover_tween = create_tween()
+	hover_tween.set_ease(Tween.EASE_OUT)
+	hover_tween.set_trans(Tween.TRANS_CUBIC)
+	
+	var target_color: Color
+	if is_preview:
+		# Preview state - show with reduced opacity
+		if is_valid_preview:
+			target_color = Color(1, 1, 1, 0.7)  # Valid preview - 70% opacity
+		else:
+			target_color = Color(1, 0.3, 0.3, 0.6)  # Invalid preview - red tint, 60% opacity
+	elif is_selected:
+		target_color = Color(1.2, 1.2, 1.0)  # Yellowish tint when selected
 	elif is_hovered:
-		modulate = Color(1.1, 1.1, 1.0)
+		target_color = Color(1.1, 1.1, 1.0)  # Slight brightening when hovered
 	else:
-		modulate = Color.WHITE
+		target_color = Color.WHITE  # Normal color
+	
+	# Apply color to sprite instance
+	hover_tween.tween_property(self, "modulate", target_color, 0.2)
 
 func select() -> void:
 	is_selected = true
@@ -167,7 +350,7 @@ func get_crew_assignment_info() -> Dictionary:
 			var crew_name = "Unknown"
 			if crew.has_method("get_name"):
 				crew_name = crew.get_name()
-			elif crew.has_property("data") and crew.data and crew.data.has_property("name"):
+			elif crew.has_property("data") and crew.data != null and crew.data.has_property("name"):
 				crew_name = crew.data.name
 			elif crew.has_property("name"):
 				crew_name = crew.name

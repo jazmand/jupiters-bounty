@@ -253,7 +253,7 @@ func _assign_crew_to_furniture(furniture: Furniture, crew_member: CrewMember) ->
 	if success:
 		# Determine the containing room (parent or overlap fallback)
 		var room := _get_room_for_furniture(furniture)
-		if room == null or room.data.door_tiles.is_empty():
+		if room == null or room.data == null or room.data.door_tiles.is_empty():
 			# Fallback: go near furniture as before
 			var fallback_adj := furniture.find_adjacent_tile()
 			var fallback_world := build_tile_map.to_global(build_tile_map.map_to_local(fallback_adj))
@@ -297,6 +297,9 @@ func _get_room_for_furniture(furniture: Furniture) -> Room:
 	return null
 
 func _get_closest_door_tile(room: Room, crew_world_pos: Vector2) -> Vector2i:
+	if room == null or room.data == null or room.data.door_tiles.is_empty():
+		return Vector2i.ZERO
+		
 	var best: Vector2i = room.data.door_tiles[0]
 	var best_d := INF
 	for d in room.data.door_tiles:
@@ -406,9 +409,8 @@ func apply_furniture_inspection_effects() -> void:
 	if TileMapManager.build_tile_map:
 		TileMapManager.build_tile_map.set_layer_modulate(TileMapManager.Layer.BUILDING, Color(1, 1, 1, 0.3))
 	
-	# Lower opacity of furniture layer (other furniture)
-	if TileMapManager.furniture_tile_map:
-		TileMapManager.furniture_tile_map.set_layer_modulate(TileMapManager.Layer.FURNISHING, Color(1, 1, 1, 0.3))
+	# Lower opacity of furniture sprites (other furniture)
+	_lower_furniture_opacities()
 	
 	# Lower opacity of special furniture layer (pumps, etc.)
 	if TileMapManager.special_furniture_tile_map:
@@ -421,7 +423,27 @@ func apply_furniture_inspection_effects() -> void:
 				crew_member.modulate = Color(1, 1, 1, 0.3)
 	
 	# Keep the inspected furniture at full opacity by not changing its modulate
-	# The furniture tiles will remain at full opacity while other layers are dimmed
+	# The furniture sprites will remain at full opacity while other layers are dimmed
+
+func _lower_furniture_opacities() -> void:
+	# Lower opacity of all furniture sprites except the inspected one
+	if Global.station and Global.station.rooms:
+		for room in Global.station.rooms:
+			if room and is_instance_valid(room):
+				# Get all furniture in this room
+				for child in room.get_children():
+					if child is Furniture and child != inspected_furniture:
+						child.modulate = Color(1, 1, 1, 0.3)
+
+func _restore_furniture_opacities() -> void:
+	# Restore normal opacity of all furniture sprites
+	if Global.station and Global.station.rooms:
+		for room in Global.station.rooms:
+			if room and is_instance_valid(room):
+				# Get all furniture in this room
+				for child in room.get_children():
+					if child is Furniture:
+						child.modulate = Color(1, 1, 1, 1.0)
 
 func restore_normal_opacity() -> void:
 	# Restore base tiles
@@ -432,9 +454,8 @@ func restore_normal_opacity() -> void:
 	if TileMapManager.build_tile_map:
 		TileMapManager.build_tile_map.set_layer_modulate(TileMapManager.Layer.BUILDING, Color(1, 1, 1, 1.0))
 	
-	# Restore furniture layer
-	if TileMapManager.furniture_tile_map:
-		TileMapManager.furniture_tile_map.set_layer_modulate(TileMapManager.Layer.FURNISHING, Color(1, 1, 1, 1.0))
+	# Restore furniture sprites
+	_restore_furniture_opacities()
 	
 	# Restore special furniture layer
 	if TileMapManager.special_furniture_tile_map:

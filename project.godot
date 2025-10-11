@@ -13,7 +13,7 @@ config_version=5
 config/name="Jupiter's Forge"
 run/main_scene="res://entities/ui/menu/main_menu.tscn"
 config/features=PackedStringArray("4.2", "Forward Plus")
-config/icon="res://assets/sprites/flirty_pose.png"
+config/icon="res://assets/sprites/crew/flirty_pose.png"
 
 [autoload]
 

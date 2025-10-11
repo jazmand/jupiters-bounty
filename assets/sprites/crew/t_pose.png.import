@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bpmey73nbq8f1"
-path="res://.godot/imported/flirty_pose.png-3cb3344a8cbebf2458414b49aedc316e.ctex"
+uid="uid://d0a26f7nbiylj"
+path="res://.godot/imported/t_pose.png-a0f6d8092a8c767854f3629b396d1863.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/flirty_pose.png"
-dest_files=["res://.godot/imported/flirty_pose.png-3cb3344a8cbebf2458414b49aedc316e.ctex"]
+source_file="res://assets/sprites/crew/t_pose.png"
+dest_files=["res://.godot/imported/t_pose.png-a0f6d8092a8c767854f3629b396d1863.ctex"]
 
 [params]
 

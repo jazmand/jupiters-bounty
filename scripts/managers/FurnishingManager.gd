@@ -26,6 +26,9 @@ var _furniture_instances: Array[Furniture] = []
 var _furniture_instance_map: Dictionary = {}  # Maps tile positions to Array[Furniture]
 var _furniture_scene: PackedScene = preload("res://entities/furniture/furniture_scene.tscn")
 
+# Preview Management
+var _preview_furniture: Furniture = null
+
 enum StateEvent {FURNISHING_STOP, FURNISHING_START, FURNISHING_BACK, FURNISHING_FORWARD}
 
 const FURNISH_EVENTS = [&"furnishing_stop", &"furnishing_start", &"furnishing_back", &"furnishing_forward"]
@@ -77,13 +80,17 @@ func _on_selecting_furniture_state_entered() -> void:
 	# Reset rotation when starting to select furniture
 	_furniture_rotation = 0
 
-	_current_room_area = [Global.selected_room.data.top_left, Global.selected_room.data.bottom_right]
-	if _current_room_type == null:
-		_current_room_type = Global.selected_room.data.type
-
-	# Show furniture menu and room info panel (only in selecting furniture state)
-	GUI.furniture_menu.show_furniture_panel(get_valid_furniture_for_room(_current_room_type))
-	GUI.room_info_panel.open(Global.selected_room)
+	# Check if we have a valid selected room
+	if Global.selected_room and Global.selected_room.data:
+		_current_room_area = [Global.selected_room.data.top_left, Global.selected_room.data.bottom_right]
+		if _current_room_type == null:
+			_current_room_type = Global.selected_room.data.type
+		
+		# Show furniture menu and room info panel (only in selecting furniture state)
+		GUI.furniture_menu.show_furniture_panel(get_valid_furniture_for_room(_current_room_type))
+		GUI.room_info_panel.open(Global.selected_room)
+	else:
+		push_error("No valid room selected for furnishing")
 	show_invalid_overlay()
 
 func _on_selecting_furniture_state_input(event):
@@ -129,11 +136,8 @@ func _on_placing_furniture_state_processing(delta) -> void:
 	update_furniture_preview()
 
 func _on_placing_furniture_state_exited() -> void:
-	TileMapManager.clear_furniture_drafting_layer()
-
-	# Restore the drafting layer opacity to normal
-	if TileMapManager.furniture_tile_map:
-		TileMapManager.furniture_tile_map.set_layer_modulate(TileMapManager.Layer.FURNITURE_DRAFTING, Color.WHITE)
+	# Clear preview furniture
+	_clear_preview_furniture()
 
 	hide_invalid_overlay()
 	GUI.room_info_panel.close()
@@ -142,7 +146,8 @@ func _on_placing_furniture_state_exited() -> void:
 # Crew assignment is now handled by GameManager in the crew state
 
 func update_furniture_preview() -> void:
-	TileMapManager.clear_furniture_drafting_layer()
+	# Clear any existing preview
+	_clear_preview_furniture()
 
 	var origin = TileMapManager.get_global_mouse_position_for_tilemap(TileMapManager.furniture_tile_map)
 	var positions = get_placement_positions_from_origin(origin, selected_furnituretype)
@@ -160,24 +165,8 @@ func update_furniture_preview() -> void:
 	# Check if placement is valid at this position
 	var is_valid_placement = _is_furniture_placement_valid_at_position(positions)
 	
-	# Set the preview color based on validity
-	var preview_color: Color
-	if is_valid_placement:
-		# Valid placement: show true colors with good opacity
-		preview_color = Color.WHITE  # True colors
-	else:
-		# Invalid placement: show red with reduced opacity
-		preview_color = Color(1, 0, 0, 0.6)  # Red with 60% opacity
-
-	# Draw the preview tiles with the appropriate color and rotation
-	for i in positions.size():
-		var tile_pos = positions[i]
-		var tile_coord = tileset_coords_to_use[i]
-		TileMapManager.set_furniture_drafting_cell(tile_pos, selected_furnituretype.tileset_id, tile_coord)
-		
-		# Apply the preview color to the drafting layer
-		if TileMapManager.furniture_tile_map:
-			TileMapManager.furniture_tile_map.set_layer_modulate(TileMapManager.Layer.FURNITURE_DRAFTING, preview_color)
+	# Create preview furniture sprite
+	_create_preview_furniture(positions, is_valid_placement)
 
 func _is_furniture_placement_valid_at_position(positions: Array[Vector2i]) -> bool:
 	# Check if furniture placement is valid at the given positions
@@ -223,17 +212,8 @@ func place_furniture(event: InputEvent) -> void:
 		var furniture_instance = _spawn_furniture_instance(selected_furnituretype, positions, _furniture_rotation)
 		
 		if furniture_instance:
-			# Place tiles for visual representation (keeping current appearance)
-			var tileset_coords_to_use: Array[Vector2i]
-			if selected_furnituretype.supports_rotation:
-				tileset_coords_to_use = selected_furnituretype.get_tileset_coords_for_rotation(_furniture_rotation == 1)
-			else:
-				tileset_coords_to_use = selected_furnituretype.tileset_coords
-			
-			for i in positions.size():
-				var world_tile = positions[i]
-				var tileset_coord = tileset_coords_to_use[i]
-				TileMapManager.set_furniture_cell(world_tile, selected_furnituretype.tileset_id, tileset_coord)
+			# Furniture is now represented by sprites, not tiles
+			# No need to place tiles - the sprite handles the visual representation
 			
 			# Deduct currency
 			Global.station.currency -= selected_furnituretype.price
@@ -392,6 +372,39 @@ func _on_furniture_clicked(furniture: Furniture) -> void:
 	# Crew assignment is handled directly in the crew state
 	pass
 
+# Preview Furniture Management
+
+func _create_preview_furniture(positions: Array[Vector2i], is_valid_placement: bool) -> void:
+	# Create a preview furniture instance
+	_preview_furniture = _furniture_scene.instantiate() as Furniture
+	if not _preview_furniture:
+		push_error("Failed to instantiate preview furniture scene")
+		return
+	
+	# Add to the current room or station for preview
+	if Global.selected_room:
+		Global.selected_room.add_child(_preview_furniture)
+	else:
+		if Global.station:
+			Global.station.add_child(_preview_furniture)
+		else:
+			push_error("No room or station to add preview furniture to")
+			_preview_furniture.queue_free()
+			return
+	
+	# Initialize the preview furniture
+	_preview_furniture.initialize(selected_furnituretype, positions, _furniture_rotation)
+	
+	# Set preview visual state
+	_preview_furniture.is_preview = true
+	_preview_furniture.is_valid_preview = is_valid_placement
+	_preview_furniture._update_visual_state()
+
+func _clear_preview_furniture() -> void:
+	if _preview_furniture:
+		_preview_furniture.queue_free()
+		_preview_furniture = null
+
 func remove_furniture_instance(furniture_instance: Furniture) -> void:
 	if furniture_instance in _furniture_instances:
 		_furniture_instances.erase(furniture_instance)
@@ -527,6 +540,29 @@ func _lower_crew_opacities() -> void:
 			if crew_member and is_instance_valid(crew_member):
 				# Set crew member opacity to 50% (same as background)
 				crew_member.modulate = Color(1, 1, 1, 0.5)
+	
+	# Also lower the opacity of furniture sprites to 50%
+	_lower_furniture_opacities()
+
+func _lower_furniture_opacities() -> void:
+	# Lower the opacity of all furniture sprites to 50% to focus attention on the selected room
+	if Global.station and Global.station.rooms:
+		for room in Global.station.rooms:
+			if room and is_instance_valid(room):
+				# Get all furniture in this room
+				for child in room.get_children():
+					if child is Furniture:
+						child.modulate = Color(1, 1, 1, 0.5)
+
+func _restore_furniture_opacities() -> void:
+	# Restore normal opacity of all furniture sprites
+	if Global.station and Global.station.rooms:
+		for room in Global.station.rooms:
+			if room and is_instance_valid(room):
+				# Get all furniture in this room
+				for child in room.get_children():
+					if child is Furniture:
+						child.modulate = Color(1, 1, 1, 1.0)
 
 func _create_dimming_overlay(room_bounds: Dictionary) -> void:
 	# This function is no longer needed - we're using only opacity changes
@@ -548,6 +584,9 @@ func _restore_original_opacities() -> void:
 	
 	# Restore crew member opacities
 	_restore_crew_opacities()
+	
+	# Restore furniture opacities
+	_restore_furniture_opacities()
 	
 	# Clear stored opacities
 	_original_opacities.clear()

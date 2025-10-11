@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dhxmp0xpmlnfc"
-path="res://.godot/imported/idle_agatha.png-f8f61254ca9d32a070b77e842efc03f3.ctex"
+uid="uid://dl20q4t7m3dex"
+path="res://.godot/imported/walk_agatha.png-6bff8a0afc51e4cc9340fc1dbde4a9da.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/idle_agatha.png"
-dest_files=["res://.godot/imported/idle_agatha.png-f8f61254ca9d32a070b77e842efc03f3.ctex"]
+source_file="res://assets/sprites/crew/walk_agatha.png"
+dest_files=["res://.godot/imported/walk_agatha.png-6bff8a0afc51e4cc9340fc1dbde4a9da.ctex"]
 
 [params]
 

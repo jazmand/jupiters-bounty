@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dl20q4t7m3dex"
-path="res://.godot/imported/walk_agatha.png-701f050c3d989e66b8f56bc853d1ca95.ctex"
+uid="uid://cfgucmg1tork8"
+path="res://.godot/imported/bed_e.png-3e3276516e23f5d9b66e90dc719114bc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/walk_agatha.png"
-dest_files=["res://.godot/imported/walk_agatha.png-701f050c3d989e66b8f56bc853d1ca95.ctex"]
+source_file="res://assets/sprites/furniture/bed_e.png"
+dest_files=["res://.godot/imported/bed_e.png-3e3276516e23f5d9b66e90dc719114bc.ctex"]
 
 [params]
 

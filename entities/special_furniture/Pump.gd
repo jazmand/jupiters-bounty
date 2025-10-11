@@ -6,6 +6,7 @@ signal pump_clicked
 @export var position_tiles: Array[Vector2i] = []
 
 var is_hovered: bool = false
+var hover_tween: Tween
 
 func _ready() -> void:
 	# Initialize pump data if not set
@@ -14,7 +15,7 @@ func _ready() -> void:
 	
 	# Set up visual representation first
 	var sprite = Sprite2D.new()
-	sprite.texture = load("res://assets/sprites/pump_standard.png")
+	sprite.texture = load("res://assets/sprites/special_furniture/pump_standard.png")
 	add_child(sprite)
 	
 	# Set up input handling
@@ -82,11 +83,21 @@ func _on_mouse_exited():
 	_update_visual_state()
 
 func _update_visual_state():
-	# Add visual feedback for hover state
+	# Create smooth fade transition for hover effect
+	if hover_tween:
+		hover_tween.kill()
+	
+	hover_tween = create_tween()
+	hover_tween.set_ease(Tween.EASE_OUT)
+	hover_tween.set_trans(Tween.TRANS_CUBIC)
+	
+	var target_color: Color
 	if is_hovered:
-		modulate = Color(1.4, 1.4, 1.4, 1.0)  # Even lighter when hovered
+		target_color = Color(1.4, 1.4, 1.4, 1.0)  # Even lighter when hovered
 	else:
-		modulate = Color(1.2, 1.2, 1.2, 1.0)  # Current hover color as default
+		target_color = Color(1.2, 1.2, 1.2, 1.0)  # Current hover color as default
+	
+	hover_tween.tween_property(self, "modulate", target_color, 0.2)
 
 func set_position_from_tiles(tiles: Array[Vector2i]) -> void:
 	position_tiles = tiles

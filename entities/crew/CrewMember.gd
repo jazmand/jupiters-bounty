@@ -68,6 +68,8 @@ var idle_time_limit = 2.0
 @export var idle_time_max: float = 3.0
 
 var speed_multiplier: float = 1.0
+var is_hovered: bool = false
+var hover_tween: Tween
 
 @export var walk_segments_per_cycle_min: int = 1
 @export var walk_segments_per_cycle_max: int = 3
@@ -134,8 +136,8 @@ func _ready() -> void:
 	navigation_timer.timeout.connect(_on_timer_timeout)
 	call_deferred("actor_setup")
 	area.input_event.connect(_on_input_event)
-	area.mouse_entered.connect(func(): Global.is_crew_input = true)
-	area.mouse_exited.connect(func(): Global.is_crew_input = false)
+	area.mouse_entered.connect(_on_mouse_entered)
+	area.mouse_exited.connect(_on_mouse_exited)
 	
 	# Initialize CrewVigour component
 	crew_vigour.initialize(data.vigour)
@@ -163,8 +165,35 @@ func _on_input_event(viewport, event, _shape_idx):
 		viewport.set_input_as_handled()
 		select()
 
+func _on_mouse_entered():
+	is_hovered = true
+	_update_visual_state()
+	Global.is_crew_input = true
+
+func _on_mouse_exited():
+	is_hovered = false
+	_update_visual_state()
+	Global.is_crew_input = false
+
 func select() -> void:
 	Global.crew_selected.emit(self)
+
+func _update_visual_state():
+	# Create smooth fade transition for hover effect
+	if hover_tween:
+		hover_tween.kill()
+	
+	hover_tween = create_tween()
+	hover_tween.set_ease(Tween.EASE_OUT)
+	hover_tween.set_trans(Tween.TRANS_CUBIC)
+	
+	var target_color: Color
+	if is_hovered:
+		target_color = Color(1.3, 1.3, 1.3, 1.0)  # Brighten when hovered
+	else:
+		target_color = Color.WHITE  # Normal color when not hovered
+	
+	hover_tween.tween_property(self, "modulate", target_color, 0.2)
 
 func set_movement_target(movement_target: Vector2) -> void:
 	# Store the original target for repathing if needed
