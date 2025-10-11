@@ -14,3 +14,7 @@ tileset_coords = [Vector2(2.08165e-12, 1)]
 height = 1
 width = 1
 valid_room_types = [3]
+collision_width = 1
+collision_height = 1
+sprite_offset = Vector2(-20, 10)
+sprite_offset_rotated = Vector2(-20, 10)

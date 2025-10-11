@@ -55,6 +55,7 @@ func _setup_collision_shape() -> void:
 	if not collision_shape or position_tiles.is_empty():
 		return
 	
+	# Always compute collision footprint from actual occupied tiles so it matches click trigger
 	# Calculate bounds of occupied tiles
 	var min_x = position_tiles[0].x
 	var max_x = position_tiles[0].x
@@ -67,44 +68,58 @@ func _setup_collision_shape() -> void:
 		min_y = min(min_y, tile.y)
 		max_y = max(max_y, tile.y)
 	
-	# Create collision shape covering all tiles using a polygon
-	# For isometric tiles, we need to create a parallelogram shape
-	
 	# Calculate how many tiles in each direction
 	var num_tiles_x = (max_x - min_x + 1)
 	var num_tiles_y = (max_y - min_y + 1)
 	
-	# Isometric tile dimensions (from tileset)
-	# Each tile is a diamond: 256 pixels wide (half of 512) by 148 pixels tall (half of 296)
-	var tile_half_width = 256.0
-	var tile_half_height = 148.0
-	
-	# Create a convex polygon shape that matches the tile footprint
+	# Build polygon from TileMap transforms to match the exact occupied tiles
+	var tile_map = get_tree().get_first_node_in_group("navigation")
 	var polygon_shape = ConvexPolygonShape2D.new()
-	
-	# For isometric tiles arranged in a grid:
-	# - Moving right (+X) moves right by tile_half_width and down by tile_half_height
-	# - Moving down (+Y) moves left by tile_half_width and down by tile_half_height
-	
 	var points = PackedVector2Array()
+	var shape_offset := Vector2.ZERO
 	
-	# Top point (at 0,0 in tile space)
-	points.append(Vector2(0, 0))
-	# Right point (moved right by num_tiles_x)
-	points.append(Vector2(tile_half_width * num_tiles_x, tile_half_height * num_tiles_x))
-	# Bottom point (moved right by num_tiles_x, then down by num_tiles_y)
-	points.append(Vector2(
-		tile_half_width * num_tiles_x - tile_half_width * num_tiles_y,
-		tile_half_height * num_tiles_x + tile_half_height * num_tiles_y
-	))
-	# Left point (moved down by num_tiles_y)
-	points.append(Vector2(-tile_half_width * num_tiles_y, tile_half_height * num_tiles_y))
-	
+	if tile_map and tile_map is TileMap:
+		var anchor_local = tile_map.map_to_local(Vector2i(min_x, min_y))
+		var anchor_global = tile_map.to_global(anchor_local)
+		# Per-tile basis vectors in world space
+		var right1_local = tile_map.map_to_local(Vector2i(min_x + 1, min_y))
+		var right1_global = tile_map.to_global(right1_local)
+		var down1_local = tile_map.map_to_local(Vector2i(min_x, min_y + 1))
+		var down1_global = tile_map.to_global(down1_local)
+		var ex = right1_global - anchor_global
+		var ey = down1_global - anchor_global
+		
+		# Construct union-of-tiles diamond using per-tile basis
+		var top = -0.5 * ex - 0.5 * ey
+		var right = (float(num_tiles_x) - 0.5) * ex - 0.5 * ey
+		var bottom = (float(num_tiles_x) - 0.5) * ex + (float(num_tiles_y) - 0.5) * ey
+		var left = -0.5 * ex + (float(num_tiles_y) - 0.5) * ey
+		
+		points.append(top)
+		points.append(right)
+		points.append(bottom)
+		points.append(left)
+		shape_offset = Vector2.ZERO
+	else:
+		# Fallback using approximate iso half sizes
+		var tile_half_width = 256.0
+		var tile_half_height = 148.0
+		var ex = Vector2(tile_half_width, tile_half_height)
+		var ey = Vector2(-tile_half_width, tile_half_height)
+		var top = -0.5 * ex - 0.5 * ey
+		var right = (float(num_tiles_x) - 0.5) * ex - 0.5 * ey
+		var bottom = (float(num_tiles_x) - 0.5) * ex + (float(num_tiles_y) - 0.5) * ey
+		var left = -0.5 * ex + (float(num_tiles_y) - 0.5) * ey
+		points.append(top)
+		points.append(right)
+		points.append(bottom)
+		points.append(left)
+		shape_offset = Vector2.ZERO
+
 	polygon_shape.points = points
 	collision_shape.shape = polygon_shape
-	# Offset collision shape up by half the tile height to align with furniture tiles
-	collision_shape.position = Vector2(0, -tile_half_height)
-	collision_shape.rotation = 0  # No rotation needed - polygon is already in correct shape
+	collision_shape.position = shape_offset
+	collision_shape.rotation = 0
 	
 	# Also set up the StaticBody2D collision shape for crew collision
 	var static_body = get_node("StaticBody2D")
@@ -113,8 +128,7 @@ func _setup_collision_shape() -> void:
 		var static_polygon_shape = ConvexPolygonShape2D.new()
 		static_polygon_shape.points = points
 		static_collision.shape = static_polygon_shape
-		# Offset collision shape up by half the tile height to align with furniture tiles
-		static_collision.position = Vector2(0, -tile_half_height)
+		static_collision.position = shape_offset
 		static_collision.rotation = 0
 
 func _set_position_from_tiles() -> void:
@@ -197,20 +211,17 @@ func _setup_sprite_representation() -> void:
 	var base_y = height_in_tiles * tile_size / 2.0 - 25  # Offset up by 25 pixels to prevent overlapping tiles
 	
 	# Apply furniture-specific offsets based on type and rotation
-	var offset_x = -100.0  # Move left by 100px
-	var offset_y = 20.0    # Move down by 20px
+	var furniture_offset = furniture_type.get_sprite_offset_for_rotation(rotation_state == 1)
 	
-	if furniture_type.id == 1:  # Bed
-		if furniture_type.supports_rotation and rotation_state == 1:
-			# bed_e (vertical): additional adjustments
-			offset_x += 30
-			offset_y += 30
-		else:
-			# bed_w (horizontal): additional adjustments
-			offset_x += -30
-			offset_y += 30
-	
-	sprite.position = Vector2(base_x + offset_x, base_y + offset_y)
+	# Use furniture type offset if set, otherwise fall back to default positioning
+	if furniture_offset != Vector2.ZERO:
+		sprite.position = Vector2(base_x + furniture_offset.x, base_y + furniture_offset.y)
+	else:
+		# Fallback to default positioning logic
+		var offset_x = -100.0  # Move left by 100px
+		var offset_y = 20.0    # Move down by 20px
+		
+		sprite.position = Vector2(base_x + offset_x, base_y + offset_y)
 	
 	# Scale sprite uniformly
 	# All furniture sprites are 512x512 with perfect proportions
