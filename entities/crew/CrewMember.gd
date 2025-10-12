@@ -1087,7 +1087,9 @@ func _update_depth_sorting() -> void:
 		var tile_pos = tile_map.local_to_map(tile_map.to_local(global_position))
 		# Higher Y values (further down) should have higher z_index (appear in front)
 		# Crew should appear above furniture (which has z_index = tile_y + 15), so add a higher base offset
+		z_as_relative = false
 		z_index = tile_pos.y + 25  # Base offset to ensure crew appears above furniture
 	else:
 		# Fallback: use Y position directly
+		z_as_relative = false
 		z_index = int(global_position.y / 64) + 25

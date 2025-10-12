@@ -80,8 +80,10 @@ func get_collision_dimensions_for_rotation(is_rotated: bool) -> Vector2i:
 
 func get_sprite_offset_for_rotation(is_rotated: bool) -> Vector2:
 	# Return the appropriate sprite offset based on rotation state
-	if supports_rotation and is_rotated and sprite_offset_rotated != Vector2.ZERO:
-		return sprite_offset_rotated
-	else:
-		return sprite_offset
+	if supports_rotation and is_rotated:
+		if sprite_offset_rotated != Vector2.ZERO:
+			return sprite_offset_rotated
+		# Default behavior: mirror X offset when rotated if no explicit rotated offset set
+		return Vector2(-sprite_offset.x, sprite_offset.y)
+	return sprite_offset
 	

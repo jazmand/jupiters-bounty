@@ -4,6 +4,7 @@ extends Node
 ## Eliminates duplicate resource loading code across managers
 
 signal resources_loaded
+signal furniture_types_reloaded
 
 # Resource collections
 var room_types: Array[RoomType] = []
@@ -16,10 +17,19 @@ const FURNITURE_TYPES_PATH = "res://assets/furniture_type/"
 # Resource loading status
 var _room_types_loaded: bool = false
 var _furniture_types_loaded: bool = false
+var _furniture_types_mtimes: Dictionary = {}
 
 func _ready() -> void:
 	# Load all resources on startup
 	load_all_resources()
+	# Start polling for furniture type changes during play for hot-reload
+	var timer := Timer.new()
+	timer.name = "ResourceHotReloadTimer"
+	timer.one_shot = false
+	timer.wait_time = 1.0
+	timer.timeout.connect(_poll_furniture_type_changes)
+	add_child(timer)
+	timer.start()
 
 func load_all_resources() -> void:
 	load_room_types()
@@ -76,6 +86,8 @@ func load_room_types() -> void:
 	_room_types_loaded = true
 
 func load_furniture_types() -> void:
+	# Clear and reload to reflect latest edits
+	furniture_types.clear()
 	var furniture_type_dir = DirAccess.open("res://assets/furniture_type")
 	if furniture_type_dir:
 		furniture_type_dir.list_dir_begin()
@@ -83,7 +95,8 @@ func load_furniture_types() -> void:
 		
 		while file_name != "":
 			if file_name.ends_with(".tres"):
-				var furniture_type_resource = load("res://assets/furniture_type/" + file_name) as FurnitureType
+				var res_path = "res://assets/furniture_type/" + file_name
+				var furniture_type_resource = load(res_path) as FurnitureType
 				if furniture_type_resource:
 					var furniture_type_instance = FurnitureType.new()
 					furniture_type_instance.id = furniture_type_resource.id
@@ -98,14 +111,46 @@ func load_furniture_types() -> void:
 					furniture_type_instance.width = furniture_type_resource.width
 					furniture_type_instance.valid_room_types = furniture_type_resource.valid_room_types
 					furniture_type_instance.supports_rotation = furniture_type_resource.supports_rotation
+					# New properties for collision footprint and sprite positioning
+					furniture_type_instance.collision_width = furniture_type_resource.collision_width
+					furniture_type_instance.collision_height = furniture_type_resource.collision_height
+					furniture_type_instance.sprite_offset = furniture_type_resource.sprite_offset
+					furniture_type_instance.sprite_offset_rotated = furniture_type_resource.sprite_offset_rotated
 					
 					furniture_types.append(furniture_type_instance)
+					# Track modification time for hot-reload
+					_furniture_types_mtimes[res_path] = FileAccess.get_modified_time(res_path)
 			
 			file_name = furniture_type_dir.get_next()
 		
 		furniture_type_dir.list_dir_end()
 	else:
 		pass
+	_furniture_types_loaded = true
+
+func _poll_furniture_type_changes() -> void:
+	# Check if any furniture .tres changed on disk; if so, reload and notify
+	var changed := false
+	var dir := DirAccess.open("res://assets/furniture_type")
+	if not dir:
+		return
+	
+	dir.list_dir_begin()
+	var name = dir.get_next()
+	while name != "":
+		if name.ends_with(".tres"):
+			var path = "res://assets/furniture_type/" + name
+			var mtime = FileAccess.get_modified_time(path)
+			var prev = _furniture_types_mtimes.get(path, 0)
+			if mtime != 0 and mtime != prev:
+				changed = true
+				_furniture_types_mtimes[path] = mtime
+		name = dir.get_next()
+		dir.list_dir_end()
+
+	if changed:
+		load_furniture_types()
+		furniture_types_reloaded.emit()
 
 ## Utility methods for other managers
 

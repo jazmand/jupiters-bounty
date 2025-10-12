@@ -18,5 +18,5 @@ valid_room_types = [1]
 supports_rotation = true
 collision_width = 1
 collision_height = 2
-sprite_offset = Vector2(-130, 50)
-sprite_offset_rotated = Vector2(-130, 50)
+sprite_offset = Vector2(25, 15)
+sprite_offset_rotated = Vector2(-25, 15)

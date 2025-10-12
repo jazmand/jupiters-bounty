@@ -721,6 +721,8 @@ script = ExtResource("22_hn45n")
 [node name="CanvasLayer" type="CanvasLayer" parent="GameManager"]
 
 [node name="StateChartDebugger" parent="GameManager/CanvasLayer" instance=ExtResource("23_d4vmm")]
+visible = false
+enabled = false
 offset_left = 13.0
 offset_top = 313.0
 offset_right = -1531.0

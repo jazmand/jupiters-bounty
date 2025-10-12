@@ -35,6 +35,10 @@ func _ready():
 	area.connect("input_event", self._on_area_input_event)
 	area.connect("mouse_entered", self._on_mouse_entered)
 	area.connect("mouse_exited", self._on_mouse_exited)
+	# Hot-reload: when furniture types are reloaded, refresh our visuals if our type id still exists
+	var rm = get_node_or_null("/root/ResourceManager")
+	if rm and rm.has_signal("furniture_types_reloaded"):
+		rm.furniture_types_reloaded.connect(_on_furniture_types_reloaded)
 
 func initialize(furniture_type_data: FurnitureType, tiles: Array[Vector2i], rotation: int = 0) -> void:
 	furniture_type = furniture_type_data
@@ -161,13 +165,14 @@ func _set_position_from_tiles() -> void:
 		var tile_size = 64
 		position = Vector2(min_x * tile_size, min_y * tile_size)
 	
-	# Set z_index based on the maximum Y tile position for proper depth sorting
-	var max_y = position_tiles[0].y
+	# Depth sorting for isometric: use max(x+y) over occupied tiles
+	# This guarantees items further down-right render above up-left ones
+	z_as_relative = false
+	var sort_key := position_tiles[0].x + position_tiles[0].y
 	for tile in position_tiles:
-		max_y = max(max_y, tile.y)
-	
-	# Furniture z_index: tile_y + 22 (below crew at tile_y + 25, above rooms at z_index = 2)
-	z_index = max_y + 22
+		sort_key = max(sort_key, tile.x + tile.y)
+	# Furniture slightly below crew (crew uses +25)
+	z_index = sort_key + 22
 
 func _setup_sprite_representation() -> void:
 	# Get the sprite node
@@ -184,44 +189,47 @@ func _setup_sprite_representation() -> void:
 	if texture_path:
 		sprite.texture = load(texture_path)
 	
-	# Set sprite position to center of occupied tiles relative to furniture position
-	# The furniture's position is at the top-left tile (via global_position)
-	# We need to position the sprite at the center of all occupied tiles
-	var tile_size = 64
-	var min_x = position_tiles[0].x
-	var max_x = position_tiles[0].x
-	var min_y = position_tiles[0].y
-	var max_y = position_tiles[0].y
-	
-	for tile in position_tiles:
-		min_x = min(min_x, tile.x)
-		max_x = max(max_x, tile.x)
-		min_y = min(min_y, tile.y)
-		max_y = max(max_y, tile.y)
-	
-	# Calculate offset from top-left tile to center
-	# The furniture node is positioned at (min_x, min_y) in tile coordinates
-	# We need to offset to the center of the occupied tile area
-	var width_in_tiles = max_x - min_x + 1
-	var height_in_tiles = max_y - min_y + 1
-	
-	# Sprite position is in local coordinates relative to furniture node
-	# Base position: center of occupied tiles
-	var base_x = width_in_tiles * tile_size / 2.0
-	var base_y = height_in_tiles * tile_size / 2.0 - 25  # Offset up by 25 pixels to prevent overlapping tiles
+	# Set sprite position to true isometric center of occupied tiles
+	# Compute the average of TileMap world centers of all occupied tiles,
+	# then convert that to local coordinates relative to this Furniture node
+	var tile_map = get_tree().get_first_node_in_group("navigation")
+	var base_local: Vector2 = Vector2.ZERO
+	if tile_map and tile_map is TileMap:
+		var sum: Vector2 = Vector2.ZERO
+		for tile in position_tiles:
+			var tile_center_local: Vector2 = tile_map.map_to_local(tile)
+			sum += tile_map.to_global(tile_center_local)
+		var center_global: Vector2 = sum / float(position_tiles.size())
+		base_local = to_local(center_global)
+	else:
+		# Fallback to approximate center using grid metrics
+		var tile_size = 64
+		var min_x = position_tiles[0].x
+		var max_x = position_tiles[0].x
+		var min_y = position_tiles[0].y
+		var max_y = position_tiles[0].y
+		for tile in position_tiles:
+			min_x = min(min_x, tile.x)
+			max_x = max(max_x, tile.x)
+			min_y = min(min_y, tile.y)
+			max_y = max(max_y, tile.y)
+		var width_in_tiles = max_x - min_x + 1
+		var height_in_tiles = max_y - min_y + 1
+		base_local = Vector2(width_in_tiles * tile_size / 2.0, height_in_tiles * tile_size / 2.0)
+	# Nudge up slightly to avoid overlap with floor
+	base_local.y -= 25
 	
 	# Apply furniture-specific offsets based on type and rotation
 	var furniture_offset = furniture_type.get_sprite_offset_for_rotation(rotation_state == 1)
 	
 	# Use furniture type offset if set, otherwise fall back to default positioning
 	if furniture_offset != Vector2.ZERO:
-		sprite.position = Vector2(base_x + furniture_offset.x, base_y + furniture_offset.y)
+		sprite.position = base_local + furniture_offset
 	else:
 		# Fallback to default positioning logic
 		var offset_x = -100.0  # Move left by 100px
 		var offset_y = 20.0    # Move down by 20px
-		
-		sprite.position = Vector2(base_x + offset_x, base_y + offset_y)
+		sprite.position = base_local + Vector2(offset_x, offset_y)
 	
 	# Scale sprite uniformly
 	# All furniture sprites are 512x512 with perfect proportions
@@ -234,6 +242,14 @@ func _setup_sprite_representation() -> void:
 	
 	# No need to rotate sprite - we use different sprite files for different orientations
 
+func _on_furniture_types_reloaded() -> void:
+	# Find updated type by id and reapply offsets/texture
+	var rm = get_node_or_null("/root/ResourceManager")
+	if rm and rm.has_method("get_furniture_type_by_id") and furniture_type:
+		var updated = rm.get_furniture_type_by_id(furniture_type.id)
+		if updated:
+			furniture_type = updated
+			_setup_sprite_representation()
 func _get_furniture_texture_path() -> String:
 	# Map furniture types to their texture paths
 	# bed_e = horizontal (east-west), bed_w = vertical (rotated)

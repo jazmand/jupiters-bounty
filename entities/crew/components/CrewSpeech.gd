@@ -110,8 +110,13 @@ func _ensure_speech_label() -> void:
 	if not is_instance_valid(speech_label):
 		var lbl := Label.new()
 		lbl.name = "SpeechLabel"
-		crew_member.add_child(lbl)
-		speech_label = lbl
+		# Defer adding while parent tree is building to avoid blocked add_child()
+		if crew_member.is_inside_tree() and crew_member.is_node_ready():
+			crew_member.add_child(lbl)
+			speech_label = lbl
+		else:
+			crew_member.call_deferred("add_child", lbl)
+			speech_label = lbl
 	
 	# Configure size and placement
 	speech_label.position = Vector2(0, -350)
@@ -136,7 +141,10 @@ func _ensure_speech_timer() -> void:
 		t.name = "SpeechTimer"
 		t.one_shot = true
 		t.autostart = false
-		crew_member.add_child(t)
+		if crew_member.is_inside_tree() and crew_member.is_node_ready():
+			crew_member.add_child(t)
+		else:
+			crew_member.call_deferred("add_child", t)
 		speech_timer = t
 
 # Public getters
