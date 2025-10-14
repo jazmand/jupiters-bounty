@@ -189,7 +189,7 @@ func _update_visual_state():
 	
 	var target_color: Color
 	if is_hovered:
-		target_color = Color(1.3, 1.3, 1.3, 1.0)  # Brighten when hovered
+		target_color = Global.COLOR_HOVER_HIGHLIGHT
 	else:
 		target_color = Color.WHITE  # Normal color when not hovered
 	

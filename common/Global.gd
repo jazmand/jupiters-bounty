@@ -12,6 +12,12 @@ const ROOMTYPE: Dictionary = {
 	STORAGE_BAY = 3,
 }
 
+# Shared UI colors
+const COLOR_HOVER_HIGHLIGHT := Color(1.3, 1.3, 1.1, 1.0)
+const COLOR_SELECTED_HIGHLIGHT := Color(1.2, 1.2, 1.0, 1.0)
+const COLOR_PREVIEW_VALID := Color(1.0, 1.0, 1.0, 0.7)
+const COLOR_PREVIEW_INVALID := Color(1.0, 0.0, 0.0, 0.5)
+
 var station: Station = load("res://assets/resources/station_resources.tres") as Station
 
 var is_crew_input = false

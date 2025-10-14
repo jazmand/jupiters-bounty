@@ -21,6 +21,16 @@ class_name FurnitureType extends Resource
 @export var sprite_offset: Vector2 = Vector2.ZERO  # X/Y offset for sprite positioning
 @export var sprite_offset_rotated: Vector2 = Vector2.ZERO  # Offset when rotated (for asymmetric furniture)
 
+# Access Points
+# Defines which sides of the furniture's collision footprint must remain accessible.
+# Sides are relative to the furniture's current rotation.
+# For example: a bed may require at least one long side accessible.
+enum AccessRule { NONE, ANY, ALL, AT_LEAST_N }
+@export var access_rule: int = AccessRule.NONE
+@export var access_required_sides: Array = [] # values from ["north","south","east","west"] or [0,1,2,3]
+@export var access_required_count: int = 1 # used when access_rule == AT_LEAST_N
+@export var access_required_sides_rotated: Array = [] # optional explicit sides when rotated
+
 func _init(
 	p_id: int = 0,
 	p_name: String = "",
@@ -37,7 +47,11 @@ func _init(
 	p_collision_width: int = 1,
 	p_collision_height: int = 1,
 	p_sprite_offset: Vector2 = Vector2.ZERO,
-	p_sprite_offset_rotated: Vector2 = Vector2.ZERO
+	p_sprite_offset_rotated: Vector2 = Vector2.ZERO,
+	p_access_rule: int = AccessRule.NONE,
+	p_access_required_sides: Array = [],
+	p_access_required_count: int = 1,
+	p_access_required_sides_rotated: Array = []
 ):
 	id = p_id
 	name = p_name
@@ -55,6 +69,10 @@ func _init(
 	collision_height = p_collision_height
 	sprite_offset = p_sprite_offset
 	sprite_offset_rotated = p_sprite_offset_rotated
+	access_rule = p_access_rule
+	access_required_sides = p_access_required_sides
+	access_required_count = p_access_required_count
+	access_required_sides_rotated = p_access_required_sides_rotated
 
 func get_tileset_coords_for_rotation(is_rotated: bool) -> Array[Vector2i]:
 	# Return the appropriate tileset coordinates based on rotation state

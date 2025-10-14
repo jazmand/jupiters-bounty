@@ -303,18 +303,23 @@ func _update_visual_state():
 	if is_preview:
 		# Preview state - show with reduced opacity
 		if is_valid_preview:
-			target_color = Color(1, 1, 1, 0.7)  # Valid preview - 70% opacity
+			target_color = Global.COLOR_PREVIEW_VALID
 		else:
-			target_color = Color(1, 0.3, 0.3, 0.6)  # Invalid preview - red tint, 60% opacity
+			target_color = Global.COLOR_PREVIEW_INVALID
 	elif is_selected:
-		target_color = Color(1.2, 1.2, 1.0)  # Yellowish tint when selected
+		target_color = Global.COLOR_SELECTED_HIGHLIGHT
 	elif is_hovered:
-		target_color = Color(1.1, 1.1, 1.0)  # Slight brightening when hovered
+		target_color = Global.COLOR_HOVER_HIGHLIGHT
 	else:
 		target_color = Color.WHITE  # Normal color
 	
-	# Apply color to sprite instance
-	hover_tween.tween_property(self, "modulate", target_color, 0.2)
+	# Apply color directly to the Sprite2D so preview/hover tints are always visible
+	var sprite := get_node_or_null("Sprite2D")
+	if sprite:
+		hover_tween.tween_property(sprite, "modulate", target_color, 0.2)
+	else:
+		# Fallback to tinting this node if sprite is missing
+		hover_tween.tween_property(self, "modulate", target_color, 0.2)
 
 func select() -> void:
 	is_selected = true

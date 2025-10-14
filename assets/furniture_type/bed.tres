@@ -20,3 +20,7 @@ collision_width = 1
 collision_height = 2
 sprite_offset = Vector2(25, 15)
 sprite_offset_rotated = Vector2(-25, 15)
+access_rule = 1
+access_required_sides = ["east", "west"]
+access_required_count = 1
+access_required_sides_rotated = ["north", "south"]

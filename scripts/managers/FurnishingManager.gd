@@ -177,6 +177,10 @@ func _is_furniture_placement_valid_at_position(positions: Array[Vector2i]) -> bo
 	if not are_tiles_in_room(positions):
 		return false
 	
+	# Door tiles and their interior approach tiles cannot be occupied by furniture
+	if _intersects_door_or_approach_tiles(positions):
+		return false
+
 	# Check if tiles are already occupied
 	if are_tiles_occupied(positions):
 		return false
@@ -184,8 +188,248 @@ func _is_furniture_placement_valid_at_position(positions: Array[Vector2i]) -> bo
 	# Check if we have enough currency
 	if not has_enough_currency(selected_furnituretype.price):
 		return false
+
+	# Check access requirements for the furniture type
+	if not _are_access_requirements_met(selected_furnituretype, positions, _furniture_rotation == 1):
+		return false
+
+	# Ensure this placement does not break access requirements of existing adjacent furniture
+	if _does_block_neighbor_access(positions):
+		return false
 	
 	return true
+
+func _intersects_door_or_approach_tiles(positions: Array[Vector2i]) -> bool:
+	# Ensure we have a selected room with door tiles
+	if not Global.selected_room or not Global.selected_room.data:
+		return false
+	var doors: Array[Vector2i] = Global.selected_room.data.door_tiles
+	if doors.is_empty():
+		return false
+	# Build a quick lookup set for doors and their interior approach tiles
+	var blocked := {}
+	# Room bounds used to determine door orientation
+	var b := Global.selected_room.get_room_bounds()
+	for d in doors:
+		blocked[d] = true
+		# Determine interior approach tile based on which wall the door sits on
+		if d.x == b.min_x:
+			blocked[d + Vector2i(1, 0)] = true
+		elif d.x == b.max_x:
+			blocked[d + Vector2i(-1, 0)] = true
+		elif d.y == b.min_y:
+			blocked[d + Vector2i(0, 1)] = true
+		elif d.y == b.max_y:
+			blocked[d + Vector2i(0, -1)] = true
+	# If any occupied position matches a blocked tile, reject placement
+	for p in positions:
+		if blocked.has(p):
+			return true
+	return false
+
+func _are_access_requirements_met(ft: FurnitureType, positions: Array[Vector2i], is_rotated: bool) -> bool:
+	# No access requirements
+	if ft.access_rule == ft.AccessRule.NONE:
+		return true
+
+	# Build a fast lookup set of occupied tiles
+	var occupied := {}
+	for p in positions:
+		occupied[p] = true
+
+	# Compute footprint bounds and sides
+	# Sides are considered as tile edges. A side is accessible if any tile along that side
+	# has its adjacent tile empty (not occupied by furniture) and inside the room bounds.
+	var min_x = positions[0].x
+	var max_x = positions[0].x
+	var min_y = positions[0].y
+	var max_y = positions[0].y
+	for p in positions:
+		min_x = min(min_x, p.x)
+		max_x = max(max_x, p.x)
+		min_y = min(min_y, p.y)
+		max_y = max(max_y, p.y)
+
+	# Resolve requested sides, supporting dynamic tokens like "long"
+	var requested_sides: Array = _resolve_required_sides(ft, is_rotated)
+
+	# Count accessible requested sides
+	var accessible_count := 0
+	for side in requested_sides:
+		if _is_side_accessible(side, occupied, min_x, max_x, min_y, max_y):
+			accessible_count += 1
+
+	match ft.access_rule:
+		ft.AccessRule.ANY:
+			return accessible_count >= 1
+		ft.AccessRule.ALL:
+			return accessible_count == requested_sides.size()
+		ft.AccessRule.AT_LEAST_N:
+			return accessible_count >= max(1, ft.access_required_count)
+		_:
+			return true
+
+func _transform_sides_for_rotation(sides: Array, is_rotated: bool) -> Array:
+	# When rotated 90 degrees clockwise, map: north->east, east->south, south->west, west->north
+	if not is_rotated:
+		return sides.duplicate()
+	var mapping := {
+		"north": "east",
+		"east": "south",
+		"south": "west",
+		"west": "north"
+	}
+	var out: Array = []
+	for s in sides:
+		if mapping.has(s):
+			out.append(mapping[s])
+		else:
+			out.append(s)
+	return out
+
+func _resolve_required_sides(ft: FurnitureType, is_rotated: bool) -> Array:
+	# Prefer explicit rotated sides if provided on the resource
+	if is_rotated and ft.access_required_sides_rotated.size() > 0:
+		return ft.access_required_sides_rotated.duplicate()
+	# Otherwise transform configured sides by rotation
+	return _transform_sides_for_rotation(ft.access_required_sides, is_rotated)
+
+func _is_side_accessible(side: String, occupied: Dictionary, min_x: int, max_x: int, min_y: int, max_y: int) -> bool:
+	# A side is accessible only if EVERY edge tile along that side has its adjacent neighbor free and in-room
+	if side == "north":
+		var y = min_y
+		for x in range(min_x, max_x + 1):
+			var neighbor := Vector2i(x, y - 1)
+			if occupied.has(neighbor) or not are_tiles_in_room([neighbor]) or are_tiles_occupied([neighbor]) or _is_room_wall(neighbor):
+				return false
+		return true
+	elif side == "south":
+		var y2 = max_y
+		for x2 in range(min_x, max_x + 1):
+			var neighbor2 := Vector2i(x2, y2 + 1)
+			if occupied.has(neighbor2) or not are_tiles_in_room([neighbor2]) or are_tiles_occupied([neighbor2]) or _is_room_wall(neighbor2):
+				return false
+		return true
+	elif side == "west":
+		var xw = min_x
+		for y3 in range(min_y, max_y + 1):
+			var neighbor3 := Vector2i(xw - 1, y3)
+			if occupied.has(neighbor3) or not are_tiles_in_room([neighbor3]) or are_tiles_occupied([neighbor3]) or _is_room_wall(neighbor3):
+				return false
+		return true
+	elif side == "east":
+		var xe = max_x
+		for y4 in range(min_y, max_y + 1):
+			var neighbor4 := Vector2i(xe + 1, y4)
+			if occupied.has(neighbor4) or not are_tiles_in_room([neighbor4]) or are_tiles_occupied([neighbor4]) or _is_room_wall(neighbor4):
+				return false
+		return true
+	return false
+
+func _is_room_wall(tile: Vector2i) -> bool:
+	# Treat any tile outside the selected room bounds as blocking (wall)
+	if not Global.selected_room:
+		return false
+	var b := Global.selected_room.get_room_bounds()
+	return tile.x < b.min_x or tile.x > b.max_x or tile.y < b.min_y or tile.y > b.max_y
+
+func _does_block_neighbor_access(positions: Array[Vector2i]) -> bool:
+	# Build a lookup set for the new furniture footprint
+	var new_blocked := {}
+	for p in positions:
+		new_blocked[p] = true
+
+	# Collect unique adjacent furniture touching any of the new footprint edges
+	var neighbor_furniture := {}
+	var dirs := [Vector2i(0,-1), Vector2i(1,0), Vector2i(0,1), Vector2i(-1,0)]
+	for p in positions:
+		for d in dirs:
+			var n: Vector2i = p + d
+			var items := _get_furniture_at_tile(n)
+			for f in items:
+				neighbor_furniture[str(f.get_instance_id())] = f
+
+	# For each neighboring furniture, verify its access is still satisfied
+	for k in neighbor_furniture.keys():
+		var f: Furniture = neighbor_furniture[k]
+		if not _are_access_requirements_met_for_existing(f, new_blocked):
+			return true
+	return false
+
+func _are_access_requirements_met_for_existing(f: Furniture, extra_blocked: Dictionary) -> bool:
+	if f == null or f.furniture_type == null:
+		return true
+	var ft: FurnitureType = f.furniture_type
+	if ft.access_rule == ft.AccessRule.NONE:
+		return true
+
+	var tiles: Array[Vector2i] = f.get_occupied_tiles()
+	if tiles.is_empty():
+		return true
+
+	# Compute bounds
+	var min_x = tiles[0].x
+	var max_x = tiles[0].x
+	var min_y = tiles[0].y
+	var max_y = tiles[0].y
+	var occupied := {}
+	for t in tiles:
+		occupied[t] = true
+		min_x = min(min_x, t.x)
+		max_x = max(max_x, t.x)
+		min_y = min(min_y, t.y)
+		max_y = max(max_y, t.y)
+
+	# Transform sides based on the furniture's own rotation
+	var req_sides: Array = _resolve_required_sides(ft, f.rotation_state == 1)
+
+	# Count accessible required sides
+	var accessible_count := 0
+	for side in req_sides:
+		if _is_side_accessible_with_extra_blocked(side, occupied, min_x, max_x, min_y, max_y, extra_blocked):
+			accessible_count += 1
+
+	match ft.access_rule:
+		ft.AccessRule.ANY:
+			return accessible_count >= 1
+		ft.AccessRule.ALL:
+			return accessible_count == req_sides.size()
+		ft.AccessRule.AT_LEAST_N:
+			return accessible_count >= max(1, ft.access_required_count)
+		_:
+			return true
+
+func _is_side_accessible_with_extra_blocked(side: String, occupied: Dictionary, min_x: int, max_x: int, min_y: int, max_y: int, extra_blocked: Dictionary) -> bool:
+	# Similar to _is_side_accessible but also considers extra blocked tiles (the new preview)
+	if side == "north":
+		var y = min_y
+		for x in range(min_x, max_x + 1):
+			var neighbor := Vector2i(x, y - 1)
+			if extra_blocked.has(neighbor) or _is_tile_occupied_by_furniture(neighbor) or not are_tiles_in_room([neighbor]) or _is_room_wall(neighbor):
+				return false
+		return true
+	elif side == "south":
+		var y2 = max_y
+		for x2 in range(min_x, max_x + 1):
+			var neighbor2 := Vector2i(x2, y2 + 1)
+			if extra_blocked.has(neighbor2) or _is_tile_occupied_by_furniture(neighbor2) or not are_tiles_in_room([neighbor2]) or _is_room_wall(neighbor2):
+				return false
+		return true
+	elif side == "west":
+		var xw = min_x
+		for y3 in range(min_y, max_y + 1):
+			var neighbor3 := Vector2i(xw - 1, y3)
+			if extra_blocked.has(neighbor3) or _is_tile_occupied_by_furniture(neighbor3) or not are_tiles_in_room([neighbor3]) or _is_room_wall(neighbor3):
+				return false
+		return true
+	elif side == "east":
+		var xe = max_x
+		for y4 in range(min_y, max_y + 1):
+			var neighbor4 := Vector2i(xe + 1, y4)
+			if extra_blocked.has(neighbor4) or _is_tile_occupied_by_furniture(neighbor4) or not are_tiles_in_room([neighbor4]) or _is_room_wall(neighbor4):
+				return false
+		return true
+	return false
 
 func place_furniture(event: InputEvent) -> void:
 	if selected_furnituretype == null:
@@ -345,9 +589,8 @@ func _is_preview_colliding_with_furniture(positions: Array[Vector2i]) -> bool:
 	return false
 
 func _is_preview_colliding_with_doors(positions: Array[Vector2i]) -> bool:
-	# TODO: Implement door collision detection
-	# For now, return false as doors are not implemented yet
-	return false
+	# Reuse the same door/approach blocking logic for preview collisions
+	return _intersects_door_or_approach_tiles(positions)
 
 func _on_furniture_crew_assigned(crew_member: Node) -> void:
 	# TODO: Implement crew assignment logic
@@ -552,7 +795,15 @@ func _lower_furniture_opacities() -> void:
 				# Get all furniture in this room
 				for child in room.get_children():
 					if child is Furniture:
-						child.modulate = Color(1, 1, 1, 0.5)
+						# Skip preview furniture so its invalid tint stays strong
+						if child.is_preview:
+							continue
+						# If furniture has a Sprite2D child, dim the sprite directly
+						var sprite := child.get_node_or_null("Sprite2D")
+						if sprite:
+							sprite.modulate = Color(1, 1, 1, 0.5)
+						else:
+							child.modulate = Color(1, 1, 1, 0.5)
 
 func _restore_furniture_opacities() -> void:
 	# Restore normal opacity of all furniture sprites
