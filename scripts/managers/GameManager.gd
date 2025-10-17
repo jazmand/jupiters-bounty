@@ -248,36 +248,10 @@ func show_furniture_info_panel_no_assignment(furniture: Furniture) -> void:
 
 
 func _assign_crew_to_furniture(furniture: Furniture, crew_member: CrewMember) -> bool:
-	# Assign a crew member to furniture and handle the movement
+	# Assign a crew member to furniture and handle the movement via flow fields
 	var success = furniture.assign_crew(crew_member)
 	if success:
-		# Determine the containing room (parent or overlap fallback)
-		var room := _get_room_for_furniture(furniture)
-		if room == null or room.data == null or room.data.door_tiles.is_empty():
-			# Fallback: go near furniture as before
-			var fallback_adj := furniture.find_adjacent_tile()
-			var fallback_world := build_tile_map.to_global(build_tile_map.map_to_local(fallback_adj))
-			crew_member.override_path_limit_for_assignment()
-			crew_member.assign_to_furniture_via_waypoints(furniture, [fallback_world])
-			return true
-
-		# Choose nearest door to crew
-		var door_tile := _get_closest_door_tile(room, crew_member.global_position)
-		# Compute outside-of-door tile for head-on approach
-		var approach := _compute_door_approach_tiles(room, door_tile)
-		# Waypoint world positions should be at the CENTER of tiles
-		var outside_world := _tile_center_world(approach["outside"])
-		var door_world := _tile_center_world(approach["door"])
-		# Then go to an inside-adjacent tile near the furniture (stay there)
-		var inside_adj := _get_adjacent_tile_inside_room(furniture, room)
-		var inside_adj_world := _tile_center_world(inside_adj)
-
-		# Remove temporary seam link: we rely on base-layer nav only
-
-		# Temporarily remove path length limit and send fixed waypoints (no recalculation): outside -> door -> inside-adj
-		crew_member.override_path_limit_for_assignment()
-		crew_member.assign_to_furniture_via_waypoints(furniture, [outside_world, door_world, inside_adj_world])
-		
+		crew_member.assign_to_furniture_via_flow(furniture)
 		return true
 	else:
 		# TODO: Show error to users via UI
@@ -575,5 +549,10 @@ func _deferred_bake_navigation() -> void:
 	# Wait one physics frame for safety, then bake
 	await get_tree().physics_frame
 	navigation_region.bake_navigation_polygon()
+	# Invalidate flow fields after nav changes
+	if Global and Global.flow_service:
+		Global.flow_service.mark_nav_dirty()
+	if Global and Global.wander_beacons:
+		Global.wander_beacons.rebuild_from_nav()
 
 

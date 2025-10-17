@@ -25,5 +25,21 @@ var is_crew_input = false
 var selected_room: Room = null
 var inspected_furniture: Furniture = null
 
+# Shared services
+const FlowFieldServiceScript = preload("res://scripts/utilities/FlowFieldManager.gd")
+var flow_service = null
+const WanderBeaconsScript = preload("res://scripts/utilities/WanderBeacons.gd")
+var wander_beacons = null
+const AssignmentBeaconsScript = preload("res://scripts/utilities/AssignmentBeacons.gd")
+var assignment_beacons = null
+
 func _ready() -> void:
 	GameTime.second.connect(station.update_hydrogen)
+	# Initialize shared flow field service
+	flow_service = FlowFieldServiceScript.new()
+	# Initialize wander beacons
+	wander_beacons = WanderBeaconsScript.new()
+	add_child(wander_beacons)
+	wander_beacons.rebuild_from_nav()
+	assignment_beacons = AssignmentBeaconsScript.new()
+	add_child(assignment_beacons)

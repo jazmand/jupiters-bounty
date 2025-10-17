@@ -209,21 +209,21 @@ func _intersects_door_or_approach_tiles(positions: Array[Vector2i]) -> bool:
 	# Build a quick lookup set for doors and their interior approach tiles
 	var blocked := {}
 	# Room bounds used to determine door orientation
-	var b := Global.selected_room.get_room_bounds()
-	for d in doors:
-		blocked[d] = true
+	var room_bounds: Dictionary = Global.selected_room.get_room_bounds()
+	for door_tile in doors:
+		blocked[door_tile] = true
 		# Determine interior approach tile based on which wall the door sits on
-		if d.x == b.min_x:
-			blocked[d + Vector2i(1, 0)] = true
-		elif d.x == b.max_x:
-			blocked[d + Vector2i(-1, 0)] = true
-		elif d.y == b.min_y:
-			blocked[d + Vector2i(0, 1)] = true
-		elif d.y == b.max_y:
-			blocked[d + Vector2i(0, -1)] = true
+		if door_tile.x == room_bounds.min_x:
+			blocked[door_tile + Vector2i(1, 0)] = true
+		elif door_tile.x == room_bounds.max_x:
+			blocked[door_tile + Vector2i(-1, 0)] = true
+		elif door_tile.y == room_bounds.min_y:
+			blocked[door_tile + Vector2i(0, 1)] = true
+		elif door_tile.y == room_bounds.max_y:
+			blocked[door_tile + Vector2i(0, -1)] = true
 	# If any occupied position matches a blocked tile, reject placement
-	for p in positions:
-		if blocked.has(p):
+	for occupied_pos in positions:
+		if blocked.has(occupied_pos):
 			return true
 	return false
 
@@ -330,7 +330,7 @@ func _is_room_wall(tile: Vector2i) -> bool:
 	# Treat any tile outside the selected room bounds as blocking (wall)
 	if not Global.selected_room:
 		return false
-	var b := Global.selected_room.get_room_bounds()
+	var b: Dictionary = Global.selected_room.get_room_bounds()
 	return tile.x < b.min_x or tile.x > b.max_x or tile.y < b.min_y or tile.y > b.max_y
 
 func _does_block_neighbor_access(positions: Array[Vector2i]) -> bool:
@@ -554,6 +554,10 @@ func _spawn_furniture_instance(furniture_type: FurnitureType, positions: Array[V
 	_furniture_instances.append(furniture_instance)
 	_add_furniture_to_tile_map(furniture_instance, positions)
 
+	# Invalidate furniture-related flow fields
+	if Global and Global.flow_service:
+		Global.flow_service.mark_furniture_dirty()
+
 	return furniture_instance
 
 func _add_furniture_to_tile_map(furniture_instance: Furniture, positions: Array[Vector2i]) -> void:
@@ -666,6 +670,9 @@ func remove_furniture_instance(furniture_instance: Furniture) -> void:
 		
 		# Remove from scene
 		furniture_instance.queue_free()
+		# Invalidate furniture-related flow fields after removal
+		if Global and Global.flow_service:
+			Global.flow_service.mark_furniture_dirty()
 
 func cleanup_room_furniture(room: Node) -> void:
 	var room_furniture = get_furniture_instances_in_room(room)
@@ -799,7 +806,7 @@ func _lower_furniture_opacities() -> void:
 						if child.is_preview:
 							continue
 						# If furniture has a Sprite2D child, dim the sprite directly
-						var sprite := child.get_node_or_null("Sprite2D")
+						var sprite: Sprite2D = child.get_node_or_null("Sprite2D") as Sprite2D
 						if sprite:
 							sprite.modulate = Color(1, 1, 1, 0.5)
 						else:

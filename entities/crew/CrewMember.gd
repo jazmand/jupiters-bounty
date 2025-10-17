@@ -40,8 +40,8 @@ const COLLISION_LAYERS = {
 @onready var navigation_agent: NavigationAgent2D = $Navigation/NavigationAgent2D
 @onready var navigation_timer: Timer = $Navigation/Timer
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
-@onready var speech_label: Label = $SpeechLabel
-@onready var speech_timer: Timer = $SpeechTimer
+@onready var speech_label: Label = get_node_or_null("SpeechLabel")
+@onready var speech_timer: Timer = get_node_or_null("SpeechTimer")
 @onready var sprite_idle: Sprite2D = $AgathaIdle
 @onready var sprite_walk: Sprite2D = $AgathaWalk
 @onready var area: Area2D = $BodyArea
@@ -119,6 +119,23 @@ var assignment_path: Array[Vector2] = []
 var assignment_path_idx: int = 0
 const ASSIGNMENT_WAYPOINT_EPS: float = 8.0
 
+# Flow-field following
+var _is_flow_following: bool = false
+var _flow_furniture: Furniture = null
+var _flow_timer: Timer = null
+var _flow_wander_goal: Vector2i = Vector2i.ZERO
+var _assignment_beacon: Vector2i = Vector2i.ZERO
+var _oscillation_count: int = 0
+var _last_tile: Vector2i = Vector2i.ZERO
+
+# Flow-field services
+const FlowFieldServiceScript = preload("res://scripts/utilities/FlowFieldManager.gd")
+const NavGridProviderScript = preload("res://scripts/utilities/NavGridProvider.gd")
+const FlowTargetsScript = preload("res://scripts/utilities/FlowTargets.gd")
+var _flow_service = null
+var _nav_grid = NavGridProviderScript.new()
+var _flow_targets = FlowTargetsScript.new()
+
 func _is_on_assignment() -> bool:
 	return assignment == &"work" or furniture_workplace != null or not pending_waypoints.is_empty()
 
@@ -155,10 +172,20 @@ func _ready() -> void:
 	navigation_timer.start(randf_range(0.0, navigation_timer.wait_time))
 	# Ensure speech label exists (no random speech timer)
 	_ensure_speech_label()
+	# Use shared flow service if available
+	if Global and Global.flow_service:
+		_flow_service = Global.flow_service
+	else:
+		_flow_service = FlowFieldServiceScript.new()
 	
 func actor_setup():
 	await get_tree().physics_frame
 	set_movement_target(target)
+	# Relax path tolerances and enable smoothing to avoid boundary jitter
+	navigation_agent.target_desired_distance = 10.0
+	navigation_agent.path_desired_distance = 10.0
+	navigation_agent.path_postprocessing = 1  # string pulling
+	navigation_agent.avoidance_enabled = true
 
 func _on_input_event(viewport, event, _shape_idx):
 	if event.is_action_pressed("select"):
@@ -537,19 +564,17 @@ func _on_idling_state_physics_processing(_delta: float) -> void:
 	if idle_timer >= idle_time_limit:
 		state_manager.send_event(&"walk")
 		idle_timer = 0.0
-		# Set number of walk segments for this free-walk cycle
-		walk_segments_remaining = randi_range(walk_segments_per_cycle_min, walk_segments_per_cycle_max)
-		randomise_target_position()
+		# Start/refresh flow wandering instead of random direct target
+		_start_flow_wander()
 
 func _on_walking_state_entered() -> void:
 	# Don't override state if resting
 	if not crew_vigour.is_resting:
 		state = STATE.WALK
 	walk_start_time = Time.get_ticks_msec() / 1000.0  # Convert to seconds
-	# If walking freely, generate a new random target; otherwise keep assignment target/waypoint
+	# If walking freely, start/continue flow-field wandering
 	if not _is_on_assignment():
-		randomise_target_position()
-		walk_segments_remaining = randi_range(walk_segments_per_cycle_min, walk_segments_per_cycle_max)
+		_start_flow_wander()
 
 func _on_walking_state_physics_processing(_delta: float) -> void:
 	# Update z_index based on Y position for proper depth sorting
@@ -616,7 +641,8 @@ func _on_walking_state_physics_processing(_delta: float) -> void:
 
 	set_rounded_direction()
 	
-	# Validate current path against obstacles
+	# Validate current path against obstacles even when following flow fields
+	# so we adapt around physics obstacles and room walls/doors
 	validate_current_path()
 	
 	# Update collision avoidance
@@ -639,8 +665,19 @@ func _on_walking_state_physics_processing(_delta: float) -> void:
 	# TEST: log next path position changes while on assignment
 	if _is_on_assignment():
 		var np := navigation_agent.get_next_path_position()
-		if _last_logged_next_path.distance_to(np) > 4.0:
-			_last_logged_next_path = np
+		var current_tile := _nav_grid.world_to_tile(global_position)
+		if current_tile == _last_tile:
+			_oscillation_count += 1
+		else:
+			_oscillation_count = 0
+			_last_tile = current_tile
+		if _oscillation_count >= 6:
+			# Force a side-step to break oscillation
+			var step := _choose_side_step(current_tile, _nav_grid.world_to_tile(np))
+			if step != Vector2i.ZERO:
+				var w := _nav_grid.tile_center_world(step)
+				navigation_agent.target_position = w
+				_oscillation_count = 0
 
 func _snapshot_agent_path() -> void:
 	# Capture current computed path from the agent for this assignment leg
@@ -707,6 +744,27 @@ func assign_to_furniture_via_waypoints(furniture: Furniture, waypoints: Array[Ve
 	# Ensure we are walking immediately
 	state_manager.send_event(&"walk")
 
+func assign_to_furniture_via_flow(furniture: Furniture) -> void:
+	# Start following a flow field toward furniture access tiles
+	if furniture == null:
+		return
+	# Store furniture reference and mark assignment
+	furniture_workplace = furniture
+	assignment = &"work"
+	state_manager.set_expression_property(&"assignment", assignment)
+	# Reserve an assignment beacon tile (unique per crew)
+	if Global and Global.assignment_beacons:
+		_assignment_beacon = Global.assignment_beacons.reserve_for_crew(furniture, get_instance_id(), global_position)
+		if _assignment_beacon == Vector2i.ZERO:
+			# Fallback to flow-to-furniture if reservation fails
+			_assignment_beacon = Vector2i.ZERO
+	# Ensure timer exists and start loop
+	_ensure_flow_timer()
+	_is_flow_following = true
+	_flow_furniture = furniture
+	_on_flow_timer_timeout()
+	_flow_timer.start()
+
 func override_path_limit_for_assignment() -> void:
 	# Save and remove path distance limit for long paths to door/furniture
 	if _saved_path_max_distance < 0.0:
@@ -721,6 +779,10 @@ func override_path_limit_for_assignment() -> void:
 func unassign_from_furniture() -> void:
 	furniture_workplace = null
 	state_manager.send_event(&"unassigned")
+	_stop_flow_follow()
+	# Release beacon reservation
+	if Global and Global.assignment_beacons:
+		Global.assignment_beacons.release_for_crew(get_instance_id())
 
 func go_to_work() -> void:
 	# Avoid retargeting while following a fixed assignment path
@@ -735,6 +797,143 @@ func go_to_work() -> void:
 	# Don't chain segments when heading to work
 	walk_segments_remaining = 1
 	state_manager.send_event(&"walk")
+
+func _ensure_flow_timer() -> void:
+	if is_instance_valid(_flow_timer):
+		return
+	var t := Timer.new()
+	t.name = "FlowFollowTimer"
+	t.one_shot = true
+	t.autostart = false
+	t.wait_time = 0.15  # ~6.6 Hz
+	add_child(t)
+	t.timeout.connect(_on_flow_timer_timeout)
+	_flow_timer = t
+
+func _on_flow_timer_timeout() -> void:
+	if _flow_furniture != null and _is_flow_following:
+		# Assigned flow-follow to furniture or its personal beacon
+		var target_field = null
+		if _assignment_beacon != Vector2i.ZERO:
+			target_field = _flow_service.get_field_to_tile(_assignment_beacon)
+		else:
+			target_field = _flow_service.get_field_to_furniture(_flow_furniture)
+		var field_f = target_field
+		if field_f == null:
+			_flow_timer.start()
+			return
+		var curr_tile_f := _nav_grid.world_to_tile(global_position)
+		var next_tile_f = _flow_service.get_next_tile(field_f, curr_tile_f)
+		if next_tile_f == curr_tile_f or next_tile_f == Vector2i.ZERO:
+			# Check arrival strictly at personal beacon if set
+			if _assignment_beacon != Vector2i.ZERO:
+				if curr_tile_f == _assignment_beacon:
+					_stop_flow_follow()
+					state_manager.send_event(&"to_assignment")
+					return
+				# No gradient yet: retry next tick
+				_flow_timer.start()
+				return
+			# Without a beacon, only accept arrival if truly adjacent to furniture
+			if Global and Global.assignment_beacons and Global.assignment_beacons.is_adjacent_to_furniture(curr_tile_f, _flow_furniture):
+				_stop_flow_follow()
+				state_manager.send_event(&"to_assignment")
+				return
+			# Otherwise retry next tick
+			_flow_timer.start()
+			return
+		var next_world_f := _nav_grid.tile_center_world(next_tile_f)
+		# If direct line is blocked (corner/wall), step sideways to a viable neighbor
+		if not check_path_for_static_obstacles(next_world_f):
+			var alt_f := _choose_side_step(curr_tile_f, next_tile_f)
+			if alt_f != Vector2i.ZERO:
+				next_world_f = _nav_grid.tile_center_world(alt_f)
+		# Ensure we don't prematurely accept current tile as target
+		if next_tile_f == curr_tile_f:
+			# Nudge toward beacon/furniture center by picking any valid neighbor with lower distance
+			var field_for_nudge = _flow_service.get_field_to_tile(_assignment_beacon) if _assignment_beacon != Vector2i.ZERO else _flow_service.get_field_to_furniture(_flow_furniture)
+			if field_for_nudge:
+				for neighbor_try in [Vector2i(0,-1), Vector2i(1,0), Vector2i(0,1), Vector2i(-1,0)]:
+					var neighbor_tile: Vector2i = curr_tile_f + neighbor_try
+					var neighbor_next_tile: Vector2i = _flow_service.get_next_tile(field_for_nudge, neighbor_tile)
+					if _nav_grid.is_walkable(neighbor_tile) and _nav_grid.can_traverse(curr_tile_f, neighbor_tile) and (neighbor_next_tile != neighbor_tile):
+						next_world_f = _nav_grid.tile_center_world(neighbor_tile)
+						break
+		navigation_agent.target_position = next_world_f
+		state_manager.send_event(&"walk")
+		_flow_timer.start()
+		return
+
+	# Wandering via flow field to a random walkable tile
+	if _flow_wander_goal == Vector2i.ZERO:
+		# Prefer a shared beacon with slight jitter to reduce clustering
+		if Global and Global.wander_beacons:
+			var beacon_tile: Vector2i = Global.wander_beacons.pick_beacon_for_crew()
+			if beacon_tile != Vector2i.ZERO:
+				_flow_wander_goal = Global.wander_beacons.jitter(beacon_tile, 2)
+		if _flow_wander_goal == Vector2i.ZERO:
+			_flow_wander_goal = _nav_grid.random_walkable_tile()
+	var field_w = _flow_service.get_field_to_tile(_flow_wander_goal)
+	if field_w == null:
+		_flow_timer.start()
+		return
+	var curr_tile_w := _nav_grid.world_to_tile(global_position)
+	var next_tile_w = _flow_service.get_next_tile(field_w, curr_tile_w)
+	if next_tile_w == curr_tile_w or next_tile_w == Vector2i.ZERO:
+		# Reroll if unreachable or arrived; release any beacon reservation
+		if Global and Global.wander_beacons and _flow_wander_goal != Vector2i.ZERO:
+			Global.wander_beacons.release_beacon(_flow_wander_goal)
+		_flow_wander_goal = Vector2i.ZERO
+		_flow_timer.start()
+		return
+	var next_world_w := _nav_grid.tile_center_world(next_tile_w)
+	# If direct line is blocked (corner/wall), step sideways to a viable neighbor
+	if not check_path_for_static_obstacles(next_world_w):
+		var alt_w := _choose_side_step(curr_tile_w, next_tile_w)
+		if alt_w != Vector2i.ZERO:
+			next_world_w = _nav_grid.tile_center_world(alt_w)
+	navigation_agent.target_position = next_world_w
+	state_manager.send_event(&"walk")
+	_flow_timer.start()
+
+func _stop_flow_follow() -> void:
+	_is_flow_following = false
+	_flow_furniture = null
+	_flow_wander_goal = Vector2i.ZERO
+	if is_instance_valid(_flow_timer):
+		_flow_timer.stop()
+
+func _start_flow_wander() -> void:
+	# Begin or continue wandering using a flow field toward a random walkable tile
+	_ensure_flow_timer()
+	_is_flow_following = false
+	_flow_furniture = null
+	if _flow_wander_goal == Vector2i.ZERO:
+		_flow_wander_goal = _nav_grid.random_walkable_tile()
+	_on_flow_timer_timeout()
+	_flow_timer.start()
+
+func _choose_side_step(from_tile: Vector2i, to_tile: Vector2i) -> Vector2i:
+	# Pick a perpendicular neighbor to avoid a blocked wall/corner
+	var dir := to_tile - from_tile
+	var left := Vector2i(-dir.y, dir.x)
+	var right := Vector2i(dir.y, -dir.x)
+	var cand1 := from_tile + left.sign()
+	var cand2 := from_tile + right.sign()
+	if _is_viable_transition(from_tile, cand1):
+		return cand1
+	if _is_viable_transition(from_tile, cand2):
+		return cand2
+	return Vector2i.ZERO
+
+func _is_viable_transition(a: Vector2i, b: Vector2i) -> bool:
+	# Stay on nav, obey door transitions, and ensure line is clear
+	if not _nav_grid.is_walkable(b):
+		return false
+	if not _nav_grid.can_traverse(a, b):
+		return false
+	var w := _nav_grid.tile_center_world(b)
+	return check_path_for_static_obstacles(w)
 	
 func is_assigned() -> bool:
 	return workplace != null or furniture_workplace != null
