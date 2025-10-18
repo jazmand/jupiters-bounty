@@ -89,7 +89,7 @@ func is_room_size_and_price_valid(room_type: RoomType, initial_coords: Vector2i,
 	})
 	return true
 
-func is_door_placement_valid(coords: Vector2i, room_initial_coords: Vector2i, room_transverse_coords: Vector2i) -> bool:
+func is_door_placement_valid(coords: Vector2i, room_initial_coords: Vector2i, room_transverse_coords: Vector2i, existing_doors: Array[Vector2i] = []) -> bool:
 	"""
 	Validates if a door can be placed at the given coordinates
 	"""
@@ -97,6 +97,21 @@ func is_door_placement_valid(coords: Vector2i, room_initial_coords: Vector2i, ro
 		validation_failed.emit("invalid_door_position", {
 			"coords": coords,
 			"room_bounds": {"initial": room_initial_coords, "transverse": room_transverse_coords}
+		})
+		return false
+	
+	# Check if door would face outside the navigable area
+	if not is_door_facing_navigable_area(coords, room_initial_coords, room_transverse_coords):
+		validation_failed.emit("door_faces_outside", {
+			"coords": coords
+		})
+		return false
+	
+	# Check if door would be blocked by existing doors
+	if is_door_blocked_by_existing_doors(coords, existing_doors):
+		validation_failed.emit("door_blocked", {
+			"coords": coords,
+			"blocking_doors": existing_doors
 		})
 		return false
 		
@@ -127,6 +142,64 @@ func is_blocking_existing_door(coords: Vector2i) -> bool:
 			if (abs(coords.x - door_tile.x) + abs(coords.y - door_tile.y)) == 1:
 				return true
 	return false
+
+func is_door_facing_navigable_area(coords: Vector2i, room_initial_coords: Vector2i, room_transverse_coords: Vector2i) -> bool:
+	"""
+	Checks if a door would face a navigable area (not outside the station)
+	"""
+	var room_bounds = {
+		"min_x": min(room_initial_coords.x, room_transverse_coords.x),
+		"max_x": max(room_initial_coords.x, room_transverse_coords.x),
+		"min_y": min(room_initial_coords.y, room_transverse_coords.y),
+		"max_y": max(room_initial_coords.y, room_transverse_coords.y)
+	}
+	
+	# Determine which direction the door faces (outside the room)
+	var outside_tile: Vector2i
+	if coords.x == room_bounds.min_x:
+		outside_tile = coords + Vector2i(-1, 0)  # Left side of room
+	elif coords.x == room_bounds.max_x:
+		outside_tile = coords + Vector2i(1, 0)   # Right side of room
+	elif coords.y == room_bounds.min_y:
+		outside_tile = coords + Vector2i(0, -1)  # Top side of room
+	elif coords.y == room_bounds.max_y:
+		outside_tile = coords + Vector2i(0, 1)   # Bottom side of room
+	else:
+		return false  # Not on room edge
+	
+	# Check if the outside tile is navigable
+	return is_tile_navigable(outside_tile)
+
+func is_tile_navigable(coords: Vector2i) -> bool:
+	"""
+	Checks if a tile is navigable (has base tile data and is buildable)
+	"""
+	var tile_data = TileMapManager.get_base_cell_tile_data(coords)
+	if tile_data == null:
+		return false
+	return tile_data.get_custom_data("is_buildable") == true
+
+func is_door_blocked_by_existing_doors(coords: Vector2i, existing_doors: Array[Vector2i]) -> bool:
+	"""
+	Checks if a door would be blocked by existing doors in the same room
+	"""
+	for door in existing_doors:
+		if (abs(coords.x - door.x) + abs(coords.y - door.y)) == 1:
+			return true
+	return false
+
+func calculate_required_doors(room_size: int) -> int:
+	"""
+	Calculates the required number of doors based on room size:
+	- 1 door for 9 tiles or less
+	- +1 door for each additional 5 tiles
+	"""
+	if room_size <= 9:
+		return 1
+	else:
+		var additional_tiles = room_size - 9
+		var additional_doors = (additional_tiles + 4) / 5  # Ceiling division
+		return 1 + additional_doors
 
 ## Furniture Placement Validation
 
@@ -259,6 +332,10 @@ func get_validation_error_message(error_type: String, details: Dictionary) -> St
 			return "Room must be at least 2x2 tiles"
 		"invalid_door_position":
 			return "Door must be on room edge, not corner"
+		"door_faces_outside":
+			return "Door cannot face outside the navigable area"
+		"door_blocked":
+			return "Door cannot be placed adjacent to another door"
 		"furniture_outside_room":
 			return "Furniture must be placed inside room"
 		"furniture_tiles_occupied":

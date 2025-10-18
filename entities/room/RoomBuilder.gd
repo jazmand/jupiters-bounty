@@ -86,19 +86,44 @@ func drafting_room_motion() -> void:
 	update_cursor_with_room_info(room_cost, room_consumption, TileMapManager.base_tile_map.get_global_mouse_position())
 
 func setting_door() -> void:
-	temp_door_coords = []
 	var coords = TileMapManager.get_global_mouse_position()
-	if is_on_room_edge_and_not_corner(coords):
+	
+	# Check if clicking on an existing door to remove it
+	if temp_door_coords.has(coords):
+		temp_door_coords.erase(coords)
+		return
+	
+	# Try to place a new door
+	if ValidationManager.is_door_placement_valid(coords, initial_tile_coords, transverse_tile_coords, temp_door_coords):
 		set_doors(coords)
-		confirm_room_details()
+		# Check if we have enough doors to proceed
+		var room_size = Room.calculate_tile_count(initial_tile_coords, transverse_tile_coords)
+		var required_doors = ValidationManager.calculate_required_doors(room_size)
+		if temp_door_coords.size() >= required_doors:
+			confirm_room_details()
+
+func force_door_confirmation() -> void:
+	# Allow confirmation even if minimum doors aren't met
+	confirm_room_details()
 
 func setting_door_motion() -> void:
 	var coords = TileMapManager.get_global_mouse_position()
 	# Clear the previous door tile from the door_layer
 	draft_room(initial_tile_coords, transverse_tile_coords)
+	
+	# Draw all existing doors
+	for door_coord in temp_door_coords:
+		TileMapManager.set_building_drafting_cell(door_coord, TileMapManager.BuildTileset.DOOR, Vector2i(0, 0))
+	
 	# Check if the tile is within the room and on the room's edge
-	if is_on_room_edge_and_not_corner(coords):
-		TileMapManager.set_building_drafting_cell(coords, TileMapManager.BuildTileset.DOOR, Vector2i(0, 0))  # Use door tileset for door placement
+	if ValidationManager.is_door_placement_valid(coords, initial_tile_coords, transverse_tile_coords, temp_door_coords):
+		TileMapManager.set_building_drafting_cell(coords, TileMapManager.BuildTileset.DOOR, Vector2i(0, 0))
+	else:
+		# Show invalid door placement
+		TileMapManager.set_building_drafting_cell(coords, TileMapManager.BuildTileset.INVALID, Vector2i(0, 0))
+	
+	# Update cursor with door placement info
+	update_cursor_with_door_info(coords)
 
 # -- Selection and drawing functions
 
@@ -144,8 +169,13 @@ func confirm_room_details() -> void:
 	var room_cost = selected_room_type.price * room_size
 	var room_width = abs(transverse_tile_coords.x - initial_tile_coords.x) + 1
 	var room_height = abs(transverse_tile_coords.y - initial_tile_coords.y) + 1
+	var required_doors = ValidationManager.calculate_required_doors(room_size)
+	
 	popup_title = "Confirm Construction"
-	popup_content = "[b]Room Type: [/b]" + selected_room_type.name + "\n" + "[b]Dimensions: [/b]" + str(room_width) + "x" + str(room_height) + " tiles\n" + "[b]Cost: [/b]" + str(room_cost)
+	popup_content = "[b]Room Type: [/b]" + selected_room_type.name + "\n" + \
+					"[b]Dimensions: [/b]" + str(room_width) + "x" + str(room_height) + " tiles\n" + \
+					"[b]Cost: [/b]" + str(room_cost) + "\n" + \
+					"[b]Doors: [/b]" + str(temp_door_coords.size()) + "/" + str(required_doors) + " placed"
 	action_completed.emit(Action.FORWARD)
 
 func confirm_build() -> void:
@@ -232,6 +262,27 @@ func is_blocking_existing_door(coords: Vector2i) -> bool:
 		if room.is_blocking_door(coords):
 			return true
 	return false
+
+func update_cursor_with_door_info(coords: Vector2i) -> void:
+	var room_size = Room.calculate_tile_count(initial_tile_coords, transverse_tile_coords)
+	var required_doors = ValidationManager.calculate_required_doors(room_size)
+	var placed_doors = temp_door_coords.size()
+	
+	var label_text = "Doors: " + str(placed_doors) + "/" + str(required_doors)
+	
+	# Add instruction text
+	if placed_doors < required_doors:
+		label_text += "\nClick to place door\nPress Enter to confirm"
+	else:
+		label_text += "\nClick to confirm or add more doors"
+	
+	# Add validation feedback
+	if temp_door_coords.has(coords):
+		label_text += "\nClick to remove door"
+	elif not ValidationManager.is_door_placement_valid(coords, initial_tile_coords, transverse_tile_coords, temp_door_coords):
+		label_text += "\nInvalid door position"
+	
+	Global.update_cursor_label.emit(label_text, TileMapManager.base_tile_map.get_global_mouse_position())
 
 func update_cursor_with_room_info(room_cost: int, room_consumption: int, cursor_position: Vector2) -> void:
 	var consumption_text = ""

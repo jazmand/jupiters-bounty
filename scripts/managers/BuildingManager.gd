@@ -102,6 +102,9 @@ func _on_setting_door_state_input(event: InputEvent) -> void:
 	elif event.is_action_pressed("cancel"):
 		state_manager.send_event(BUILD_EVENTS[StateEvent.BUILDING_BACK])
 		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("ui_accept"):  # Enter key for force confirmation
+		room_builder.force_door_confirmation()
+		get_viewport().set_input_as_handled()
 	elif event is InputEventMouseMotion:
 		room_builder.setting_door_motion()
 
