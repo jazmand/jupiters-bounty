@@ -10,7 +10,7 @@ func execute() -> void:
 	
 	# Don't interrupt crew members who are assigned to furniture and walking to their assignment
 	if crew_member._is_on_assignment() and crew_member.state == crew_member.STATE.WALK:
-		print("[IdleAction] Skipping idle event - crew is walking to furniture assignment")
+		
 		return
 	
 	# Don't interrupt an ongoing walk; let navigation finish first

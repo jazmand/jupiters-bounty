@@ -37,7 +37,7 @@ func _ready() -> void:
 	TileMapManager.set_tile_maps(base_tile_map_node, build_tile_map_node, furniture_tile_map_node, special_furniture_tile_map_node)
 
 func _input(event: InputEvent) -> void:
-	## Global input handler for crew/room/furniture clicks from any state
+	# Global input handler for crew/room/furniture clicks from any state
 	if event.is_action_pressed(&"select"):
 		# If any Building state is active, let BuildingManager handle clicks
 		var building_state = get_node_or_null("StateManager/GameState/Building")
@@ -120,7 +120,7 @@ func _input(event: InputEvent) -> void:
 		# Fallback: already in default or another non-handled state
 
 func _is_mouse_over_ui() -> bool:
-	## Check if mouse is currently over any UI element
+	# Check if mouse is currently over any UI element
 	var mouse_pos = get_viewport().get_mouse_position()
 
 	# Check popup panels (highest priority - z-index 1)
@@ -217,7 +217,7 @@ func _on_default_state_unhandled_input(event: InputEvent) -> void:
 # Crew assignment is now handled through the inspecting crew state
 
 func show_furniture_info_panel(furniture: Furniture) -> void:
-	## Show the furniture info panel with crew assignment options
+	# Show the furniture info panel with crew assignment options
 	# Hide all other panels first
 	hide_all_panels()
 
@@ -255,7 +255,6 @@ func _assign_crew_to_furniture(furniture: Furniture, crew_member: CrewMember) ->
 		return true
 	else:
 		# TODO: Show error to users via UI
-		print("Failed to assign crew member to furniture - may be at capacity")
 		return false
 
 # --- Assignment helpers ---
@@ -285,18 +284,18 @@ func _get_closest_door_tile(room: Room, crew_world_pos: Vector2) -> Vector2i:
 	return best
 
 func _compute_door_approach_tiles(room: Room, door: Vector2i) -> Dictionary:
-	var b := room.get_room_bounds()
-	var outside := door
-	if door.x == b.min_x:
-		outside = door + Vector2i(-1, 0)
-	elif door.x == b.max_x:
-		outside = door + Vector2i(1, 0)
-	elif door.y == b.min_y:
-		outside = door + Vector2i(0, -1)
-	elif door.y == b.max_y:
-		outside = door + Vector2i(0, 1)
+	var room_bounds := room.get_room_bounds()
+	var outside_tile := door
+	if door.x == room_bounds.min_x:
+		outside_tile = door + Vector2i(-1, 0)
+	elif door.x == room_bounds.max_x:
+		outside_tile = door + Vector2i(1, 0)
+	elif door.y == room_bounds.min_y:
+		outside_tile = door + Vector2i(0, -1)
+	elif door.y == room_bounds.max_y:
+		outside_tile = door + Vector2i(0, 1)
 	return {
-		"outside": outside,
+		"outside": outside_tile,
 		"door": door
 	}
 
@@ -306,13 +305,13 @@ func _tile_center_world(tile: Vector2i) -> Vector2:
 	return build_tile_map.to_global(local)
 
 func _get_adjacent_tile_inside_room(furniture: Furniture, room: Room) -> Vector2i:
-	var dirs := [Vector2i(0,-1), Vector2i(1,0), Vector2i(0,1), Vector2i(-1,0),
+	var directions := [Vector2i(0,-1), Vector2i(1,0), Vector2i(0,1), Vector2i(-1,0),
 		Vector2i(1,-1), Vector2i(1,1), Vector2i(-1,1), Vector2i(-1,-1)]
-	for t in furniture.get_occupied_tiles():
-		for d in dirs:
-			var c: Vector2i = t + d
-			if room.is_coord_in_room(c) and not furniture.is_tile_occupied(c):
-				return c
+	for occupied_tile in furniture.get_occupied_tiles():
+		for direction in directions:
+			var candidate_tile: Vector2i = occupied_tile + direction
+			if room.is_coord_in_room(candidate_tile) and not furniture.is_tile_occupied(candidate_tile):
+				return candidate_tile
 	# Fallback: use any tile adjacent to furniture even if boundary is tight
 	return furniture.get_center_tile()
 
@@ -330,8 +329,8 @@ func _on_furniture_crew_unassigned(furniture: Furniture, crew_member: Node) -> v
 		if crew_member.has_method("unassign_from_furniture"):
 			crew_member.unassign_from_furniture()
 	else:
-		print("Failed to unassign crew member from furniture")
 		# TODO: Show error to users via UI
+		pass
 
 func _on_furniture_info_panel_closed() -> void:
 	# Disconnect signals to prevent memory leaks
@@ -504,14 +503,10 @@ func _get_pump_at_tile(tile: Vector2i) -> Pump:
 
 func _handle_pump_click(pump: Pump) -> void:
 	# Handle pump click - show pump model information
-	print("=== PUMP INFORMATION ===")
-	print("Model: ", pump.pump_data.get_full_name())
-	print("Description: ", pump.pump_data.get_description())
-	print("Position: ", pump.position_tiles)
-	print("========================")
+	pass
 
 func _on_inspecting_crew_state_entered() -> void:
-	## Handle entering crew inspection state
+	# Handle entering crew inspection state
 	# Ensure only crew info panel is visible
 	hide_all_panels()
 

@@ -6,6 +6,7 @@ signal action_completed(action: int)
 signal room_built(room_type, tiles)
 
 @onready var building_manager: BuildingManager = %BuildingManager
+@onready var GUI: GUI = %GUI
 
 
 var initial_tile_coords = Vector2i()
@@ -57,6 +58,8 @@ func stop_drafting() -> void:
 	TileMapManager.clear_drafting_layer()
 	action_completed.emit(Action.BACK)
 	Global.hide_cursor_label.emit()
+	# Also clear any temporary door selections if we are backing out
+	clear_temp_doors()
 # --- Input functions ---
 
 func selecting_tile(current_room_type: RoomType) -> void:
@@ -93,18 +96,21 @@ func setting_door() -> void:
 		temp_door_coords.erase(coords)
 		return
 	
-	# Try to place a new door
+	# Calculate max allowed doors for current draft
+	var room_size = Room.calculate_tile_count(initial_tile_coords, transverse_tile_coords)
+	var max_doors = ValidationManager.calculate_required_doors(room_size)
+	# Try to place a new door within limits
 	if ValidationManager.is_door_placement_valid(coords, initial_tile_coords, transverse_tile_coords, temp_door_coords):
-		set_doors(coords)
-		# Check if we have enough doors to proceed
-		var room_size = Room.calculate_tile_count(initial_tile_coords, transverse_tile_coords)
-		var required_doors = ValidationManager.calculate_required_doors(room_size)
-		if temp_door_coords.size() >= required_doors:
-			confirm_room_details()
+		if temp_door_coords.size() < max_doors:
+			set_doors(coords)
+		else:
+			# Optional: feedback could be added here
+			pass
 
 func force_door_confirmation() -> void:
-	# Allow confirmation even if minimum doors aren't met
-	confirm_room_details()
+	# Do not auto-confirm if 0 doors; show tooltip but keep disabled
+	if temp_door_coords.size() > 0:
+		confirm_build()
 
 func setting_door_motion() -> void:
 	var coords = TileMapManager.get_global_mouse_position()
@@ -169,13 +175,13 @@ func confirm_room_details() -> void:
 	var room_cost = selected_room_type.price * room_size
 	var room_width = abs(transverse_tile_coords.x - initial_tile_coords.x) + 1
 	var room_height = abs(transverse_tile_coords.y - initial_tile_coords.y) + 1
-	var required_doors = ValidationManager.calculate_required_doors(room_size)
+	var max_doors = ValidationManager.calculate_required_doors(room_size)
 	
 	popup_title = "Confirm Construction"
 	popup_content = "[b]Room Type: [/b]" + selected_room_type.name + "\n" + \
 					"[b]Dimensions: [/b]" + str(room_width) + "x" + str(room_height) + " tiles\n" + \
 					"[b]Cost: [/b]" + str(room_cost) + "\n" + \
-					"[b]Doors: [/b]" + str(temp_door_coords.size()) + "/" + str(required_doors) + " placed"
+					"[b]Doors: [/b]" + str(temp_door_coords.size()) + " (max " + str(max_doors) + ")"
 	action_completed.emit(Action.FORWARD)
 
 func confirm_build() -> void:
@@ -192,11 +198,16 @@ func confirm_build() -> void:
 	action_completed.emit(Action.COMPLETE)
 	# Notify others that a room has been built
 	room_built.emit(selected_room_type, get_selected_tiles())
+	# Clear UI tooltip state after confirming
+	if GUI and GUI.manager:
+		GUI.manager.hide_room_confirm_tooltip()
 
 func cancel_build() -> void:
 	stop_drafting()
 	Global.station.rooms.pop_back()
 	action_completed.emit(Action.COMPLETE)
+	if GUI and GUI.manager:
+		GUI.manager.hide_room_confirm_tooltip()
 
 func save_room() -> void:
 	var room = create_room(
@@ -265,16 +276,13 @@ func is_blocking_existing_door(coords: Vector2i) -> bool:
 
 func update_cursor_with_door_info(coords: Vector2i) -> void:
 	var room_size = Room.calculate_tile_count(initial_tile_coords, transverse_tile_coords)
-	var required_doors = ValidationManager.calculate_required_doors(room_size)
+	var max_doors = ValidationManager.calculate_required_doors(room_size)
 	var placed_doors = temp_door_coords.size()
 	
-	var label_text = "Doors: " + str(placed_doors) + "/" + str(required_doors)
+	var label_text = "Doors: " + str(placed_doors) + " (max " + str(max_doors) + ")"
 	
-	# Add instruction text
-	if placed_doors < required_doors:
-		label_text += "\nClick to place door\nPress Enter to confirm"
-	else:
-		label_text += "\nClick to confirm or add more doors"
+	# Instruction text (doors optional; Enter to confirm anytime)
+	label_text += "\nClick to place/remove doors\nPress Enter to confirm"
 	
 	# Add validation feedback
 	if temp_door_coords.has(coords):
@@ -299,3 +307,48 @@ func get_selected_tiles() -> Array[Vector2i]:
 		for y in range(min(initial_tile_coords.y, transverse_tile_coords.y), max(initial_tile_coords.y, transverse_tile_coords.y) + 1):
 			tiles.append(Vector2i(x, y))
 	return tiles
+
+func clear_temp_doors() -> void:
+	# Clear temporary door selections and drafting door visuals
+	temp_door_coords.clear()
+	TileMapManager.clear_drafting_layer()
+
+func get_temp_door_count() -> int:
+	return temp_door_coords.size()
+
+func get_current_metrics() -> Dictionary:
+	# Return dynamic metrics for the confirmation tooltip
+	if selected_room_type == null or initial_tile_coords == Vector2i() or transverse_tile_coords == Vector2i():
+		return {}
+	var room_size := Room.calculate_tile_count(initial_tile_coords, transverse_tile_coords)
+	var room_width: int = abs(transverse_tile_coords.x - initial_tile_coords.x) + 1
+	var room_height: int = abs(transverse_tile_coords.y - initial_tile_coords.y) + 1
+	var cost := selected_room_type.price * room_size
+	var max_doors := ValidationManager.calculate_required_doors(room_size)
+	return {
+		"width": room_width,
+		"height": room_height,
+		"cost": cost,
+		"doors": temp_door_coords.size(),
+		"max_doors": max_doors
+	}
+
+func get_confirmation_anchor_screen_pos() -> Vector2:
+	# Anchor near the last clicked corner (transverse_tile_coords), in screen space
+	var build_tm := TileMapManager.build_tile_map
+	if build_tm == null:
+		return Vector2.ZERO
+	
+	# Calculate the drag direction to position popup away from the room
+	var drag_direction = Vector2(transverse_tile_coords - initial_tile_coords).normalized()
+	if drag_direction == Vector2.ZERO:
+		drag_direction = Vector2(1, 0)  # Default to right if no drag
+	
+	# Position popup away from the room in the drag direction
+	var offset_distance = 300.0  # Distance in pixels to offset from room
+	var offset_tile = transverse_tile_coords + Vector2i(drag_direction * offset_distance / 256.0)
+	
+	var local := build_tm.map_to_local(offset_tile)
+	var world := build_tm.to_global(local)
+	# Convert world -> screen using the current canvas (camera) transform
+	return get_viewport().get_canvas_transform() * world

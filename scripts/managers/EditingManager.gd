@@ -1,6 +1,5 @@
-## DISCUSS: Do we need this?
+# DISCUSS: Do we need this?
 class_name EditingManager extends Node
-#
 #@onready var GUI: GUI = %GUI
 #
 #@onready var base_tile_map: TileMap = %BaseTileMap

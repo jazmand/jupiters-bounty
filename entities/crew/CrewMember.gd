@@ -371,16 +371,16 @@ func set_rounded_direction() -> void:
 func snap_to_eight_directions(vec: Vector2) -> Vector2:
 	if vec == Vector2.ZERO:
 		return Vector2.ZERO
-	var v = vec.normalized()
-	var best_dir = DIRECTIONS.RIGHT
-	var best_dot = -INF
-	var dirs = [DIRECTIONS.RIGHT, DIRECTIONS.UP_RIGHT, DIRECTIONS.UP, DIRECTIONS.UP_LEFT, DIRECTIONS.LEFT, DIRECTIONS.DOWN_LEFT, DIRECTIONS.DOWN, DIRECTIONS.DOWN_RIGHT]
-	for d in dirs:
-		var dot = v.dot(d.normalized())
-		if dot > best_dot:
-			best_dot = dot
-			best_dir = d
-	return best_dir
+	var normalized_vec = vec.normalized()
+	var best_direction = DIRECTIONS.RIGHT
+	var best_dot_product = -INF
+	var directions = [DIRECTIONS.RIGHT, DIRECTIONS.UP_RIGHT, DIRECTIONS.UP, DIRECTIONS.UP_LEFT, DIRECTIONS.LEFT, DIRECTIONS.DOWN_LEFT, DIRECTIONS.DOWN, DIRECTIONS.DOWN_RIGHT]
+	for direction in directions:
+		var dot_product = normalized_vec.dot(direction.normalized())
+		if dot_product > best_dot_product:
+			best_dot_product = dot_product
+			best_direction = direction
+	return best_direction
 
 func set_current_animation() -> void:
 	# Special handling for resting - use idle animation with resting direction
@@ -486,12 +486,12 @@ func say(text: String, duration: float = 2.5) -> void:
 	await get_tree().process_frame
 	speech_label.position.x = -speech_label.size.x / 2.0
 	# Fade in, wait, fade out
-	var t := create_tween()
+	var fade_tween := create_tween()
 	is_speaking = true
-	t.tween_property(speech_label, "modulate:a", 1.0, 0.2)
-	t.tween_interval(max(0.0, duration - 0.4))
-	t.tween_property(speech_label, "modulate:a", 0.0, 0.2)
-	t.finished.connect(func():
+	fade_tween.tween_property(speech_label, "modulate:a", 1.0, 0.2)
+	fade_tween.tween_interval(max(0.0, duration - 0.4))
+	fade_tween.tween_property(speech_label, "modulate:a", 0.0, 0.2)
+	fade_tween.finished.connect(func():
 		speech_label.visible = false
 		is_speaking = false
 	)
@@ -544,13 +544,13 @@ func _ensure_speech_label() -> void:
 func _ensure_speech_timer() -> void:
 	if is_instance_valid(speech_timer):
 		return
-	var t := Timer.new()
-	t.name = "SpeechTimer"
-	t.one_shot = true
-	t.autostart = false
-	add_child(t)
-	t.timeout.connect(_on_speech_timer_timeout)
-	speech_timer = t
+	var speech_timer_node := Timer.new()
+	speech_timer_node.name = "SpeechTimer"
+	speech_timer_node.one_shot = true
+	speech_timer_node.autostart = false
+	add_child(speech_timer_node)
+	speech_timer_node.timeout.connect(_on_speech_timer_timeout)
+	speech_timer = speech_timer_node
 
 func _handle_collision_speech(collision: KinematicCollision2D) -> void:
 	var other := collision.get_collider()
@@ -681,16 +681,10 @@ func _on_walking_state_physics_processing(_delta: float) -> void:
 	
 	velocity = current_move_direction.normalized() * (speed * current_speed_scale)
 	
-	# DEBUG: Log movement details for assignment debugging
-	if _is_on_assignment():
-		var current_tile = _nav_grid.world_to_tile(global_position)
-		var next_target = navigation_agent.get_next_path_position()
-		var next_tile = _nav_grid.world_to_tile(next_target)
-		print("[CrewMember] MOVEMENT DEBUG: pos=", global_position, " tile=", current_tile, " velocity=", velocity, " target=", next_target, " target_tile=", next_tile)
+	
 	
 	var collision = move_and_collide(velocity)
 	if collision:
-		print("[CrewMember] COLLISION: ", collision.get_collider(), " at ", collision.get_position())
 		_handle_wall_collision(collision)
 		_handle_collision_speech(collision)
 
@@ -810,14 +804,14 @@ func go_to_work() -> void:
 func _ensure_flow_timer() -> void:
 	if is_instance_valid(_flow_timer):
 		return
-	var t := Timer.new()
-	t.name = "FlowFollowTimer"
-	t.one_shot = true
-	t.autostart = false
-	t.wait_time = 0.15  # ~6.6 Hz
-	add_child(t)
-	t.timeout.connect(_on_flow_timer_timeout)
-	_flow_timer = t
+	var flow_timer_node := Timer.new()
+	flow_timer_node.name = "FlowFollowTimer"
+	flow_timer_node.one_shot = true
+	flow_timer_node.autostart = false
+	flow_timer_node.wait_time = 0.15  # ~6.6 Hz
+	add_child(flow_timer_node)
+	flow_timer_node.timeout.connect(_on_flow_timer_timeout)
+	_flow_timer = flow_timer_node
 
 func _on_flow_timer_timeout() -> void:
 	if _flow_furniture != null and _is_flow_following:
@@ -968,14 +962,14 @@ func _choose_side_step(from_tile: Vector2i, to_tile: Vector2i) -> Vector2i:
 		return cand2
 	return Vector2i.ZERO
 
-func _is_viable_transition(a: Vector2i, b: Vector2i) -> bool:
+func _is_viable_transition(from_tile: Vector2i, to_tile: Vector2i) -> bool:
 	# Stay on nav, obey door transitions, and ensure line is clear
-	if not _nav_grid.is_walkable(b):
+	if not _nav_grid.is_walkable(to_tile):
 		return false
-	if not _nav_grid.can_traverse(a, b):
+	if not _nav_grid.can_traverse(from_tile, to_tile):
 		return false
-	var w := _nav_grid.tile_center_world(b)
-	return check_path_for_static_obstacles(w)
+	var world_position := _nav_grid.tile_center_world(to_tile)
+	return check_path_for_static_obstacles(world_position)
 	
 func is_assigned() -> bool:
 	return workplace != null or furniture_workplace != null
