@@ -815,7 +815,7 @@ func _ensure_flow_timer() -> void:
 
 func _on_flow_timer_timeout() -> void:
 	if _flow_furniture != null and _is_flow_following:
-		print("[CrewMember] Flow timer timeout for crew ", get_instance_id(), " assigned to ", _flow_furniture.furniture_type.name if _flow_furniture.furniture_type else "Unknown")
+		
 		
 		var curr_tile_f := _nav_grid.world_to_tile(global_position)
 		
@@ -828,7 +828,7 @@ func _on_flow_timer_timeout() -> void:
 		if _assignment_beacon != Vector2i.ZERO:
 			var beacon_world = _nav_grid.tile_center_world(_assignment_beacon)
 			distance_to_beacon = global_position.distance_to(beacon_world)
-			print("[CrewMember] Distance to beacon: ", distance_to_beacon, " tiles")
+			
 		
 		# Decision logic for retargeting:
 		# 1. Always retarget if crew moved to new tile (making progress)
@@ -841,30 +841,25 @@ func _on_flow_timer_timeout() -> void:
 			_flow_timer.start()
 			return
 		
-		print("[CrewMember] Retargeting enabled - crew moved: ", crew_moved, ", distance: ", distance_to_beacon)
+		
 		
 		# Assigned flow-follow to furniture or its personal beacon
 		var target_field = null
 		if _assignment_beacon != Vector2i.ZERO:
-			print("[CrewMember] Using personal beacon at tile ", _assignment_beacon)
 			target_field = _flow_service.get_field_to_tile(_assignment_beacon)
 		else:
-			print("[CrewMember] Using furniture flow field (no personal beacon)")
 			target_field = _flow_service.get_field_to_furniture(_flow_furniture)
 		var field_f = target_field
 		if field_f == null:
-			print("[CrewMember] ERROR: Flow field is null - generation failed")
 			_flow_timer.start()
 			return
 		var next_tile_f = _flow_service.get_next_tile(field_f, curr_tile_f)
-		print("[CrewMember] Current tile: ", curr_tile_f, ", Next tile: ", next_tile_f)
 		
 		if next_tile_f == curr_tile_f or next_tile_f == Vector2i.ZERO:
-			print("[CrewMember] No movement direction from flow field")
 			# Check arrival strictly at personal beacon if set
 			if _assignment_beacon != Vector2i.ZERO:
 				if curr_tile_f == _assignment_beacon:
-					print("[CrewMember] SUCCESS: Arrived at personal beacon!")
+					
 					_stop_flow_follow()
 					state_manager.send_event(&"to_assignment")
 					return
@@ -872,22 +867,22 @@ func _on_flow_timer_timeout() -> void:
 				var beacon_world = _nav_grid.tile_center_world(_assignment_beacon)
 				var beacon_distance = global_position.distance_to(beacon_world)
 				if beacon_distance <= 128.0:
-					print("[CrewMember] SUCCESS: Close to beacon (distance: ", beacon_distance, ")")
+					
 					_stop_flow_follow()
 					state_manager.send_event(&"to_assignment")
 					return
 				# No gradient yet: retry next tick
-				print("[CrewMember] Not at beacon yet, retrying...")
+				
 				_flow_timer.start()
 				return
 			# Without a beacon, only accept arrival if truly adjacent to furniture
 			if Global and Global.assignment_beacons and Global.assignment_beacons.is_adjacent_to_furniture(curr_tile_f, _flow_furniture):
-				print("[CrewMember] SUCCESS: Adjacent to furniture!")
+			
 				_stop_flow_follow()
 				state_manager.send_event(&"to_assignment")
 				return
 			# Otherwise retry next tick
-			print("[CrewMember] Not adjacent to furniture, retrying...")
+			
 			_flow_timer.start()
 			return
 		# SOLUTION: Use flow field for pathfinding, don't interfere with NavigationAgent2D

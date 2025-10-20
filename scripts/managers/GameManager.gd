@@ -17,8 +17,17 @@ var inspected_furniture: Furniture = null
 var _original_opacities: Dictionary = {}
 var is_in_crew_assignment_mode: bool = false
 
+@export var initial_crew_count: int = 2
+@export var spawn_fade_duration: float = 2.0
+@onready var spawn_points: Node = %SpawnPoints
+
+# Spawn management
+var _spawning_in_progress: int = 0
+var _next_spawn_index: int = 0
+
+
 func _ready() -> void:
-	Events.gui_add_crew_pressed.connect(new_crew_member)
+	Events.gui_add_crew_pressed.connect(_on_gui_add_crew_pressed)
 	Global.crew_assigned.connect(crew_selected)
 	Global.crew_selected.connect(crew_selected)
 	# Navigation rebaking disabled - using physics-based path validation instead
@@ -35,6 +44,8 @@ func _ready() -> void:
 
 	# Set the tile maps in TileMapManager and initialise it
 	TileMapManager.set_tile_maps(base_tile_map_node, build_tile_map_node, furniture_tile_map_node, special_furniture_tile_map_node)
+
+	spawn_initial_crew()
 
 func _input(event: InputEvent) -> void:
 	# Global input handler for crew/room/furniture clicks from any state
@@ -164,6 +175,118 @@ func new_crew_member(position_vector: Vector2 = Vector2(5000, 3000)) -> CrewMemb
 	add_child(crew_member)
 	Global.station.add_crew(crew_member)
 	return crew_member
+
+func new_crew_member_with_fade(position_vector: Vector2) -> CrewMember:
+	var crew_member := new_crew_member(position_vector)
+	crew_member.modulate.a = 0.0
+	_begin_spawn()
+	var t := create_tween()
+	t.tween_property(crew_member, "modulate:a", 1.0, spawn_fade_duration)
+	t.finished.connect(func():
+		_end_spawn()
+	)
+	return crew_member
+
+func _get_spawn_positions_from_2x1_tile_area() -> Array[Vector2]:
+	# Build two spawn positions that align exactly to a 2x1 tile area.
+	var results: Array[Vector2] = []
+	if not is_instance_valid(build_tile_map):
+		return get_spawn_positions()
+	if not is_instance_valid(spawn_points) or spawn_points.get_child_count() == 0:
+		return get_spawn_positions()
+
+	# Anchor from first marker's tile
+	var first_marker := spawn_points.get_child(0)
+	if not (first_marker is Marker2D):
+		return get_spawn_positions()
+	var first_global: Vector2 = (first_marker as Marker2D).global_position
+	var first_tile: Vector2i = build_tile_map.local_to_map(build_tile_map.to_local(first_global))
+
+	# Determine orientation using second marker if present; default horizontal
+	var second_offset: Vector2i = Vector2i(1, 0)
+	if spawn_points.get_child_count() >= 2:
+		var second_marker := spawn_points.get_child(1)
+		if second_marker is Marker2D:
+			var second_global: Vector2 = (second_marker as Marker2D).global_position
+			var second_tile: Vector2i = build_tile_map.local_to_map(build_tile_map.to_local(second_global))
+			var delta := second_tile - first_tile
+			var dx := 0
+			var dy := 0
+			if delta.x > 0:
+				dx = 1
+			elif delta.x < 0:
+				dx = -1
+			if delta.y > 0:
+				dy = 1
+			elif delta.y < 0:
+				dy = -1
+			if abs(delta.x) >= abs(delta.y):
+				second_offset = Vector2i(dx if dx != 0 else 1, 0)
+			else:
+				second_offset = Vector2i(0, dy if dy != 0 else 1)
+
+	var tile_a: Vector2i = first_tile
+	var tile_b: Vector2i = first_tile + second_offset
+
+	var local_a: Vector2 = build_tile_map.map_to_local(tile_a)
+	var local_b: Vector2 = build_tile_map.map_to_local(tile_b)
+	var world_a: Vector2 = build_tile_map.to_global(local_a)
+	var world_b: Vector2 = build_tile_map.to_global(local_b)
+	results.append(world_a)
+	results.append(world_b)
+	return results
+
+func get_spawn_positions() -> Array[Vector2]:
+	var positions: Array[Vector2] = []
+	if is_instance_valid(spawn_points):
+		for c in spawn_points.get_children():
+			if c is Marker2D:
+				positions.append((c as Marker2D).global_position)
+	return positions
+
+func spawn_initial_crew() -> void:
+	var positions := _get_spawn_positions_from_2x1_tile_area()
+	if positions.is_empty():
+		positions = [Vector2(5000, 3000)]
+	for i in range(initial_crew_count):
+		var pos := positions[i % positions.size()]
+		var cm := new_crew_member_with_fade(pos)
+		# Face northwest (up-left) on spawn and idle
+		if is_instance_valid(cm):
+			cm.current_animation_direction = Vector2(-1, -1)
+			cm.state = cm.STATE.IDLE
+			cm.set_current_animation()
+			if cm.animation_player:
+				cm.animation_player.play(cm.current_animation)
+
+func _on_gui_add_crew_pressed() -> void:
+	var positions := _get_spawn_positions_from_2x1_tile_area()
+	if positions.is_empty():
+		positions = [Vector2(5000, 3000)]
+	var pos := positions[_next_spawn_index % positions.size()]
+	_next_spawn_index = (_next_spawn_index + 1) % max(1, positions.size())
+	var cm := new_crew_member_with_fade(pos)
+	if is_instance_valid(cm):
+		cm.current_animation_direction = Vector2(-1, -1)
+		cm.state = cm.STATE.IDLE
+		cm.set_current_animation()
+		if cm.animation_player:
+			cm.animation_player.play(cm.current_animation)
+
+func _set_add_crew_button_disabled(disabled: bool) -> void:
+	if gui:
+		var btn: Button = gui.get_node_or_null("GUIManager/AddCrew")
+		if btn:
+			btn.disabled = disabled
+
+func _begin_spawn() -> void:
+	_spawning_in_progress += 1
+	_set_add_crew_button_disabled(true)
+
+func _end_spawn() -> void:
+	_spawning_in_progress = max(0, _spawning_in_progress - 1)
+	if _spawning_in_progress == 0:
+		_set_add_crew_button_disabled(false)
 	
 func crew_selected(crew: CrewMember) -> void:
 	start_inspecting_crew(crew)

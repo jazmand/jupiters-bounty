@@ -678,6 +678,15 @@ layer_0/name = "Special Furniture layer"
 layer_0/y_sort_enabled = true
 layer_0/z_index = 6
 
+[node name="SpawnPoints" type="Node2D" parent="GameManager"]
+unique_name_in_owner = true
+
+[node name="Airlock1" type="Marker2D" parent="GameManager/SpawnPoints"]
+position = Vector2(3000, 2000)
+
+[node name="Airlock2" type="Marker2D" parent="GameManager/SpawnPoints"]
+position = Vector2(3100, 2000)
+
 [node name="NavigationRegion" type="NavigationRegion2D" parent="GameManager"]
 unique_name_in_owner = true
 modulate = Color(0.356863, 0.533333, 1, 1)
