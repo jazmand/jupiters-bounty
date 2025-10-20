@@ -128,6 +128,11 @@ var _assignment_beacon: Vector2i = Vector2i.ZERO
 var _oscillation_count: int = 0
 var _last_tile: Vector2i = Vector2i.ZERO
 
+# Hybrid flow system state tracking
+var _last_crew_tile: Vector2i = Vector2i.ZERO
+var _last_navigation_target: Vector2 = Vector2.ZERO
+var _assignment_retargeting_enabled: bool = true
+
 # Flow-field services
 const FlowFieldServiceScript = preload("res://scripts/utilities/FlowFieldManager.gd")
 const NavGridProviderScript = preload("res://scripts/utilities/NavGridProvider.gd")
@@ -309,19 +314,37 @@ func _force_navigation_rebake() -> void:
 
 func set_rounded_direction() -> void:
 	var next_point: Vector2
-	# Prefer a frozen cached path during assignment to avoid per-tick re-planning
-	if _is_on_assignment() and assignment_path.size() > 0 and assignment_path_idx < assignment_path.size():
-		next_point = assignment_path[assignment_path_idx]
-		# Advance cached waypoint when close enough
-		if global_position.distance_to(next_point) <= ASSIGNMENT_WAYPOINT_EPS:
-			assignment_path_idx += 1
-			if assignment_path_idx < assignment_path.size():
-				next_point = assignment_path[assignment_path_idx]
+	
+	# For assignment movement, use flow field direction instead of NavigationAgent2D
+	if _is_on_assignment():
+		var curr_tile = _nav_grid.world_to_tile(global_position)
+		var flow_field = null
+		if _assignment_beacon != Vector2i.ZERO:
+			flow_field = _flow_service.get_field_to_tile(_assignment_beacon)
+		elif _flow_furniture != null:
+			flow_field = _flow_service.get_field_to_furniture(_flow_furniture)
+		if flow_field:
+			var next_tile = _flow_service.get_next_tile(flow_field, curr_tile)
+			if next_tile != curr_tile and next_tile != Vector2i.ZERO:
+				next_point = _nav_grid.tile_center_world(next_tile)
 			else:
-				# No more cached points; fall back to agent
-				next_point = navigation_agent.get_next_path_position()
+				# Flow field says we're at destination
+				next_point = global_position
+		else:
+			# Fallback to NavigationAgent2D if flow field fails
+			next_point = navigation_agent.get_next_path_position()
 	else:
-		next_point = navigation_agent.get_next_path_position()
+		# Normal movement - use NavigationAgent2D or cached path
+		if _is_on_assignment() and assignment_path.size() > 0 and assignment_path_idx < assignment_path.size():
+			next_point = assignment_path[assignment_path_idx]
+			if global_position.distance_to(next_point) <= ASSIGNMENT_WAYPOINT_EPS:
+				assignment_path_idx += 1
+				if assignment_path_idx < assignment_path.size():
+					next_point = assignment_path[assignment_path_idx]
+				else:
+					next_point = navigation_agent.get_next_path_position()
+		else:
+			next_point = navigation_agent.get_next_path_position()
 
 	var to_next = (next_point - global_position)
 	# Movement direction (quantized) remains responsive
@@ -657,8 +680,17 @@ func _on_walking_state_physics_processing(_delta: float) -> void:
 	var current_speed_scale = speed_multiplier * fatigue_scale
 	
 	velocity = current_move_direction.normalized() * (speed * current_speed_scale)
+	
+	# DEBUG: Log movement details for assignment debugging
+	if _is_on_assignment():
+		var current_tile = _nav_grid.world_to_tile(global_position)
+		var next_target = navigation_agent.get_next_path_position()
+		var next_tile = _nav_grid.world_to_tile(next_target)
+		print("[CrewMember] MOVEMENT DEBUG: pos=", global_position, " tile=", current_tile, " velocity=", velocity, " target=", next_target, " target_tile=", next_tile)
+	
 	var collision = move_and_collide(velocity)
 	if collision:
+		print("[CrewMember] COLLISION: ", collision.get_collider(), " at ", collision.get_position())
 		_handle_wall_collision(collision)
 		_handle_collision_speech(collision)
 
@@ -709,40 +741,12 @@ func _on_working_state_exited() -> void:
 func can_assign() -> bool:
 	return Global.station.rooms.size() > 0
 
+# DEPRECATED: This method is no longer used. Use assign_to_furniture_via_flow() instead.
+# TODO: Delete this method after confirming flow-based assignment works correctly.
 func assign(room: Room, center: Vector2) -> void:
 	workplace = room
 	work_location = center
 	state_manager.send_event(&"assigned")
-
-func assign_to_furniture(furniture: Furniture, position: Vector2) -> void:
-	# Store furniture reference
-	furniture_workplace = furniture
-	work_location = position
-	state_manager.send_event(&"assigned")
-
-func assign_to_furniture_via_waypoints(furniture: Furniture, waypoints: Array[Vector2]) -> void:
-	# Set up a two-step (or multi-step) path, e.g., door tile then furniture
-	furniture_workplace = furniture
-	assignment = &"work"
-	state_manager.set_expression_property(&"assignment", assignment)
-	pending_waypoints = waypoints.duplicate()
-	# Set final work location to last waypoint (where crew should remain)
-	if not waypoints.is_empty():
-		var final_wp: Vector2 = waypoints[waypoints.size() - 1]
-		work_location = Vector2i(int(final_wp.x), int(final_wp.y))
-	if not pending_waypoints.is_empty():
-		var first_target: Vector2 = pending_waypoints.pop_front()
-		set_movement_target(first_target)
-		# Snapshot the initial computed path for this assignment leg (to freeze it)
-		await get_tree().physics_frame
-		_snapshot_agent_path()
-	else:
-		# Fallback: go directly to stored work_location if no waypoints provided
-		set_movement_target(work_location)
-	# Notify UI/state that we've been assigned
-	state_manager.send_event(&"assigned")
-	# Ensure we are walking immediately
-	state_manager.send_event(&"walk")
 
 func assign_to_furniture_via_flow(furniture: Furniture) -> void:
 	# Start following a flow field toward furniture access tiles
@@ -758,6 +762,11 @@ func assign_to_furniture_via_flow(furniture: Furniture) -> void:
 		if _assignment_beacon == Vector2i.ZERO:
 			# Fallback to flow-to-furniture if reservation fails
 			_assignment_beacon = Vector2i.ZERO
+	# Initialize hybrid flow system tracking
+	_last_crew_tile = _nav_grid.world_to_tile(global_position)
+	_last_navigation_target = Vector2.ZERO
+	_assignment_retargeting_enabled = true
+	
 	# Ensure timer exists and start loop
 	_ensure_flow_timer()
 	_is_flow_following = true
@@ -812,54 +821,87 @@ func _ensure_flow_timer() -> void:
 
 func _on_flow_timer_timeout() -> void:
 	if _flow_furniture != null and _is_flow_following:
+		print("[CrewMember] Flow timer timeout for crew ", get_instance_id(), " assigned to ", _flow_furniture.furniture_type.name if _flow_furniture.furniture_type else "Unknown")
+		
+		var curr_tile_f := _nav_grid.world_to_tile(global_position)
+		
+		# HYBRID SYSTEM: Check if crew has moved to a new tile since last update
+		var crew_moved = (curr_tile_f != _last_crew_tile)
+		_last_crew_tile = curr_tile_f
+		
+		# Check distance to assignment beacon for retargeting decision
+		var distance_to_beacon: float = 0.0
+		if _assignment_beacon != Vector2i.ZERO:
+			var beacon_world = _nav_grid.tile_center_world(_assignment_beacon)
+			distance_to_beacon = global_position.distance_to(beacon_world)
+			print("[CrewMember] Distance to beacon: ", distance_to_beacon, " tiles")
+		
+		# Decision logic for retargeting:
+		# 1. Always retarget if crew moved to new tile (making progress)
+		# 2. Retarget if >3 tiles away (helps with doors/obstacles)
+		# 3. Don't retarget if ≤3 tiles away (let NavigationAgent2D finish)
+		var should_retarget = crew_moved or (distance_to_beacon > 3.0 * 256.0)  # 3 tiles * tile size
+		
+		if not should_retarget:
+			print("[CrewMember] Skipping retarget - crew hasn't moved and close to beacon")
+			_flow_timer.start()
+			return
+		
+		print("[CrewMember] Retargeting enabled - crew moved: ", crew_moved, ", distance: ", distance_to_beacon)
+		
 		# Assigned flow-follow to furniture or its personal beacon
 		var target_field = null
 		if _assignment_beacon != Vector2i.ZERO:
+			print("[CrewMember] Using personal beacon at tile ", _assignment_beacon)
 			target_field = _flow_service.get_field_to_tile(_assignment_beacon)
 		else:
+			print("[CrewMember] Using furniture flow field (no personal beacon)")
 			target_field = _flow_service.get_field_to_furniture(_flow_furniture)
 		var field_f = target_field
 		if field_f == null:
+			print("[CrewMember] ERROR: Flow field is null - generation failed")
 			_flow_timer.start()
 			return
-		var curr_tile_f := _nav_grid.world_to_tile(global_position)
 		var next_tile_f = _flow_service.get_next_tile(field_f, curr_tile_f)
+		print("[CrewMember] Current tile: ", curr_tile_f, ", Next tile: ", next_tile_f)
+		
 		if next_tile_f == curr_tile_f or next_tile_f == Vector2i.ZERO:
+			print("[CrewMember] No movement direction from flow field")
 			# Check arrival strictly at personal beacon if set
 			if _assignment_beacon != Vector2i.ZERO:
 				if curr_tile_f == _assignment_beacon:
+					print("[CrewMember] SUCCESS: Arrived at personal beacon!")
+					_stop_flow_follow()
+					state_manager.send_event(&"to_assignment")
+					return
+				# Check distance to beacon for more reliable arrival detection
+				var beacon_world = _nav_grid.tile_center_world(_assignment_beacon)
+				var beacon_distance = global_position.distance_to(beacon_world)
+				if beacon_distance <= 128.0:
+					print("[CrewMember] SUCCESS: Close to beacon (distance: ", beacon_distance, ")")
 					_stop_flow_follow()
 					state_manager.send_event(&"to_assignment")
 					return
 				# No gradient yet: retry next tick
+				print("[CrewMember] Not at beacon yet, retrying...")
 				_flow_timer.start()
 				return
 			# Without a beacon, only accept arrival if truly adjacent to furniture
 			if Global and Global.assignment_beacons and Global.assignment_beacons.is_adjacent_to_furniture(curr_tile_f, _flow_furniture):
+				print("[CrewMember] SUCCESS: Adjacent to furniture!")
 				_stop_flow_follow()
 				state_manager.send_event(&"to_assignment")
 				return
 			# Otherwise retry next tick
+			print("[CrewMember] Not adjacent to furniture, retrying...")
 			_flow_timer.start()
 			return
+		# SOLUTION: Use flow field for pathfinding, don't interfere with NavigationAgent2D
+		# The flow field provides the direction, NavigationAgent2D handles the actual movement
 		var next_world_f := _nav_grid.tile_center_world(next_tile_f)
-		# If direct line is blocked (corner/wall), step sideways to a viable neighbor
-		if not check_path_for_static_obstacles(next_world_f):
-			var alt_f := _choose_side_step(curr_tile_f, next_tile_f)
-			if alt_f != Vector2i.ZERO:
-				next_world_f = _nav_grid.tile_center_world(alt_f)
-		# Ensure we don't prematurely accept current tile as target
-		if next_tile_f == curr_tile_f:
-			# Nudge toward beacon/furniture center by picking any valid neighbor with lower distance
-			var field_for_nudge = _flow_service.get_field_to_tile(_assignment_beacon) if _assignment_beacon != Vector2i.ZERO else _flow_service.get_field_to_furniture(_flow_furniture)
-			if field_for_nudge:
-				for neighbor_try in [Vector2i(0,-1), Vector2i(1,0), Vector2i(0,1), Vector2i(-1,0)]:
-					var neighbor_tile: Vector2i = curr_tile_f + neighbor_try
-					var neighbor_next_tile: Vector2i = _flow_service.get_next_tile(field_for_nudge, neighbor_tile)
-					if _nav_grid.is_walkable(neighbor_tile) and _nav_grid.can_traverse(curr_tile_f, neighbor_tile) and (neighbor_next_tile != neighbor_tile):
-						next_world_f = _nav_grid.tile_center_world(neighbor_tile)
-						break
-		navigation_agent.target_position = next_world_f
+		# Don't set NavigationAgent2D target - let it handle its own pathfinding
+		# Instead, use the flow field direction to guide movement
+		
 		state_manager.send_event(&"walk")
 		_flow_timer.start()
 		return
@@ -1292,3 +1334,24 @@ func _update_depth_sorting() -> void:
 		# Fallback: use Y position directly
 		z_as_relative = false
 		z_index = int(global_position.y / 64) + 25
+
+func _world_center_of_footprint(furniture: Furniture) -> Vector2:
+	var occupiedTiles: Array[Vector2i] = furniture.get_occupied_tiles()
+	if occupiedTiles.is_empty():
+		return furniture.global_position
+	var worldSum := Vector2.ZERO
+	for occTile in occupiedTiles:
+		worldSum += _nav_grid.tile_center_world(occTile)
+	return worldSum / float(occupiedTiles.size())
+
+# Debug helper for AssignmentBeacons debug rendering
+func _get_current_target_tile() -> Vector2i:
+	if _is_on_assignment() and _assignment_beacon != Vector2i.ZERO:
+		var curr_tile = _nav_grid.world_to_tile(global_position)
+		var flow_field = _flow_service.get_field_to_tile(_assignment_beacon)
+		if flow_field:
+			return _flow_service.get_next_tile(flow_field, curr_tile)
+	return Vector2i.ZERO
+
+func get_furniture_workplace() -> Furniture:
+	return furniture_workplace
