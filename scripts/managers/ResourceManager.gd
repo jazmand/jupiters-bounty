@@ -69,8 +69,6 @@ func load_room_types() -> void:
 				room_type_instance.id = room_type_resource.id
 				room_type_instance.name = room_type_resource.name
 				room_type_instance.price = room_type_resource.price
-				room_type_instance.power_consumption = room_type_resource.power_consumption
-				room_type_instance.capacity = room_type_resource.capacity
 				room_type_instance.min_tiles = room_type_resource.min_tiles
 				room_type_instance.max_tiles = room_type_resource.max_tiles
 				room_type_instance.tileset_id = room_type_resource.tileset_id

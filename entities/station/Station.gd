@@ -45,7 +45,7 @@ func _init(p_id: int = 0, p_hydrogen: int = 0, p_power: int = 0, p_currency: int
 func calculate_power_consumption_all_rooms() -> int:
 	var total_consumption = 0
 	for room in rooms:
-		total_consumption += room.data.calculate_tile_count(room.data.top_left, room.data.bottom_right) * room.data.type.power_consumption
+        total_consumption += room.data.calculate_power_consumption()
 	return -total_consumption
 	
 func update_power() -> void:

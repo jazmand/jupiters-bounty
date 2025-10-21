@@ -40,7 +40,6 @@ func display_room_info(selected_room: Room) -> void:
 				selected_room.data.bottom_right
 				)
 			),
-		"Power Consumption" = selected_room.data.calculate_power_consumption(),
 	}
 	for key in display_data:
 		var display_text = "%s: %d" % [key, display_data[key]]

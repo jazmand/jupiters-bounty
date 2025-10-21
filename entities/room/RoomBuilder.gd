@@ -85,7 +85,7 @@ func drafting_room_motion() -> void:
 		
 	var room_size = Room.calculate_tile_count(initial_tile_coords, transverse_tile_coords)
 	var room_cost = selected_room_type.price * room_size
-	var room_consumption = selected_room_type.power_consumption * room_size
+	var room_consumption = 0
 	update_cursor_with_room_info(room_cost, room_consumption, TileMapManager.base_tile_map.get_global_mouse_position())
 
 func setting_door() -> void:

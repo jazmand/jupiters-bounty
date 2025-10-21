@@ -36,5 +36,4 @@ func calculate_tile_count(vector1: Vector2i, vector2: Vector2i) -> int:
 	return (abs(vector2.x - vector1.x) + 1) * (abs(vector2.y - vector1.y) + 1)
 
 func calculate_power_consumption() -> int:
-	var tile_count = calculate_tile_count(top_left, bottom_right)
-	return tile_count * type.power_consumption
+	return 0
