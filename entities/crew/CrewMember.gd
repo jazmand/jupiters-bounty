@@ -95,6 +95,12 @@ var _pathfinding_cooldown: float = 0.0
 const PATHFINDING_COOLDOWN: float = 0.1  # Reduced from 0.5 to 0.1 seconds for more responsive redirection
 var _last_pathfinding_time: float = 0.0
 
+# Throttling accumulators for expensive checks
+var _path_validation_accum: float = 0.0
+const PATH_VALIDATION_INTERVAL: float = 0.1
+var _avoidance_check_accum: float = 0.0
+const AVOIDANCE_CHECK_INTERVAL: float = 0.1
+
 # Multi-waypoint pathfinding system
 var _alternative_waypoints: Array[Vector2] = []
 var _current_waypoint_index: int = 0
@@ -664,9 +670,11 @@ func _on_walking_state_physics_processing(_delta: float) -> void:
 
 	set_rounded_direction()
 	
-	# Validate current path against obstacles even when following flow fields
-	# so we adapt around physics obstacles and room walls/doors
-	validate_current_path()
+	# Validate current path at a limited rate to reduce raycasts
+	_path_validation_accum += _delta
+	if _path_validation_accum >= PATH_VALIDATION_INTERVAL:
+		validate_current_path()
+		_path_validation_accum = 0.0
 	
 	# Update collision avoidance
 	update_avoidance(_delta)
@@ -1047,11 +1055,14 @@ func update_avoidance(_delta: float) -> void:
 		if _avoidance_timer <= 0:
 			_avoidance_offset = Vector2.ZERO
 	else:
-		# Check for new crew collisions
-		var new_offset = check_for_crew_collisions()
-		if new_offset != Vector2.ZERO:
-			_avoidance_offset = new_offset
-			_avoidance_timer = AVOIDANCE_DURATION
+		# Check for new crew collisions at a limited rate
+		_avoidance_check_accum += _delta
+		if _avoidance_check_accum >= AVOIDANCE_CHECK_INTERVAL:
+			var new_offset = check_for_crew_collisions()
+			if new_offset != Vector2.ZERO:
+				_avoidance_offset = new_offset
+				_avoidance_timer = AVOIDANCE_DURATION
+			_avoidance_check_accum = 0.0
 
 func _handle_wall_collision(collision: KinematicCollision2D) -> void:
 	"""Handle collision with walls - pause and repath if needed"""
@@ -1084,13 +1095,12 @@ func _handle_wall_collision(collision: KinematicCollision2D) -> void:
 
 func _attempt_repath_around_obstacle() -> void:
 	"""Try to find an alternative route around the obstacle to reach the same destination"""
-	# Performance optimization: limit pathfinding frequency using delta time
-	var current_time = Time.get_time_dict_from_system()
-	var time_since_last = current_time.second - _last_pathfinding_time
+	# Performance optimization: limit pathfinding frequency using monotonic time (seconds)
+	var now := Time.get_ticks_msec() / 1000.0
+	var time_since_last := now - _last_pathfinding_time
 	if time_since_last < PATHFINDING_COOLDOWN:
 		return
-	
-	_last_pathfinding_time = current_time.second
+	_last_pathfinding_time = now
 	
 	# Try multiple strategies to find a circuitous route to the same destination
 	var alternative_target = _find_smart_alternative_route(_final_destination)

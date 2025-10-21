@@ -83,6 +83,7 @@ func _build_field(seed_tiles: Array[Vector2i], radius: int, room: Room) -> FlowF
 			frontier.append(seed)
 
 	# Door-aware BFS (4-neighborhood)
+	var nav := NavGridProvider.new()
 	while not frontier.is_empty():
 		var current: Vector2i = frontier.pop_front()
 		var current_dist: int = distance[current]
@@ -92,15 +93,15 @@ func _build_field(seed_tiles: Array[Vector2i], radius: int, room: Room) -> FlowF
 			if not _is_walkable(neighbor):
 				continue
 			# Keep BFS bounded to the navigation map to prevent gradients outside nav area
-			var neighbor_world := NavGridProvider.new().tile_center_world(neighbor)
-			if not NavGridProvider.new()._is_on_navigation(neighbor_world):
+			var neighbor_world := nav.tile_center_world(neighbor)
+			if not nav._is_on_navigation(neighbor_world):
 				continue
 			if room != null and not _is_in_room(room, neighbor):
 				# Allow stepping onto door tiles of this room OR crossing boundary on door edge
 				if not _is_door_of_room(room, neighbor) and not _door_transition(current, neighbor):
 					continue
 			# Enforce door-only boundary transitions
-			if not NavGridProvider.new().can_traverse(current, neighbor):
+			if not nav.can_traverse(current, neighbor):
 				continue
 			if not distance.has(neighbor):
 				distance[neighbor] = current_dist + 1
