@@ -837,7 +837,7 @@ func _on_flow_timer_timeout() -> void:
 		var should_retarget = crew_moved or (distance_to_beacon > 3.0 * 256.0)  # 3 tiles * tile size
 		
 		if not should_retarget:
-			print("[CrewMember] Skipping retarget - crew hasn't moved and close to beacon")
+			print("[CrewMember] Skipping retarget - crew hasn't moved and is close to beacon")
 			_flow_timer.start()
 			return
 		
@@ -1311,18 +1311,9 @@ func _on_fatigue_level_changed(is_fatigued: bool) -> void:
 
 func _update_depth_sorting() -> void:
 	"""Update z_index based on Y position for proper depth sorting"""
-	# Convert world position to tile coordinates
-	var tile_map = get_tree().get_first_node_in_group("navigation")
-	if tile_map and tile_map is TileMap:
-		var tile_pos = tile_map.local_to_map(tile_map.to_local(global_position))
-		# Higher Y values (further down) should have higher z_index (appear in front)
-		# Crew should appear above furniture (which has z_index = tile_y + 15), so add a higher base offset
-		z_as_relative = false
-		z_index = tile_pos.y + 25  # Base offset to ensure crew appears above furniture
-	else:
-		# Fallback: use Y position directly
-		z_as_relative = false
-		z_index = int(global_position.y / 64) + 25
+	# Use Y position directly to avoid per-frame TileMap lookups
+	z_as_relative = false
+	z_index = int(global_position.y / 64) + 25
 
 func _world_center_of_footprint(furniture: Furniture) -> Vector2:
 	var occupiedTiles: Array[Vector2i] = furniture.get_occupied_tiles()

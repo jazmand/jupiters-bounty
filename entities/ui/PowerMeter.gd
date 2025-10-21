@@ -17,15 +17,23 @@ func _ready() -> void:
 	current_power = target_power
 	set_power_label(current_power)
 	Global.station.power_updated.connect(on_power_updated)
+	# Only process while animating toward a new power target
+	set_process(false)
 
 func _process(delta: float) -> void:
 	update_power_reading(delta)
 	modulate_light()
 	rotate_dial()
+	# Stop processing when we've reached the target
+	if current_power == target_power:
+		set_process(false)
 
 func on_power_updated(new_power: int) -> void:
 	target_power = new_power
 	elapsed_time = 0.0
+	# Re-enable processing to animate to the new value
+	if not is_processing():
+		set_process(true)
 
 func update_power_reading(delta: float) -> void:
 	if current_power != target_power:

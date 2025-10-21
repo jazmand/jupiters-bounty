@@ -28,7 +28,8 @@ func _ready() -> void:
 	# CrewInfoPanel should open when entering inspecting_crew state
 	previous_button.pressed.connect(cycle_crew_members.bind(-1))
 	next_button.pressed.connect(cycle_crew_members.bind(1))
-	set_process(true)
+	# Only process while visible to avoid per-frame work when hidden
+	set_process(false)
 
 func display_crew_info(crew_member: CrewMember) -> void:
 	assign_button.pressed.connect(start_assigning)
@@ -56,10 +57,12 @@ func open(crew_member: CrewMember) -> void:
 	reset_panel()
 	setup_new_panel(crew_member)
 	show()
+	set_process(true)
 
 func close() -> void:
 	hide()
 	reset_panel()
+	set_process(false)
 
 
 func start_assigning() -> void:
@@ -137,9 +140,16 @@ func _build_stat_rows() -> void:
 func _update_stat_rows(crew_member: CrewMember) -> void:
 	if not _stats_built:
 		return
-	_vigour_bar.value = int(crew_member.data.vigour)
-	_appetite_bar.value = int(crew_member.data.appetite)
-	_contentment_bar.value = int(crew_member.data.contentment)
+	# Only update bars when values change to reduce theme invalidations
+	var v := int(crew_member.data.vigour)
+	if _vigour_bar.value != v:
+		_vigour_bar.value = v
+	var a := int(crew_member.data.appetite)
+	if _appetite_bar.value != a:
+		_appetite_bar.value = a
+	var c := int(crew_member.data.contentment)
+	if _contentment_bar.value != c:
+		_contentment_bar.value = c
 
 func _make_stat_row(label_text: String, fill_color: Color) -> ProgressBar:
 	var row := HBoxContainer.new()

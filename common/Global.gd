@@ -44,6 +44,3 @@ func _ready() -> void:
 	assignment_beacons = AssignmentBeaconsScript.new()
 	add_child(assignment_beacons)
 	
-	# Enable debug mode for all beacons (remove this after debugging)
-	assignment_beacons.enable_debug_rendering()
-	wander_beacons.enable_debug_rendering()
