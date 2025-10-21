@@ -18,7 +18,7 @@ var _original_opacities: Dictionary = {}
 var is_in_crew_assignment_mode: bool = false
 
 @export var initial_crew_count: int = 2
-@export var spawn_fade_duration: float = 2.0
+@export var spawn_fade_duration: float = 2.5
 @onready var spawn_points: Node = %SpawnPoints
 
 # Spawn management
@@ -178,13 +178,43 @@ func new_crew_member(position_vector: Vector2 = Vector2(5000, 3000)) -> CrewMemb
 
 func new_crew_member_with_fade(position_vector: Vector2) -> CrewMember:
 	var crew_member := new_crew_member(position_vector)
-	crew_member.modulate.a = 0.0
+	# Fade only the visual sprites so movement is visible during fade
+	var sprite_idle: Sprite2D = crew_member.get_node_or_null("AgathaIdle") as Sprite2D
+	var sprite_walk: Sprite2D = crew_member.get_node_or_null("AgathaWalk") as Sprite2D
+	if sprite_idle:
+		sprite_idle.modulate.a = 0.0
+	if sprite_walk:
+		sprite_walk.modulate.a = 0.0
 	_begin_spawn()
-	var t := create_tween()
-	t.tween_property(crew_member, "modulate:a", 1.0, spawn_fade_duration)
+	var t: Tween = create_tween()
+	# Use exponential ease-in so fade starts slowly and ends quickly
+	t.set_trans(Tween.TRANS_EXPO)
+	t.set_ease(Tween.EASE_IN)
+	if sprite_idle:
+		t.tween_property(sprite_idle, "modulate:a", 1.0, spawn_fade_duration)
+	if sprite_walk:
+		# Run walk sprite fade in parallel
+		t.parallel().tween_property(sprite_walk, "modulate:a", 1.0, spawn_fade_duration)
 	t.finished.connect(func():
 		_end_spawn()
 	)
+	# Allow movement to begin 1.0s after spawning (while sprites are still fading)
+	var early_move_time: float = 1.0
+	if early_move_time > 0.0:
+		var move_tween: Tween = create_tween()
+		move_tween.tween_interval(early_move_time)
+		move_tween.tween_callback(func():
+			if is_instance_valid(crew_member) and crew_member.state == crew_member.STATE.IDLE:
+				crew_member.state_manager.send_event(&"walk")
+				if crew_member.has_method("_start_flow_wander"):
+					crew_member._start_flow_wander()
+		)
+	else:
+		# If fade is very short, trigger walking immediately
+		if is_instance_valid(crew_member) and crew_member.state == crew_member.STATE.IDLE:
+			crew_member.state_manager.send_event(&"walk")
+			if crew_member.has_method("_start_flow_wander"):
+				crew_member._start_flow_wander()
 	return crew_member
 
 func _get_spawn_positions_from_2x1_tile_area() -> Array[Vector2]:
