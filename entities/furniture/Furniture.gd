@@ -16,6 +16,10 @@ var rotation_state: int = 0  # 0 = normal, 1 = rotated
 var assigned_crew: Array[Node] = []
 var max_crew_capacity: int = 1
 
+# Per-furniture reservation of exact access tiles for assigned crew
+var _reserved_by_crew: Dictionary = {} # crew_id(String) -> Vector2i
+var _reserved_by_tile: Dictionary = {} # tile_key(String) -> int (crew_id)
+
 # Visual and interaction
 var is_hovered: bool = false
 var is_selected: bool = false
@@ -351,6 +355,8 @@ func unassign_crew(crew_member: Node) -> bool:
 	
 	assigned_crew.erase(crew_member)
 	emit_signal("crew_unassigned", crew_member)
+	# Release any reserved access tile for this crew
+	release_access_tile_for_crew(crew_member)
 	return true
 
 func get_assigned_crew() -> Array[Node]:
@@ -457,3 +463,113 @@ func find_adjacent_tile() -> Vector2i:
 	
 	# If no adjacent tile found, return the first tile's position (fallback)
 	return position_tiles[0] if position_tiles.size() > 0 else Vector2i.ZERO
+
+# --- Reservation API for exact access tiles ---
+
+func reserve_access_tile_for_crew(crew: Node, candidate_tiles: Array[Vector2i] = []) -> Vector2i:
+	if crew == null:
+		return Vector2i.ZERO
+	var crew_key := str(crew.get_instance_id())
+	# If already reserved, return existing
+	if _reserved_by_crew.has(crew_key):
+		return _reserved_by_crew[crew_key]
+
+	# Build candidate list
+	var grid := preload("res://scripts/utilities/NavGridProvider.gd").new()
+	var targets := preload("res://scripts/utilities/FlowTargets.gd").new()
+	var room: Room = get_parent() if (get_parent() is Room) else null
+
+	var access_tiles: Array[Vector2i] = []
+	if candidate_tiles != null and not candidate_tiles.is_empty():
+		access_tiles = candidate_tiles.duplicate()
+	else:
+		access_tiles = targets.furniture_access_tiles(self)
+		# Fallback 1: adjacent walkable tiles around furniture footprint
+		if access_tiles.is_empty():
+			var occupied_tiles: Array[Vector2i] = get_occupied_tiles()
+			var adjacent_dirs := [Vector2i(0,-1), Vector2i(1,0), Vector2i(0,1), Vector2i(-1,0)]
+			for occupied in occupied_tiles:
+				for dir in adjacent_dirs:
+					var candidate: Vector2i = occupied + dir
+					if not occupied_tiles.has(candidate) and grid.is_walkable(candidate):
+						if room == null or room.is_coord_in_room(candidate):
+							access_tiles.append(candidate)
+		# Fallback 2: door tiles of the room
+		if access_tiles.is_empty() and room != null:
+			access_tiles = targets.door_tiles(room)
+
+	if access_tiles.is_empty():
+		return Vector2i.ZERO
+
+	# Filter candidates: walkable, nav-centered, not reserved, in same room, adjacent to furniture
+	var candidates: Array[Vector2i] = []
+	for tile in access_tiles:
+		if not grid.is_walkable(tile):
+			continue
+		if not _is_nav_centered(tile):
+			continue
+		if _reserved_by_tile.has(_key(tile)):
+			continue
+		if room != null and not room.is_coord_in_room(tile):
+			continue
+		if not _is_adjacent_to_furniture(tile):
+			continue
+		candidates.append(tile)
+
+	if candidates.is_empty():
+		return Vector2i.ZERO
+
+	# Pick tile closest to furniture center
+	var best_tile := candidates[0]
+	var best_dist := INF
+	var furniture_center := _furniture_center_world()
+	for candidate in candidates:
+		var candidate_world := grid.tile_center_world(candidate)
+		var dist := furniture_center.distance_to(candidate_world)
+		if dist < best_dist:
+			best_dist = dist
+			best_tile = candidate
+
+	# Reserve
+	_reserved_by_crew[crew_key] = best_tile
+	_reserved_by_tile[_key(best_tile)] = crew.get_instance_id()
+	return best_tile
+
+func release_access_tile_for_crew(crew: Node) -> void:
+	if crew == null:
+		return
+	var crew_key := str(crew.get_instance_id())
+	if not _reserved_by_crew.has(crew_key):
+		return
+	var tile: Vector2i = _reserved_by_crew[crew_key]
+	_reserved_by_crew.erase(crew_key)
+	_reserved_by_tile.erase(_key(tile))
+
+# --- Helpers ---
+
+func _key(tile: Vector2i) -> String:
+	return str(tile.x) + ":" + str(tile.y)
+
+func _is_nav_centered(tile: Vector2i) -> bool:
+	var grid := preload("res://scripts/utilities/NavGridProvider.gd").new()
+	var center := grid.tile_center_world(tile)
+	return grid._is_on_navigation(center)
+
+func _is_adjacent_to_furniture(tile: Vector2i) -> bool:
+	var occupied_tiles: Array[Vector2i] = get_occupied_tiles()
+	var adjacent_dirs := [Vector2i(0,-1), Vector2i(1,0), Vector2i(0,1), Vector2i(-1,0)]
+	for occ in occupied_tiles:
+		for dir in adjacent_dirs:
+			if occ + dir == tile:
+				return true
+	return false
+
+func _furniture_center_world() -> Vector2:
+	var grid := preload("res://scripts/utilities/NavGridProvider.gd").new()
+	var occupied_tiles: Array[Vector2i] = get_occupied_tiles()
+	if occupied_tiles.is_empty():
+		return global_position
+	var sum := Vector2.ZERO
+	for t in occupied_tiles:
+		sum += grid.tile_center_world(t)
+	return sum / float(occupied_tiles.size())

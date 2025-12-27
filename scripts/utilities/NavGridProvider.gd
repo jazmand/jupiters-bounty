@@ -25,22 +25,24 @@ func tile_center_world(tile: Vector2i) -> Vector2:
 ## Walkability and traversal
 
 func is_walkable(tile: Vector2i) -> bool:
-	# Must be within base map bounds
+	# Must lie on the navigation map
+	var tile_world_center := tile_center_world(tile)
+	if not _is_on_navigation(tile_world_center):
+		return false
+	
+	# Door tiles are explicitly walkable, even if occupied by door furniture
+	if is_door_tile(tile):
+		return true
+	
+	# Must not be occupied by furniture
 	if TileMapManager == null:
 		return false
-	var base_tile_data := TileMapManager.get_base_cell_tile_data(tile)
-	if base_tile_data == null:
-		return false
-	# Must not be occupied by furniture (sprite instances managed by FurnishingManager)
 	var furnishing_manager: FurnishingManager = _get_furnishing_manager()
 	if furnishing_manager != null:
 		var furniture_at_tile: Array = furnishing_manager.get_furniture_at_tile(tile)
 		if furniture_at_tile != null and not furniture_at_tile.is_empty():
 			return false
-	# Must lie on the current navigation map (avoid edge jitter)
-	var tile_world_center := tile_center_world(tile)
-	if not _is_on_navigation(tile_world_center):
-		return false
+	
 	return true
 
 func can_traverse(from_tile: Vector2i, to_tile: Vector2i) -> bool:
@@ -61,6 +63,18 @@ func can_traverse(from_tile: Vector2i, to_tile: Vector2i) -> bool:
 			return true
 	if to_room and to_room.data and not to_room.data.door_tiles.is_empty():
 		if to_room.data.door_tiles.has(from_tile) or to_room.data.door_tiles.has(to_tile):
+			return true
+	return false
+
+func is_door_tile(tile: Vector2i) -> bool:
+	"""Check if a tile is a door tile for any room"""
+	# Iterate over all rooms to check if the tile is in any door set
+	# Optimization: We could cache this if performance becomes an issue
+	if Global.station == null:
+		return false
+		
+	for room in Global.station.rooms:
+		if room and room.data and room.data.door_tiles.has(tile):
 			return true
 	return false
 

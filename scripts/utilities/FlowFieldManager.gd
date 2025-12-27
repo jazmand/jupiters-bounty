@@ -107,14 +107,45 @@ func _build_field(seed_tiles: Array[Vector2i], radius: int, room: Room) -> FlowF
 				distance[neighbor] = current_dist + 1
 				frontier.append(neighbor)
 
-	# Create downhill directions: for every visited tile, point toward a neighbor with lower distance
+	# Create downhill directions with tie-breaking toward goal to prevent corner oscillations
 	for tile_key in distance.keys():
 		var best_dir := Vector2i.ZERO
 		var best_val: int = int(distance[tile_key])
+		var best_neighbors: Array[Vector2i] = []  # Track all neighbors with best distance
+		
 		for neighbor2 in _neighbors4(tile_key):
-			if distance.has(neighbor2) and distance[neighbor2] < best_val:
-				best_val = distance[neighbor2]
-				best_dir = neighbor2 - tile_key
+			if distance.has(neighbor2):
+				var neighbor_dist: int = distance[neighbor2]
+				if neighbor_dist < best_val:
+					best_val = neighbor_dist
+					best_neighbors.clear()
+					best_neighbors.append(neighbor2)
+				elif neighbor_dist == best_val:
+					# Same distance - keep for tie-breaking
+					best_neighbors.append(neighbor2)
+		
+		# If multiple neighbors have same best distance, pick the one most aligned with goal direction
+		if best_neighbors.size() > 1:
+			var goal_tile: Vector2i = Vector2i.ZERO
+			# Find a seed tile as our goal (use first seed for direction hint)
+			if seed_tiles.size() > 0:
+				goal_tile = seed_tiles[0]
+			
+			var best_dot: float = -999999.0
+			var chosen_neighbor: Vector2i = best_neighbors[0]
+			var to_goal_normalized: Vector2 = Vector2(goal_tile - tile_key).normalized()
+			
+			for candidate in best_neighbors:
+				var to_neighbor_normalized: Vector2 = Vector2(candidate - tile_key).normalized()
+				var dot: float = to_neighbor_normalized.dot(to_goal_normalized)
+				if dot > best_dot:
+					best_dot = dot
+					chosen_neighbor = candidate
+			
+			best_dir = chosen_neighbor - tile_key
+		elif best_neighbors.size() == 1:
+			best_dir = best_neighbors[0] - tile_key
+		
 		if best_dir != Vector2i.ZERO:
 			dir_out[tile_key] = best_dir
 

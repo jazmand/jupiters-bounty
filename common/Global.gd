@@ -30,8 +30,6 @@ const FlowFieldServiceScript = preload("res://scripts/utilities/FlowFieldManager
 var flow_service = null
 const WanderBeaconsScript = preload("res://scripts/utilities/WanderBeacons.gd")
 var wander_beacons = null
-const AssignmentBeaconsScript = preload("res://scripts/utilities/AssignmentBeacons.gd")
-var assignment_beacons = null
 
 func _ready() -> void:
 	GameTime.second.connect(station.update_hydrogen)
@@ -41,6 +39,4 @@ func _ready() -> void:
 	wander_beacons = WanderBeaconsScript.new()
 	add_child(wander_beacons)
 	wander_beacons.rebuild_from_nav()
-	assignment_beacons = AssignmentBeaconsScript.new()
-	add_child(assignment_beacons)
 	

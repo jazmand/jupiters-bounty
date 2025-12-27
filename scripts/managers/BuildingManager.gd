@@ -44,19 +44,21 @@ func on_build_menu_action(action: int, clicked_roomtype: RoomType) -> void:
 	state_manager.send_event(event)
 
 func on_room_builder_action(action: int) -> void:
-	var event: String
 	match action:
 		room_builder.Action.BACK:
-			event = BUILD_EVENTS[StateEvent.BUILDING_BACK]
+			state_manager.send_event(BUILD_EVENTS[StateEvent.BUILDING_BACK])
 		room_builder.Action.FORWARD:
-			event = BUILD_EVENTS[StateEvent.BUILDING_FORWARD]
+			state_manager.send_event(BUILD_EVENTS[StateEvent.BUILDING_FORWARD])
 		room_builder.Action.COMPLETE:
-			event = BUILD_EVENTS[StateEvent.BUILDING_STOP]
+			# Exit Building state first (to Default)
+			state_manager.send_event(BUILD_EVENTS[StateEvent.BUILDING_STOP])
+			
+			# Then trigger room_built, which allows FurnishingManager to transition to Furnishing state
 			room_built.emit(selected_roomtype, room_builder.get_selected_tiles())
+			
 			# Invalidate nav-related flow fields after room placement
 			if Global and Global.flow_service:
 				Global.flow_service.mark_nav_dirty()
-	state_manager.send_event(event)
 
 func _on_building_state_input(event: InputEvent) -> void:
 	if event.is_action_pressed("exit"):

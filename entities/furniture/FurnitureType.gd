@@ -31,6 +31,11 @@ enum AccessRule { NONE, ANY, ALL, AT_LEAST_N }
 @export var access_required_count: int = 1 # used when access_rule == AT_LEAST_N
 @export var access_required_sides_rotated: Array = [] # optional explicit sides when rotated
 
+# Crew usage state for assignment arrival (e.g., "work", "rest/sleep").
+# useState is a camelCase alias to stay flexible with data sources.
+@export var use_state: StringName = &"work"
+@export var useState: StringName = StringName()
+
 func _init(
 	p_id: int = 0,
 	p_name: String = "",
@@ -51,7 +56,9 @@ func _init(
 	p_access_rule: int = AccessRule.NONE,
 	p_access_required_sides: Array = [],
 	p_access_required_count: int = 1,
-	p_access_required_sides_rotated: Array = []
+	p_access_required_sides_rotated: Array = [],
+	p_use_state: StringName = &"work",
+	p_useState: StringName = StringName()
 ):
 	id = p_id
 	name = p_name
@@ -73,6 +80,8 @@ func _init(
 	access_required_sides = p_access_required_sides
 	access_required_count = p_access_required_count
 	access_required_sides_rotated = p_access_required_sides_rotated
+	use_state = p_use_state
+	useState = p_useState
 
 func get_tileset_coords_for_rotation(is_rotated: bool) -> Array[Vector2i]:
 	# Return the appropriate tileset coordinates based on rotation state
@@ -104,4 +113,12 @@ func get_sprite_offset_for_rotation(is_rotated: bool) -> Vector2:
 		# Default behavior: mirror X offset when rotated if no explicit rotated offset set
 		return Vector2(-sprite_offset.x, sprite_offset.y)
 	return sprite_offset
+
+func get_use_state() -> StringName:
+	# Prefer explicit camelCase value when provided, fall back to snake_case/default
+	if useState != StringName():
+		return useState
+	if use_state != StringName():
+		return use_state
+	return &"work"
 	

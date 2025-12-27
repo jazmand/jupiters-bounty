@@ -17,7 +17,7 @@ var inspected_furniture: Furniture = null
 var _original_opacities: Dictionary = {}
 var is_in_crew_assignment_mode: bool = false
 
-@export var initial_crew_count: int = 2
+@export var initial_crew_count: int = 1
 @export var spawn_fade_duration: float = 2.5
 @onready var spawn_points: Node = %SpawnPoints
 
@@ -281,6 +281,9 @@ func spawn_initial_crew() -> void:
 	for i in range(initial_crew_count):
 		var pos := positions[i % positions.size()]
 		var cm := new_crew_member_with_fade(pos)
+		# Enable assignment flow debug overlay for the first (and only) crew
+		if i == 0 and is_instance_valid(cm):
+			cm.debug_assignment_flow = true
 		# Face northwest (up-left) on spawn and idle
 		if is_instance_valid(cm):
 			cm.current_animation_direction = Vector2(-1, -1)

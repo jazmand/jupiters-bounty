@@ -1,11 +1,11 @@
 class_name AssignmentBeacons
 extends Node
 
-# Reserves a unique access-adjacent tile per crew when assigned to furniture.
-# Releases the reservation on unassign.
+# Simple assignment beacon system - reserves exact tiles per crew for furniture assignments
+# Works like WanderBeacons but with unique reservations (no jitter, exact tiles)
 
-var crewIdToTile: Dictionary = {}
-var reservedKeyToCrew: Dictionary = {}
+var crewIdToTile: Dictionary = {}  # crew_id -> beacon_tile
+var tileToCrewId: Dictionary = {}  # tile_key -> crew_id
 
 # Debug rendering
 var debug_enabled: bool = false
@@ -15,89 +15,115 @@ var debug_draw_node: Control = null
 func reserve_for_crew(furniture: Furniture, crew_id: int, crew_world_pos: Vector2) -> Vector2i:
 	if furniture == null:
 		return Vector2i.ZERO
-	# If already reserved, return existing
-	if crewIdToTile.has(str(crew_id)):
-		var existing_tile = crewIdToTile[str(crew_id)]
-		print("[AssignmentBeacons] Crew ", crew_id, " already has beacon at tile ", existing_tile)
-		return existing_tile
-	# Compute access tiles (respecting rotation and room bounds)
-	var accessTiles: Array[Vector2i] = FlowTargets.new().furniture_access_tiles(furniture)
-
-	# Initialize grid for walkability checks
+	
+	# If already reserved for this crew, return existing
+	var crew_key := str(crew_id)
+	if crewIdToTile.has(crew_key):
+		return crewIdToTile[crew_key]
+	
+	# Get furniture access tiles
+	var access_tiles: Array[Vector2i] = FlowTargets.new().furniture_access_tiles(furniture)
 	var grid := NavGridProvider.new()
 	
-	# IMMEDIATE LENIENT FALLBACK: If no access tiles found, find any walkable tile adjacent to furniture
-	if accessTiles.is_empty():
+	# Fallback: find adjacent walkable tiles if no access tiles
+	if access_tiles.is_empty():
 		var occupied_tiles: Array[Vector2i] = furniture.get_occupied_tiles()
-		var adjacent_directions = [Vector2i(0,-1), Vector2i(1,0), Vector2i(0,1), Vector2i(-1,0)]
-		var room: Room = null
-		if furniture.get_parent() is Room:
-			room = furniture.get_parent()
+		var adjacent_dirs := [Vector2i(0,-1), Vector2i(1,0), Vector2i(0,1), Vector2i(-1,0)]
+		var room: Room = furniture.get_parent() if (furniture.get_parent() is Room) else null
 		
-		for occupied_tile in occupied_tiles:
-			for direction in adjacent_directions:
-				var candidate_tile: Vector2i = occupied_tile + direction
-				if not occupied_tiles.has(candidate_tile) and grid.is_walkable(candidate_tile) and (room == null or room.is_coord_in_room(candidate_tile)):
-					accessTiles.append(candidate_tile)
-		
-		# debug log removed
+		for occupied in occupied_tiles:
+			for dir in adjacent_dirs:
+				var candidate: Vector2i = occupied + dir
+				if not occupied_tiles.has(candidate) and grid.is_walkable(candidate):
+					if room == null or room.is_coord_in_room(candidate):
+						access_tiles.append(candidate)
 	
-	# If STILL no access tiles after lenient search, try door tiles as last resort
-	if accessTiles.is_empty():
-		if furniture.get_parent() is Room:
-			accessTiles = FlowTargets.new().door_tiles(furniture.get_parent())
-		else:
-			return Vector2i.ZERO
+	# Last resort: use door tiles
+	if access_tiles.is_empty() and furniture.get_parent() is Room:
+		access_tiles = FlowTargets.new().door_tiles(furniture.get_parent())
 	
-	# Filter out already reserved tiles and require true adjacency to the furniture footprint
-	var candidateTiles: Array[Vector2i] = []
-	var crew_tile: Vector2i = grid.world_to_tile(crew_world_pos)
-
-	for accessTile in accessTiles:
-		# Enforce that the beacon is in the same room as the furniture
-		if furniture.get_parent() is Room and not (furniture.get_parent() as Room).is_coord_in_room(accessTile):
-			continue
-		if reservedKeyToCrew.has(_key(accessTile)):
-			continue
-		if not is_adjacent_to_furniture(accessTile, furniture):
-			continue
-		if not grid.is_walkable(accessTile):
-			continue
-		# If the crew is already standing on this tile, only accept it if it truly touches the furniture
-		if accessTile == crew_tile and not is_adjacent_to_furniture(crew_tile, furniture):
-			continue
-		candidateTiles.append(accessTile)
-	
-	if candidateTiles.is_empty():
+	if access_tiles.is_empty():
 		return Vector2i.ZERO
-	# Pick the tile closest to the furniture footprint center to ensure adjacency
-	var bestTile: Vector2i = candidateTiles[0]
-	var bestDistance := INF
-	var furnitureCenterWorld := _world_center_of_footprint(furniture)
-	for candidate in candidateTiles:
-		var candidateWorld: Vector2 = _tile_world_center(candidate)
-		var dist := furnitureCenterWorld.distance_to(candidateWorld)
-		if dist < bestDistance:
-			bestDistance = dist
-			bestTile = candidate
+	
+	# Filter: walkable, nav-centered, not reserved, in same room as furniture
+	var candidates: Array[Vector2i] = []
+	for tile in access_tiles:
+		if not grid.is_walkable(tile):
+			continue
+		if not _is_nav_centered(tile):
+			continue
+		if tileToCrewId.has(_key(tile)):
+			continue
+		if furniture.get_parent() is Room:
+			var room := furniture.get_parent() as Room
+			if not room.is_coord_in_room(tile):
+				continue
+		if not _is_adjacent_to_furniture(tile, furniture):
+			continue
+		candidates.append(tile)
+	
+	if candidates.is_empty():
+		return Vector2i.ZERO
+	
+	# Pick closest to furniture center
+	var best_tile := candidates[0]
+	var best_dist := INF
+	var furniture_center := _furniture_center_world(furniture)
+	for candidate in candidates:
+		var candidate_world := _tile_world_center(candidate)
+		var dist := furniture_center.distance_to(candidate_world)
+		if dist < best_dist:
+			best_dist = dist
+			best_tile = candidate
+	
 	# Reserve
-	crewIdToTile[str(crew_id)] = bestTile
-	reservedKeyToCrew[_key(bestTile)] = crew_id
+	crewIdToTile[crew_key] = best_tile
+	tileToCrewId[_key(best_tile)] = crew_id
 	
-	# Draw debug info for this furniture
 	if debug_enabled:
-		draw_furniture_debug(furniture)
+		_setup_debug_canvas()
 	
-	return bestTile
+	return best_tile
 
 func release_for_crew(crew_id: int) -> void:
-	var crewKey := str(crew_id)
-	if crewIdToTile.has(crewKey):
-		var tile: Vector2i = crewIdToTile[crewKey]
-		crewIdToTile.erase(crewKey)
-		var tileKey := _key(tile)
-		if reservedKeyToCrew.has(tileKey):
-			reservedKeyToCrew.erase(tileKey)
+	var crew_key := str(crew_id)
+	if not crewIdToTile.has(crew_key):
+		return
+	
+	var tile: Vector2i = crewIdToTile[crew_key]
+	crewIdToTile.erase(crew_key)
+	tileToCrewId.erase(_key(tile))
+
+func _key(tile: Vector2i) -> String:
+	return str(tile.x) + ":" + str(tile.y)
+
+func _is_nav_centered(tile: Vector2i) -> bool:
+	if TileMapManager == null or TileMapManager.build_tile_map == null:
+		return true
+	var local := TileMapManager.build_tile_map.map_to_local(tile)
+	var center := TileMapManager.build_tile_map.to_global(local)
+	var nav := Engine.get_main_loop()
+	if nav and nav.has_method("get_root"):
+		var root: Node = nav.get_root()
+		var region: NavigationRegion2D = root.get_node_or_null("Main/GameManager/NavigationRegion")
+		if region:
+			var rid: RID = region.get_navigation_map()
+			if rid != RID():
+				var closest := NavigationServer2D.map_get_closest_point(rid, center)
+				return closest.distance_to(center) <= 8.0
+	return true
+
+func _is_adjacent_to_furniture(tile: Vector2i, furniture: Furniture) -> bool:
+	var footprint := furniture.get_occupied_tiles()
+	var footprint_set := {}
+	for ft in footprint:
+		footprint_set[ft] = true
+	
+	var dirs := [Vector2i(0,-1), Vector2i(1,0), Vector2i(0,1), Vector2i(-1,0)]
+	for dir in dirs:
+		if footprint_set.has(tile + dir):
+			return true
+	return false
 
 func _tile_world_center(tile: Vector2i) -> Vector2:
 	if TileMapManager and TileMapManager.build_tile_map:
@@ -105,31 +131,16 @@ func _tile_world_center(tile: Vector2i) -> Vector2:
 		return TileMapManager.build_tile_map.to_global(local)
 	return Vector2.ZERO
 
-func _world_center_of_footprint(furniture: Furniture) -> Vector2:
-	var occupiedTiles: Array[Vector2i] = furniture.get_occupied_tiles()
-	if occupiedTiles.is_empty():
+func _furniture_center_world(furniture: Furniture) -> Vector2:
+	var occupied := furniture.get_occupied_tiles()
+	if occupied.is_empty():
 		return furniture.global_position
-	var worldSum := Vector2.ZERO
-	for occTile in occupiedTiles:
-		worldSum += _tile_world_center(occTile)
-	return worldSum / float(occupiedTiles.size())
+	var sum := Vector2.ZERO
+	for tile in occupied:
+		sum += _tile_world_center(tile)
+	return sum / float(occupied.size())
 
-func is_adjacent_to_furniture(tile: Vector2i, furniture: Furniture) -> bool:
-	var cardinalDirs := [Vector2i(0,-1), Vector2i(1,0), Vector2i(0,1), Vector2i(-1,0)]
-	var footprintTiles: Array[Vector2i] = furniture.get_occupied_tiles()
-	var occupiedLookup := {}
-	for footprintTile in footprintTiles:
-		occupiedLookup[footprintTile] = true
-	for cardinal in cardinalDirs:
-		var neighborTile: Vector2i = tile + cardinal
-		if occupiedLookup.has(neighborTile):
-			return true
-	return false
-
-func _key(tile: Vector2i) -> String:
-	return str(tile.x) + ":" + str(tile.y)
-
-# Debug rendering functions
+# Debug rendering
 func enable_debug_rendering() -> void:
 	debug_enabled = true
 	_setup_debug_canvas()
@@ -145,11 +156,9 @@ func _setup_debug_canvas() -> void:
 	if debug_canvas:
 		return
 	
-	
-	
 	debug_canvas = CanvasLayer.new()
 	debug_canvas.name = "AssignmentBeaconsDebug"
-	debug_canvas.layer = 100  # High layer to appear on top
+	debug_canvas.layer = 100
 	
 	debug_draw_node = Control.new()
 	debug_draw_node.name = "DebugDraw"
@@ -159,20 +168,14 @@ func _setup_debug_canvas() -> void:
 	debug_canvas.add_child(debug_draw_node)
 	get_tree().root.call_deferred("add_child", debug_canvas)
 	
-	
-	
-	# Connect to draw signal
 	debug_draw_node.draw.connect(_on_debug_draw)
 	
-	# Start continuous redraw timer for real-time updates
 	var redraw_timer = Timer.new()
 	redraw_timer.name = "DebugRedrawTimer"
-	redraw_timer.wait_time = 0.1  # Redraw 10 times per second
+	redraw_timer.wait_time = 0.1
 	redraw_timer.autostart = true
 	redraw_timer.timeout.connect(func(): if debug_draw_node: debug_draw_node.queue_redraw())
 	debug_canvas.add_child(redraw_timer)
-	
-	
 
 func _on_debug_draw() -> void:
 	if not debug_enabled or not debug_draw_node:
@@ -182,83 +185,27 @@ func _on_debug_draw() -> void:
 	if not viewport:
 		return
 	
-	# Draw all reserved beacons as green circles
+	# Draw reserved beacons as green circles
 	for crew_key in crewIdToTile.keys():
 		var tile: Vector2i = crewIdToTile[crew_key]
-		var world_pos: Vector2 = _tile_world_center(tile)
-		var screen_pos: Vector2 = viewport.get_screen_transform() * world_pos
-		
+		var world_pos := _tile_world_center(tile)
+		var screen_pos := viewport.get_screen_transform() * world_pos
 		debug_draw_node.draw_circle(screen_pos, 8, Color.GREEN)
-		debug_draw_node.draw_string(debug_draw_node.get_theme_default_font(), screen_pos + Vector2(10, -10), "Beacon", HORIZONTAL_ALIGNMENT_LEFT, -1, 12, Color.GREEN)
-	
-	# Draw furniture debug for all assigned furniture
-	for crew_key in crewIdToTile.keys():
-		var furniture = _get_furniture_for_crew(int(crew_key))
-		if furniture:
-			draw_furniture_debug(furniture)
-	
-	# Draw crew target arrows and lines
-	draw_crew_targets()
-
-func draw_furniture_debug(furniture: Furniture) -> void:
-	if not debug_enabled or not debug_draw_node:
-		return
-	
-	var viewport = get_viewport()
-	if not viewport:
-		return
-	
-	# Draw red circles at furniture occupied tiles
-	var occupied_tiles = furniture.get_occupied_tiles()
-	for tile in occupied_tiles:
-		var world_pos = _tile_world_center(tile)
-		var screen_pos = viewport.get_screen_transform() * world_pos
-		debug_draw_node.draw_circle(screen_pos, 6, Color.RED)
-	
-	# Draw blue circles at furniture access tiles
-	var flow_targets = FlowTargets.new()
-	var access_tiles = flow_targets.furniture_access_tiles(furniture)
-	for tile in access_tiles:
-		var world_pos = _tile_world_center(tile)
-		var screen_pos = viewport.get_screen_transform() * world_pos
-		debug_draw_node.draw_circle(screen_pos, 4, Color.BLUE)
-
-func draw_crew_targets() -> void:
-	if not debug_enabled or not debug_draw_node:
-		return
-	
-	var viewport = get_viewport()
-	if not viewport:
-		return
-	
-	# Find all crew members and draw their targets
-	var crew_members = get_tree().get_nodes_in_group("crew")
-	for crew in crew_members:
-		if crew.has_method("_is_on_assignment") and crew._is_on_assignment():
-			var crew_pos = crew.global_position
-			var crew_screen = viewport.get_screen_transform() * crew_pos
-			
-			# Draw cyan line from crew to their beacon
-			var beacon_tile = crewIdToTile.get(str(crew.get_instance_id()))
-			if beacon_tile != null:
-				var beacon_world = _tile_world_center(beacon_tile)
-				var beacon_screen = viewport.get_screen_transform() * beacon_world
-				debug_draw_node.draw_line(crew_screen, beacon_screen, Color.CYAN, 2)
-				
-				# Draw yellow arrow showing current target tile
-				if crew.has_method("_get_current_target_tile"):
-					var target_tile = crew._get_current_target_tile()
-					if target_tile != Vector2i.ZERO:
-						var target_world = _tile_world_center(target_tile)
-						var target_screen = viewport.get_screen_transform() * target_world
-						debug_draw_node.draw_circle(target_screen, 5, Color.YELLOW)
-						debug_draw_node.draw_string(debug_draw_node.get_theme_default_font(), target_screen + Vector2(10, -10), "Target", HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color.YELLOW)
-
-func _get_furniture_for_crew(crew_id: int) -> Furniture:
-	# Find furniture associated with this crew assignment
-	var crew_members = get_tree().get_nodes_in_group("crew")
-	for crew in crew_members:
-		if crew.get_instance_id() == crew_id and crew.has_method("_is_on_assignment") and crew._is_on_assignment():
-			if crew.has_method("get_furniture_workplace"):
-				return crew.get_furniture_workplace()
-	return null
+		debug_draw_node.draw_string(
+			debug_draw_node.get_theme_default_font(),
+			screen_pos + Vector2(10, -10),
+			"Beacon",
+			HORIZONTAL_ALIGNMENT_LEFT,
+			-1,
+			12,
+			Color.GREEN
+		)
+		
+		# Draw line from crew to beacon if crew exists
+		var crew_id := int(crew_key)
+		var crew_members = get_tree().get_nodes_in_group("crew")
+		for crew in crew_members:
+			if crew.get_instance_id() == crew_id:
+				var crew_screen: Vector2 = viewport.get_screen_transform() * crew.global_position
+				debug_draw_node.draw_line(crew_screen, screen_pos, Color.CYAN, 2)
+				break
