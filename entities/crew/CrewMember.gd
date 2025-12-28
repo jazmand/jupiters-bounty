@@ -21,6 +21,10 @@ const STATE = {
 	REST = &"rest"
 }
 
+# Explicit preloads for typed component references
+const CrewMovement = preload("res://entities/crew/components/CrewMovement.gd")
+const CrewAnimation = preload("res://entities/crew/components/CrewAnimation.gd")
+
 # Collision layer constants - simplified to single layer
 const COLLISION_LAYERS = {
 	OBSTACLES = 1,  # Layer 1: All obstacles (walls, furniture)
@@ -38,10 +42,12 @@ const COLLISION_LAYERS = {
 
 @onready var state_manager = $CrewStateManager
 @onready var navigation_agent: NavigationAgent2D = $Navigation/NavigationAgent2D
+@onready var crew_movement: CrewMovement = $CrewMovement
 @onready var navigation_timer: Timer = $Navigation/Timer
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
-@onready var speech_label: Label = get_node_or_null("SpeechLabel")
-@onready var speech_timer: Timer = get_node_or_null("SpeechTimer")
+@onready var crew_animation: CrewAnimation = $CrewAnimation
+@onready var crew_speech: CrewSpeech = $CrewSpeech
+@onready var crew_debug: CrewDebug = $CrewDebug
 @onready var sprite_idle: Sprite2D = $AgathaIdle
 @onready var sprite_walk: Sprite2D = $AgathaWalk
 @onready var area: Area2D = $BodyArea
@@ -58,7 +64,8 @@ var state = STATE.IDLE:
 	set(animation_state):
 		state = animation_state
 		state_transitioned.emit(state)
-		set_sprite_visibility(state)
+		if crew_animation:
+			crew_animation.set_sprite_visibility(state)
 		
 var current_animation = state + "_down"
 
@@ -109,7 +116,7 @@ var _final_destination: Vector2 = Vector2.ZERO
 # Vigour constants moved to CrewVigour component
 
 
-var is_speaking: bool = false
+var is_speaking: bool = false # legacy; handled by CrewSpeech
 
 @export var debug_assignment_flow: bool = false
 
@@ -158,7 +165,15 @@ const FlowTargetsScript = preload("res://scripts/utilities/FlowTargets.gd")
 var _flow_service: FlowFieldService = null
 var _nav_grid = NavGridProviderScript.new()
 var _flow_targets = FlowTargetsScript.new()
-const ASSIGN_DEBUG := true  # Set false to silence assignment debug logs
+var _cached_field = null
+var _cached_field_goal: Vector2i = Vector2i.ZERO
+var _cached_field_room_id: int = -1
+var _cached_field_version: int = -1  # nav ^ furniture version
+var _cached_nav_version: int = -1
+var _cached_furn_version: int = -1
+var _cached_room_id_for_tile: Dictionary = {} # tile -> room_id
+var _cached_seeds_key: String = ""
+const ASSIGN_DEBUG := false  # Set true to enable assignment debug logs
 
 func _is_on_assignment() -> bool:
 	return assignment == &"work" or furniture_workplace != null or not pending_waypoints.is_empty()
@@ -198,8 +213,8 @@ func _ready() -> void:
 	# Jitter the navigation timer start to spread work across framesß
 	navigation_timer.stop()
 	navigation_timer.start(randf_range(0.0, navigation_timer.wait_time))
-	# Ensure speech label exists (no random speech timer)
-	_ensure_speech_label()
+	if crew_speech:
+		crew_speech.initialize()
 	# Use shared flow service if available
 	if Global and Global.flow_service:
 		_flow_service = Global.flow_service
@@ -214,6 +229,9 @@ func actor_setup():
 	navigation_agent.path_desired_distance = 10.0
 	navigation_agent.path_postprocessing = 1  # string pulling
 	navigation_agent.avoidance_enabled = true
+	if crew_movement:
+		crew_movement.initialize()
+	navigation_agent.debug_enabled = ASSIGN_DEBUG
 
 func _on_input_event(viewport, event, _shape_idx):
 	if event.is_action_pressed("select"):
@@ -259,7 +277,10 @@ func set_movement_target(movement_target: Vector2) -> void:
 	_alternative_waypoints.clear()
 	_current_waypoint_index = 0
 	
-	navigation_agent.target_position = movement_target
+	if crew_movement:
+		crew_movement.set_movement_target(movement_target)
+	else:
+		navigation_agent.target_position = movement_target
 
 func find_alternative_route(blocked_target: Vector2) -> Vector2:
 	"""Find an alternative route around obstacles using multiple ray directions"""
@@ -382,59 +403,25 @@ func snap_to_eight_directions(vec: Vector2) -> Vector2:
 	return best_direction
 
 func set_current_animation() -> void:
-	# Special handling for resting - use idle animation with resting direction
-	if crew_vigour.is_resting:
-		var dir_for_anim: Vector2 = crew_vigour.get_resting_direction()
-		if dir_for_anim == Vector2.ZERO:
-			dir_for_anim = DIRECTIONS.DOWN
-		_set_animation_for_direction(STATE.IDLE, dir_for_anim)
+	if not crew_animation:
 		return
-
-	var animation_state = STATE.IDLE  # Default to idle for all non-walking states
-	if state == STATE.WALK:
-		animation_state = STATE.WALK
-	var dir_for_anim: Vector2 = current_animation_direction if current_animation_direction != Vector2.ZERO else current_move_direction
-	_set_animation_for_direction(animation_state, dir_for_anim)
-
-func _set_animation_for_direction(animation_state: StringName, direction: Vector2) -> void:
-	match direction:
-		DIRECTIONS.UP:
-			current_animation = animation_state + "_up"
-		DIRECTIONS.UP_RIGHT:
-			current_animation = animation_state + "_up_right"
-		DIRECTIONS.RIGHT:
-			current_animation = animation_state + "_right"
-		DIRECTIONS.DOWN_RIGHT:
-			current_animation = animation_state + "_down_right"
-		DIRECTIONS.DOWN:
-			current_animation = animation_state + "_down"
-		DIRECTIONS.DOWN_LEFT:
-			current_animation = animation_state + "_down_left"
-		DIRECTIONS.LEFT:
-			current_animation = animation_state + "_left"
-		DIRECTIONS.UP_LEFT:
-			current_animation = animation_state + "_up_left"
+	var dir_for_anim: Vector2 = current_animation_direction
+	if dir_for_anim == Vector2.ZERO:
+		dir_for_anim = current_move_direction
+	if dir_for_anim == Vector2.ZERO:
+		dir_for_anim = DIRECTIONS.DOWN
+	if crew_vigour.is_resting:
+		var rest_dir: Vector2 = crew_vigour.get_resting_direction()
+		if rest_dir == Vector2.ZERO:
+			rest_dir = DIRECTIONS.DOWN
+		crew_animation.update_animation(STATE.REST, rest_dir, true, rest_dir)
+	else:
+		crew_animation.update_animation(state, dir_for_anim, false)
+	current_animation = crew_animation.get_current_animation()
 
 func _update_animation_speed() -> void:
-	# Get animation speed from CrewVigour component
-	var speed_scale: float = crew_vigour.get_fatigue_scale()
-	animation_player.speed_scale = speed_scale
-
-func set_sprite_visibility(animation_state: StringName) -> void:
-	match animation_state:
-		STATE.IDLE:
-			sprite_idle.show()
-			sprite_walk.hide()
-		STATE.WALK:
-			sprite_idle.hide()
-			sprite_walk.show()
-		STATE.WORK:
-			sprite_idle.show()
-			sprite_walk.hide()
-		STATE.REST:
-			# Use idle visuals for resting (no dedicated rest sprites yet)
-			sprite_idle.show()
-			sprite_walk.hide()
+	if crew_animation:
+		crew_animation.set_animation_speed(crew_vigour.get_fatigue_scale())
 
 func randomise_target_position() -> void:
 	const MIN_DISTANCE = 200.0  # Minimum distance from current position
@@ -463,160 +450,26 @@ func randomise_target_position_in_room() -> void:
 
 func _on_timer_timeout() -> void:
 	set_current_animation()
-	if animation_player.current_animation != current_animation or not animation_player.is_playing():
-		animation_player.play(current_animation)
 	_update_animation_speed()
-	
-	# If resting, pause the animation to prevent walking in place
-	if crew_vigour.is_resting:
-		animation_player.pause()
+	if crew_animation:
+		crew_animation.play_current_animation()
+		# If resting, pause the animation to prevent walking in place
+		if crew_vigour.is_resting:
+			crew_animation.pause_animation()
 
 func say(text: String, duration: float = 2.5) -> void:
-	if is_speaking:
-		return
-	_ensure_speech_label()
-	if not is_instance_valid(speech_label):
-		return
-	# Reset and show
-	speech_label.text = text
-	speech_label.visible = true
-	speech_label.modulate.a = 0.0
-	# Center horizontally above the crew after size updates
-	await get_tree().process_frame
-	speech_label.position.x = -speech_label.size.x / 2.0
-	# Fade in, wait, fade out
-	var fade_tween: Tween = create_tween()
-	is_speaking = true
-	fade_tween.tween_property(speech_label, "modulate:a", 1.0, 0.2)
-	fade_tween.tween_interval(max(0.0, duration - 0.4))
-	fade_tween.tween_property(speech_label, "modulate:a", 0.0, 0.2)
-	fade_tween.finished.connect(func():
-		speech_label.visible = false
-		is_speaking = false
-	)
-
-const RANDOM_PHRASES := [
-	"Excuse me.",
-	"Move, damn it!",
-	"Why’s this here?",
-	"Ugh!",
-	"*Yawn*",
-]
-
-func _on_speech_timer_timeout() -> void:
-	# 50% chance to speak when timer fires
-	if randi() % 2 == 0:
-		var idx: int = randi() % RANDOM_PHRASES.size()
-		say(RANDOM_PHRASES[idx], 2.0)
-	_reset_speech_timer()
-
-func _reset_speech_timer() -> void:
-	# Random interval between 6 and 14 seconds
-	_ensure_speech_timer()
-	if is_instance_valid(speech_timer):
-		speech_timer.wait_time = randf_range(6.0, 14.0)
-		speech_timer.start()
-
-func _ensure_speech_nodes() -> void:
-	_ensure_speech_label()
-	_ensure_speech_timer()
-
-func _ensure_speech_label() -> void:
-	# Ensure the label exists
-	if not is_instance_valid(speech_label):
-		var lbl := Label.new()
-		lbl.name = "SpeechLabel"
-		add_child(lbl)
-		speech_label = lbl
-	# Configure size and placement
-	speech_label.position = Vector2(0, -350)
-	speech_label.z_index = 10
-	speech_label.visible = false
-	speech_label.modulate.a = 0.0
-	speech_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	speech_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	speech_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var settings := LabelSettings.new()
-	settings.font_size = 48
-	speech_label.label_settings = settings
+	if crew_speech:
+		crew_speech.say(text, duration)
 
 func _setup_assignment_debug_canvas() -> void:
-	if _debug_canvas:
-		return
-	# Create a world-space debug drawer so we don't need screen transforms
-	var gm := get_tree().get_root().get_node_or_null("Main/GameManager")
-	_debug_canvas = Node2D.new()
-	_debug_canvas.name = "AssignmentDebug2D"
-	_debug_canvas.top_level = true
-	if gm:
-		gm.add_child(_debug_canvas)
-	else:
-		get_tree().root.add_child(_debug_canvas)
-	_debug_draw_node = _debug_canvas
-	# Use draw callback
-	_debug_draw_node.draw.connect(_on_assignment_debug_draw)
-	# Periodic redraw
-	var redraw_timer := Timer.new()
-	redraw_timer.name = "DebugRedrawTimer"
-	redraw_timer.wait_time = 0.2
-	redraw_timer.autostart = true
-	redraw_timer.timeout.connect(func(): if _debug_draw_node: _debug_draw_node.queue_redraw())
-	_debug_canvas.add_child(redraw_timer)
+	if crew_debug:
+		crew_debug.set_assignment_target(_assignment_target_tile)
+		crew_debug.set_debug_field(_debug_flow_field)
 
 func _teardown_assignment_debug_canvas() -> void:
-	if _debug_canvas:
-		_debug_canvas.queue_free()
-		_debug_canvas = null
-		_debug_draw_node = null
+	if crew_debug:
+		crew_debug.teardown()
 
-func _on_assignment_debug_draw() -> void:
-	if not debug_assignment_flow or not _debug_draw_node:
-		return
-	if _assignment_target_tile == Vector2i.ZERO:
-		return
-	# World-space drawing (Node2D). Convert world -> local if needed
-	var beacon_world: Vector2 = _nav_grid.tile_center_world(_assignment_target_tile)
-	var p := _debug_draw_node.to_local(beacon_world)
-	_debug_draw_node.draw_circle(p, 8, Color.GREEN)
-	var font := ThemeDB.fallback_font
-	if font:
-		_debug_draw_node.draw_string(font, p + Vector2(10, -10), "Beacon", HORIZONTAL_ALIGNMENT_LEFT, -1, 22, Color.GREEN)
-	# Draw flow distances if present
-	if _debug_flow_field != null and _debug_flow_field.distance:
-		for tile_key in _debug_flow_field.distance.keys():
-			var t: Vector2i = tile_key
-			var world_pos: Vector2 = _nav_grid.tile_center_world(t)
-			var lp := _debug_draw_node.to_local(world_pos)
-			var d_val: int = int(_debug_flow_field.distance[tile_key])
-			var c := Color(0.2, 1.0, 0.2, 0.95)
-			if font:
-				_debug_draw_node.draw_string(font, lp + Vector2(-14, 10), str(d_val), HORIZONTAL_ALIGNMENT_CENTER, -1, 26, c)
-
-func _ensure_speech_timer() -> void:
-	if is_instance_valid(speech_timer):
-		return
-	var speech_timer_node := Timer.new()
-	speech_timer_node.name = "SpeechTimer"
-	speech_timer_node.one_shot = true
-	speech_timer_node.autostart = false
-	add_child(speech_timer_node)
-	speech_timer_node.timeout.connect(_on_speech_timer_timeout)
-	speech_timer = speech_timer_node
-
-func _handle_collision_speech(collision: KinematicCollision2D) -> void:
-	var other := collision.get_collider()
-	if other == null:
-		return
-	# Do not speak again while current message is in progress
-	if is_speaking:
-		return
-	if other.has_method("say"):
-		if randi() % 2 == 0:
-			say("Excuse me.", 2.5)
-		else:
-			say("Move, damn it!", 2.5)
-	else:
-		say("Why’s this here?", 2.5)
 
 func _on_idling_state_entered() -> void:
 	state = STATE.IDLE
@@ -776,7 +629,6 @@ func _on_walking_state_physics_processing(_delta: float) -> void:
 		
 		if dist_to_next > 4.0:  # Only update direction if not already at target
 			current_move_direction = snap_to_eight_directions(to_target)
-			# Update animation direction immediately to match movement direction
 			current_animation_direction = current_move_direction
 			# Track tile changes
 			var current_tile := _nav_grid.world_to_tile(global_position)
@@ -877,6 +729,11 @@ func _on_walking_state_physics_processing(_delta: float) -> void:
 	
 	# Calculate desired velocity
 	var desired_velocity := current_move_direction.normalized() * (speed * current_speed_scale)
+	# Update facing from velocity if moving meaningfully (guards against jitter when near-stop)
+	if desired_velocity.length() > 0.1:
+		var proposed_facing := snap_to_eight_directions(desired_velocity)
+		if current_animation_direction == Vector2.ZERO or proposed_facing.dot(current_animation_direction) < 0.995:
+			current_animation_direction = proposed_facing
 	
 	# When flow following, clamp velocity to prevent overshooting the target tile
 	if _is_flow_following and _flow_step_target != Vector2i.ZERO:
@@ -897,7 +754,8 @@ func _on_walking_state_physics_processing(_delta: float) -> void:
 	var collision = move_and_collide(velocity)
 	if collision:
 		_handle_wall_collision(collision)
-		_handle_collision_speech(collision)
+		if crew_speech:
+			crew_speech.say_collision_phrase(collision.get_collider())
 
 	# Oscillation detection: only for non-flow movement (flow movement handles it above)
 	if _is_on_assignment() and not _is_flow_following:
@@ -1015,6 +873,8 @@ func assign_to_furniture_via_flow(furniture: Furniture) -> void:
 	_tile_history.clear()
 	_oscillation_count = 0
 	_oscillation_cooldown = 0.0
+	_cached_room_id_for_tile.clear()
+	_cached_seeds_key = ""
 	
 	# Ensure sane agent settings while following assignment flow
 	navigation_agent.avoidance_enabled = true
@@ -1067,6 +927,13 @@ func _ensure_flow_timer() -> void:
 	add_child(flow_timer_node)
 	flow_timer_node.timeout.connect(_on_flow_timer_timeout)
 	_flow_timer = flow_timer_node
+	_cached_field = null
+	_cached_field_goal = Vector2i.ZERO
+	_cached_field_room_id = -1
+	_cached_field_version = -1
+	_cached_nav_version = -1
+	_cached_furn_version = -1
+	_cached_seeds_key = ""
 
 func _on_flow_timer_timeout() -> void:
 	# If already working, stop processing and ensure flow following is fully stopped
@@ -1101,31 +968,35 @@ func _on_flow_timer_timeout() -> void:
 	if _assignment_target_tile != Vector2i.ZERO:
 		var furniture_room := _get_furniture_room()
 		var seeds: Array[Vector2i] = []
+		var furniture_room_id: int = _get_furniture_room_id()
+		var crew_room_id: int = _cached_room_id_for_tile.get(curr_tile, -999)
+		if crew_room_id == -999:
+			crew_room_id = Room.find_tile_room_id(curr_tile)
+			_cached_room_id_for_tile[curr_tile] = crew_room_id
+		var is_on_door_tile: bool = false
 		if furniture_room:
-			var crew_room_id: int = Room.find_tile_room_id(curr_tile)
-			var furn_room_id: int = _get_furniture_room_id()
-			var is_on_door_tile: bool = furniture_room.data.door_tiles.has(curr_tile)
-			if crew_room_id != furn_room_id and not is_on_door_tile:
+			is_on_door_tile = furniture_room.data.door_tiles.has(curr_tile)
+			if crew_room_id != furniture_room_id and not is_on_door_tile:
 				seeds = _flow_targets.door_tiles(furniture_room)
 				if seeds.is_empty():
 					if ASSIGN_DEBUG:
-						print("[AssignFlow][error] no door seeds for room ", furn_room_id, " crew=", get_instance_id(), " curr=", curr_tile)
+						print("[AssignFlow][error] no door seeds for room ", furniture_room_id, " crew=", get_instance_id(), " curr=", curr_tile)
 					_flow_timer.start()
 					return
-				field = _flow_service.get_field_for_seeds(seeds, null)
+				field = _get_or_build_flow_field(seeds, null)
 			else:
 				seeds = [_assignment_target_tile]
-				field = _flow_service.get_field_for_seeds(seeds, furniture_room)
+				field = _get_or_build_flow_field(seeds, furniture_room)
 			if ASSIGN_DEBUG:
-				print("[AssignFlow][seed] crew=", get_instance_id(), " curr_room=", crew_room_id, " furn_room=", furn_room_id, " on_door=", is_on_door_tile, " seeds=", seeds.size())
+				print("[AssignFlow][seed] crew=", get_instance_id(), " curr_room=", crew_room_id, " furniture_room=", furniture_room_id, " on_door=", is_on_door_tile, " seeds=", seeds.size())
 		else:
 			seeds = [_assignment_target_tile]
-			field = _flow_service.get_field_for_seeds(seeds, null)
+			field = _get_or_build_flow_field(seeds, null)
 			if ASSIGN_DEBUG:
 				print("[AssignFlow][seed] crew=", get_instance_id(), " no room context; seed furniture tile ", _assignment_target_tile)
 		_debug_flow_field = field
 	else:
-		field = _flow_service.get_field_to_tile(_flow_wander_goal)
+		field = _get_or_build_flow_field([_flow_wander_goal], null)
 	
 	if field == null:
 		if ASSIGN_DEBUG:
@@ -1203,11 +1074,9 @@ func _on_flow_timer_timeout() -> void:
 		return
 	
 	var next_world := _nav_grid.tile_center_world(next_tile)
-	_flow_step_target = next_tile
-	navigation_agent.target_position = next_world
-	if ASSIGN_DEBUG and _assignment_target_tile != Vector2i.ZERO:
-		var move_dir := snap_to_eight_directions(next_world - global_position)
-		print("[AssignFlow][move] crew=", get_instance_id(), " curr=", curr_tile, " next=", next_tile, " world=", next_world, " move_dir=", move_dir)
+	if next_tile != _flow_step_target or navigation_agent.target_position != next_world:
+		_flow_step_target = next_tile
+		navigation_agent.target_position = next_world
 	state_manager.send_event(&"walk")
 	_flow_timer.start()
 
@@ -1235,7 +1104,8 @@ func _get_furniture_use_state() -> StringName:
 func _transition_to_work() -> void:
 	"""Helper to transition crew to work state when arriving at assignment"""
 	var current_tile := _nav_grid.world_to_tile(global_position)
-	print("[AssignFlow][transition] Crew ", get_instance_id(), " transitioning to work at tile ", current_tile, " (target was ", _assignment_target_tile, ")")
+	if ASSIGN_DEBUG:
+		print("[AssignFlow][transition] Crew ", get_instance_id(), " transitioning to work at tile ", current_tile, " (target was ", _assignment_target_tile, ")")
 	
 	# Snap to exact target position if known
 	if _assignment_target_tile != Vector2i.ZERO:
@@ -1334,6 +1204,22 @@ func _find_viable_neighbor_toward_goal(curr_tile: Vector2i, goal_tile: Vector2i)
 	
 	return best_tile
 	
+func _get_or_build_flow_field(seeds: Array[Vector2i], room: Room):
+	if seeds.is_empty():
+		return null
+	var goal := seeds[0]
+	var room_id := room.data.id if (room and room.data) else -1
+	var seeds_key := str(goal.x) + ":" + str(goal.y) + ":" + str(room_id)
+	if _cached_field != null and _cached_seeds_key == seeds_key and _cached_field_room_id == room_id and _cached_field_goal == goal:
+		return _cached_field
+	var field := _flow_service.get_field_for_seeds(seeds, room)
+	_cached_field = field
+	_cached_field_goal = goal
+	_cached_field_room_id = room_id
+	_cached_field_version = field.version if field != null else -1
+	_cached_seeds_key = seeds_key
+	return field
+	
 func is_assigned() -> bool:
 	return workplace != null or furniture_workplace != null
 
@@ -1370,8 +1256,9 @@ func _on_resting_finished() -> void:
 	state = STATE.WALK
 	# Force immediate animation update to walking
 	set_current_animation()
-	animation_player.play(current_animation)
-	animation_player.speed_scale = 1.0
+	_update_animation_speed()
+	if crew_animation:
+		crew_animation.play_current_animation()
 	# If we are on assignment (have pending waypoints or furniture target), do not randomise target
 
 ## Collision Detection and Avoidance
