@@ -80,6 +80,9 @@ func say_random_phrase() -> void:
 	var idx = randi() % RANDOM_PHRASES.size()
 	say(RANDOM_PHRASES[idx], 2.0)
 
+func say_unreachable() -> void:
+	say("That's outta reach, see?", 2.5)
+
 func setup_random_speech_timer() -> void:
 	_ensure_speech_timer()
 	if is_instance_valid(speech_timer):

@@ -21,6 +21,11 @@ const STATE = {
 	REST = &"rest"
 }
 
+# Unreachable handling
+const UNREACHABLE_RETRY_LIMIT: int = 3
+const UNREACHABLE_RETRY_WINDOW: float = 6.0
+const UNREACHABLE_RETRY_DELAY: float = 2.0
+
 # Explicit preloads for typed component references
 const CrewMovement = preload("res://entities/crew/components/CrewMovement.gd")
 const CrewAnimation = preload("res://entities/crew/components/CrewAnimation.gd")
@@ -174,6 +179,10 @@ var _cached_furn_version: int = -1
 var _cached_room_id_for_tile: Dictionary = {} # tile -> room_id
 var _cached_seeds_key: String = ""
 const ASSIGN_DEBUG := false  # Set true to enable assignment debug logs
+
+# Unreachable tracking
+var _unreachable_attempts: int = 0
+var _unreachable_window_start: float = 0.0
 
 func _is_on_assignment() -> bool:
 	return assignment == &"work" or furniture_workplace != null or not pending_waypoints.is_empty()
@@ -457,9 +466,6 @@ func _on_timer_timeout() -> void:
 		if crew_vigour.is_resting:
 			crew_animation.pause_animation()
 
-func say(text: String, duration: float = 2.5) -> void:
-	if crew_speech:
-		crew_speech.say(text, duration)
 
 func _setup_assignment_debug_canvas() -> void:
 	if crew_debug:
@@ -844,6 +850,7 @@ func assign_to_furniture_via_flow(furniture: Furniture) -> void:
 	
 	# Store furniture reference
 	furniture_workplace = furniture
+	_reset_unreachable_attempts()
 	
 	# Reserve an exact access tile at the furniture (unique per crew)
 	var flow_targets := FlowTargetsScript.new()
@@ -899,8 +906,33 @@ func unassign_from_furniture() -> void:
 
 func _give_up_on_assignment() -> void:
 	unassign_from_furniture()
-	var line: String = ASSIGNMENT_GIVE_UP_LINES[randi() % ASSIGNMENT_GIVE_UP_LINES.size()]
-	say(line, 2.5)
+	_reset_unreachable_attempts()
+	if crew_speech:
+		crew_speech.say_unreachable()
+
+func _reset_unreachable_attempts() -> void:
+	_unreachable_attempts = 0
+	_unreachable_window_start = 0.0
+
+func _schedule_unreachable_retry() -> void:
+	_ensure_flow_timer()
+	_flow_timer.start(UNREACHABLE_RETRY_DELAY)
+
+func _mark_unreachable_attempt() -> bool:
+	# Returns true if we give up
+	if _assignment_target_tile == Vector2i.ZERO:
+		return false
+	var now: float = Time.get_ticks_msec() / 1000.0
+	if _unreachable_window_start == 0.0 or (now - _unreachable_window_start) > UNREACHABLE_RETRY_WINDOW:
+		_unreachable_window_start = now
+		_unreachable_attempts = 1
+	else:
+		_unreachable_attempts += 1
+	if _unreachable_attempts >= UNREACHABLE_RETRY_LIMIT:
+		_give_up_on_assignment()
+		return true
+	_schedule_unreachable_retry()
+	return false
 
 func go_to_work() -> void:
 	# Avoid retargeting while following a fixed assignment path
@@ -981,6 +1013,8 @@ func _on_flow_timer_timeout() -> void:
 				if seeds.is_empty():
 					if ASSIGN_DEBUG:
 						print("[AssignFlow][error] no door seeds for room ", furniture_room_id, " crew=", get_instance_id(), " curr=", curr_tile)
+					if _mark_unreachable_attempt():
+						return
 					_flow_timer.start()
 					return
 				field = _get_or_build_flow_field(seeds, null)
@@ -1001,6 +1035,9 @@ func _on_flow_timer_timeout() -> void:
 	if field == null:
 		if ASSIGN_DEBUG:
 			print("[AssignFlow][error] no field for crew=", get_instance_id(), " goal=", _flow_wander_goal)
+		if _assignment_target_tile != Vector2i.ZERO:
+			if _mark_unreachable_attempt():
+				return
 		_flow_timer.start()
 		return
 	
@@ -1016,6 +1053,10 @@ func _on_flow_timer_timeout() -> void:
 	# If flow suggests an invalid transition, try a viable downhill neighbor
 	if field != null:
 		var curr_dist: int = field.distance.get(curr_tile, INF)
+		if curr_dist == INF and _assignment_target_tile != Vector2i.ZERO:
+			if _mark_unreachable_attempt():
+				return
+			return
 		var best_tile := next_tile
 		var best_dist := curr_dist
 		var candidates: Array[Vector2i] = [
@@ -1058,6 +1099,8 @@ func _on_flow_timer_timeout() -> void:
 			else:
 				if ASSIGN_DEBUG:
 					print("[AssignFlow][stall] crew=", get_instance_id(), " curr=", curr_tile, " goal=", _assignment_target_tile, " at_door=", _nav_grid.is_door_tile(curr_tile))
+				if _mark_unreachable_attempt():
+					return
 				_flow_timer.start()
 				return
 	
@@ -1070,6 +1113,9 @@ func _on_flow_timer_timeout() -> void:
 		return
 	
 	if next_tile == Vector2i.ZERO:
+		if _assignment_target_tile != Vector2i.ZERO:
+			if _mark_unreachable_attempt():
+				return
 		_flow_timer.start()
 		return
 	
@@ -1077,6 +1123,7 @@ func _on_flow_timer_timeout() -> void:
 	if next_tile != _flow_step_target or navigation_agent.target_position != next_world:
 		_flow_step_target = next_tile
 		navigation_agent.target_position = next_world
+	_reset_unreachable_attempts()
 	state_manager.send_event(&"walk")
 	_flow_timer.start()
 
@@ -1088,6 +1135,7 @@ func _stop_flow_follow() -> void:
 	_tile_history.clear()
 	_oscillation_count = 0
 	_oscillation_cooldown = 0.0
+	_reset_unreachable_attempts()
 	_teardown_assignment_debug_canvas()
 	if is_instance_valid(_flow_timer):
 		_flow_timer.stop()
@@ -1119,6 +1167,7 @@ func _transition_to_work() -> void:
 	velocity = Vector2.ZERO
 	current_move_direction = Vector2.ZERO
 	_stop_flow_follow()
+	_reset_unreachable_attempts()
 	
 	# Ensure navigation agent is also stopped
 	navigation_agent.target_position = global_position

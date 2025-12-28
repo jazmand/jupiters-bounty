@@ -52,7 +52,8 @@ func process_resting(delta: float, current_animation_direction: Vector2, current
 	# Handle repeated zzz sounds
 	zzz_timer += delta
 	if zzz_timer >= ZZZ_INTERVAL:
-		crew_member.say("*zzz*", 1.5)
+		if crew_member and crew_member.crew_speech:
+			crew_member.crew_speech.say("*zzz*", 1.5)
 		zzz_timer = 0.0
 	
 	# Recover vigour
@@ -87,7 +88,8 @@ func _start_resting(current_animation_direction: Vector2, current_move_direction
 		resting_direction = Vector2(0, 1)  # Default to facing down
 	
 	# Use bridge method to call CrewMember's speech (safer migration)
-	crew_member.say("*zzz*", 1.5)
+	if crew_member and crew_member.crew_speech:
+		crew_member.crew_speech.say("*zzz*", 1.5)
 	zzz_timer = 0.0
 	resting_started.emit()
 
