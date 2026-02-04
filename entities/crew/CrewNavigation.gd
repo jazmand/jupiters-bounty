@@ -215,8 +215,10 @@ static func process_walking_state(crew, _delta: float) -> void:
 		var dist_to_next: float = to_target.length()
 		if dist_to_next > 4.0:
 			crew.current_move_direction = snap_to_eight_directions(to_target)
-			crew.current_animation_direction = crew.current_move_direction
 			var current_tile: Vector2i = crew._nav_grid.world_to_tile(crew.global_position)
+			# Update facing only when entering a new tile so it doesn't wobble diagonal↔cardinal within a tile
+			if crew.current_animation_direction == Vector2.ZERO or crew._last_tile != current_tile:
+				crew.current_animation_direction = crew.current_move_direction
 			if crew._last_tile != current_tile:
 				crew._last_tile = current_tile
 				crew._oscillation_count = 0
@@ -281,7 +283,8 @@ static func process_walking_state(crew, _delta: float) -> void:
 	var fatigue_scale = crew.crew_vigour.get_fatigue_scale()
 	var current_speed_scale: float = crew.speed_multiplier * fatigue_scale
 	var desired_velocity: Vector2 = crew.current_move_direction.normalized() * (crew.speed * current_speed_scale)
-	if desired_velocity.length() > 0.1:
+	# Skip velocity-based facing while flow-following so avoidance doesn't overwrite flow-facing (avoids diagonal jitter)
+	if desired_velocity.length() > 0.1 and not crew._is_flow_following:
 		var proposed_facing := snap_to_eight_directions(desired_velocity)
 		if crew.current_animation_direction == Vector2.ZERO or proposed_facing.dot(crew.current_animation_direction) < 0.995:
 			crew.current_animation_direction = proposed_facing
@@ -602,8 +605,18 @@ static func _get_or_build_flow_field(crew, seeds: Array[Vector2i], room: Room) -
 	var goal := seeds[0]
 	var room_id := room.data.id if (room and room.data) else -1
 	var seeds_key := str(goal.x) + ":" + str(goal.y) + ":" + str(room_id)
+	
+	# Check if we have a cached field that matches the seeds and room
 	if crew._cached_field != null and crew._cached_seeds_key == seeds_key and crew._cached_field_room_id == room_id and crew._cached_field_goal == goal:
-		return crew._cached_field
+		# Verify the cached field version matches current service version
+		var current_version: int = crew._flow_service.get_current_version()
+		if crew._cached_field_version == current_version and crew._cached_field.version == current_version:
+			return crew._cached_field
+		# Version mismatch - clear cache
+		crew._cached_field = null
+		crew._cached_field_version = -1
+		crew._cached_seeds_key = ""
+	
 	var field: FlowFieldService.FlowField = crew._flow_service.get_field_for_seeds(seeds, room)
 	crew._cached_field = field
 	crew._cached_field_goal = goal
