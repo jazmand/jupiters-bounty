@@ -44,17 +44,21 @@ func _ready() -> void:
 	
 	# Set proper z-index to appear above crew (crew uses tile_y + 25)
 	_update_z_index()
+	
+	# Set z_as_relative to false for absolute z-index sorting
+	z_as_relative = false
 
 func _update_z_index() -> void:
-	# Convert world position to tile coordinates for proper depth sorting
-	var tile_map = get_tree().get_first_node_in_group("navigation")
-	if tile_map and tile_map is TileMap:
-		var tile_pos = tile_map.local_to_map(tile_map.to_local(global_position))
-		# Pump should appear above crew (crew uses tile_y + 25), so use higher offset
-		z_index = tile_pos.y + 35  # Higher than crew's +25
-	else:
-		# Fallback: use Y position directly
-		z_index = int(global_position.y / 64) + 35
+	"""Update z-index based on bottom position of the Pump for proper depth sorting"""
+	# For tall objects like the Pump, use the bottom Y position for z-index calculation
+	# The Pump has a height of 600 units, with collision shape at (0, 100)
+	# Bottom of the Pump is approximately at position.y + 400 (half height + offset)
+	const PUMP_HEIGHT_OFFSET: float = 400.0  # Approximate bottom of the visual Pump
+	var bottom_y: float = global_position.y + PUMP_HEIGHT_OFFSET
+	
+	# Use same calculation method as crew: int(y / 64) + offset
+	# Pump should appear above crew (crew uses +25), so use higher offset
+	z_index = int(bottom_y / 64) + 35
 
 func _set_initial_tile_position() -> void:
 	# Convert current world position to tile coordinates
@@ -123,3 +127,7 @@ func get_occupied_tiles() -> Array[Vector2i]:
 
 func is_tile_occupied(tile: Vector2i) -> bool:
 	return tile in position_tiles
+
+func _physics_process(_delta: float) -> void:
+	"""Continuously update z-index for proper depth sorting as crew moves around"""
+	_update_z_index()
