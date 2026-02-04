@@ -29,6 +29,10 @@ func mark_furniture_dirty() -> void:
 	_cache.clear()
 	cache_invalidated.emit()
 
+func get_current_version() -> int:
+	"""Get the current combined version (nav_version ^ furniture_version)"""
+	return _nav_version ^ _furniture_version
+
 func get_field_to_tile(goal_tile: Vector2i, radius: int = -1, room: Room = null) -> FlowField:
 	var cache_key := _make_key([goal_tile], room, radius)
 	if _cache.has(cache_key):

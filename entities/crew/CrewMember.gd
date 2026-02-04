@@ -228,8 +228,12 @@ func _ready() -> void:
 	# Use shared flow service if available
 	if Global and Global.flow_service:
 		_flow_service = Global.flow_service
+		# Connect to cache invalidation signal to detect when walls are built
+		_flow_service.cache_invalidated.connect(_on_flow_cache_invalidated)
 	else:
 		_flow_service = FlowFieldServiceScript.new()
+		if _flow_service:
+			_flow_service.cache_invalidated.connect(_on_flow_cache_invalidated)
 	
 func actor_setup():
 	await get_tree().physics_frame
@@ -509,6 +513,29 @@ func _ensure_flow_timer() -> void:
 
 func _on_flow_timer_timeout() -> void:
 	CrewNavigation.on_flow_timer_timeout(self)
+
+func _on_flow_cache_invalidated() -> void:
+	"""Handle flow field cache invalidation (e.g., when walls are built)"""
+	# Clear cached flow field data
+	_cached_field = null
+	_cached_field_version = -1
+	_cached_seeds_key = ""
+	_cached_nav_version = -1
+	_cached_furn_version = -1
+	_cached_room_id_for_tile.clear()
+	
+	# If freely roaming (not on assignment), clear wander goal and pick new beacon
+	if not _is_on_assignment() and _flow_wander_goal != Vector2i.ZERO:
+		if Global and Global.wander_beacons:
+			Global.wander_beacons.release_beacon(_flow_wander_goal)
+		_flow_wander_goal = Vector2i.ZERO
+		_flow_step_target = Vector2i.ZERO
+	
+	# Force immediate flow field recalculation if flow following
+	if _is_flow_following and is_instance_valid(_flow_timer):
+		_flow_timer.stop()
+		_on_flow_timer_timeout()
+		_flow_timer.start()
 
 func _stop_flow_follow() -> void:
 	CrewNavigation._stop_flow_follow(self)
