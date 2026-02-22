@@ -11,9 +11,19 @@ signal fatigue_level_changed(is_fatigued: bool)
 # Vigour constants
 const MAX_VIGOUR: int = 10
 const VIGOUR_LOW_THRESHOLD: int = 2
-const WALK_VIGOUR_TICK_S: float = 2.0  # Time to lose 1 vigour while walking
+## Real seconds of walking to lose 1 vigour point. Tuned so full→empty over ~one in-game day (10h) at default time scale.
+@export var walk_vigour_tick_s: float = 180.0
 const REST_VIGOUR_TICK_S: float = 0.4  # Time to gain 1 vigour while resting
 const ZZZ_INTERVAL: float = 3.0  # Interval between zzz sounds
+
+## At night: multiplier applied to walk depletion (e.g. 1.5 = lose vigour faster). Day uses 1.0.
+@export var night_walk_depletion_multiplier: float = 1.5
+## When working: multiplier applied to depletion (e.g. 1.5 = lose vigour faster while working).
+@export var work_depletion_multiplier: float = 1.5
+## Personality: industrious crew deplete vigour slower (e.g. 0.9 = 10% slower depletion).
+@export var industrious_depletion_multiplier: float = 0.9
+## At night: multiplier applied to rest recovery (e.g. 0.8 = recover vigour slower). Day uses 1.0.
+@export var night_rest_recovery_multiplier: float = 0.8
 
 # Current state
 var current_vigour: int = MAX_VIGOUR
@@ -22,6 +32,7 @@ var resting_direction: Vector2 = Vector2.ZERO
 
 # Internal timers
 var vigour_walk_accum: float = 0.0
+var vigour_work_accum: float = 0.0
 var vigour_rest_accum: float = 0.0
 var zzz_timer: float = 0.0
 
@@ -38,10 +49,19 @@ func initialize(starting_vigour: int = MAX_VIGOUR) -> void:
 func process_walking(delta: float) -> void:
 	if is_resting:
 		return
-		
-	vigour_walk_accum += delta
-	if vigour_walk_accum >= WALK_VIGOUR_TICK_S:
+	var multiplier: float = _get_walk_depletion_multiplier()
+	vigour_walk_accum += delta * multiplier
+	if vigour_walk_accum >= walk_vigour_tick_s:
 		vigour_walk_accum = 0.0
+		_decrease_vigour(1)
+
+func process_working(delta: float) -> void:
+	if is_resting:
+		return
+	var multiplier: float = _get_work_depletion_multiplier()
+	vigour_work_accum += delta * multiplier
+	if vigour_work_accum >= walk_vigour_tick_s:
+		vigour_work_accum = 0.0
 		_decrease_vigour(1)
 
 func process_resting(delta: float, current_animation_direction: Vector2, current_move_direction: Vector2) -> void:
@@ -57,7 +77,8 @@ func process_resting(delta: float, current_animation_direction: Vector2, current
 		zzz_timer = 0.0
 	
 	# Recover vigour
-	vigour_rest_accum += delta
+	var recovery_multiplier: float = _get_rest_recovery_multiplier()
+	vigour_rest_accum += delta * recovery_multiplier
 	if vigour_rest_accum >= REST_VIGOUR_TICK_S:
 		vigour_rest_accum = 0.0
 		_increase_vigour(1)
@@ -125,3 +146,32 @@ func get_vigour() -> int:
 
 func get_resting_direction() -> Vector2:
 	return resting_direction
+
+func _get_walk_depletion_multiplier() -> float:
+	var base: float = 1.0
+	if GameTime.is_night():
+		base = night_walk_depletion_multiplier
+	var personality: float = _get_personality_depletion_multiplier()
+	return base * personality
+
+func _get_work_depletion_multiplier() -> float:
+	var base: float = work_depletion_multiplier
+	if GameTime.is_night():
+		base *= night_walk_depletion_multiplier
+	var personality: float = _get_personality_depletion_multiplier()
+	return base * personality
+
+func _get_personality_depletion_multiplier() -> float:
+	if crew_member == null:
+		return 1.0
+	var data = crew_member.get("data")
+	if data == null:
+		return 1.0
+	if data.get("is_industrious"):
+		return industrious_depletion_multiplier
+	return 1.0
+
+func _get_rest_recovery_multiplier() -> float:
+	if GameTime.is_night():
+		return night_rest_recovery_multiplier
+	return 1.0

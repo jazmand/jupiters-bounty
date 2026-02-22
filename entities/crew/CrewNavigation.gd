@@ -145,11 +145,25 @@ static func process_walking_state(crew, _delta: float) -> void:
 		crew.current_animation_direction = Vector2.ZERO
 		return
 	if crew.crew_vigour.should_rest() or crew.crew_vigour.is_resting:
-		crew.crew_vigour.process_resting(_delta, crew.current_animation_direction, crew.current_move_direction)
-		crew.velocity = Vector2.ZERO
-		crew.current_move_direction = Vector2.ZERO
-		crew.current_animation_direction = crew.crew_vigour.get_resting_direction()
-		return
+		# Path to bed only when crew has an assigned bed (task 5.3: no bed → rest in place, never stuck)
+		if crew.assigned_bed != null and is_instance_valid(crew.assigned_bed):
+			if not (crew._flow_furniture == crew.assigned_bed and crew._is_flow_following):
+				path_to_bed_via_flow(crew)
+		if crew.crew_vigour.is_resting:
+			crew.crew_vigour.process_resting(_delta, crew.current_animation_direction, crew.current_move_direction)
+			crew.velocity = Vector2.ZERO
+			crew.current_move_direction = Vector2.ZERO
+			crew.current_animation_direction = crew.crew_vigour.get_resting_direction()
+			return
+		if crew._flow_furniture == crew.assigned_bed and crew._is_flow_following:
+			pass  # Pathing to bed; fall through to flow movement
+		else:
+			# No assigned bed or not pathing to it: rest in place (task 5.3 fallback)
+			crew.crew_vigour.process_resting(_delta, crew.current_animation_direction, crew.current_move_direction)
+			crew.velocity = Vector2.ZERO
+			crew.current_move_direction = Vector2.ZERO
+			crew.current_animation_direction = crew.crew_vigour.get_resting_direction()
+			return
 	if not crew._is_flow_following:
 		var reached_leg := false
 		if crew._is_on_assignment() and crew.assignment_path.size() > 0:
@@ -350,6 +364,42 @@ static func assign_to_furniture_via_flow(crew, furniture) -> void:
 			print("[AssignFlow] crew=", crew.get_instance_id(), " reserved=", crew._assignment_target_tile, " furniture=", furniture.name, " room_id=", rid)
 		if crew.debug_assignment_flow:
 			crew._setup_assignment_debug_canvas()
+	crew._is_flow_following = true
+	crew._flow_furniture = furniture
+	crew._flow_step_target = Vector2i.ZERO
+	crew._last_tile = Vector2i.ZERO
+	crew._flow_wander_goal = crew._assignment_target_tile
+	crew._tile_history.clear()
+	crew._oscillation_count = 0
+	crew._oscillation_cooldown = 0.0
+	crew._cached_room_id_for_tile.clear()
+	crew._cached_seeds_key = ""
+	crew.navigation_agent.avoidance_enabled = true
+	crew.navigation_agent.path_postprocessing = 1
+	_ensure_flow_timer(crew)
+	on_flow_timer_timeout(crew)
+	crew._flow_timer.start()
+	crew.state_manager.send_event(&"walk")
+
+
+static func path_to_bed_via_flow(crew) -> void:
+	"""Start flow pathing to crew's assigned bed when tired. Uses same flow fields, movement and obstacle rules as work (task 5.4); does not set furniture_workplace."""
+	if crew.assigned_bed == null or not is_instance_valid(crew.assigned_bed):
+		return
+	if not crew.crew_vigour.should_rest():
+		return
+	if crew._flow_furniture == crew.assigned_bed and crew._is_flow_following:
+		return
+	var furniture: Furniture = crew.assigned_bed
+	crew._reset_unreachable_attempts()
+	var flow_targets: FlowTargets = crew.FlowTargetsScript.new()
+	var candidates: Array[Vector2i] = flow_targets.furniture_access_tiles(furniture)
+	var reserved: Vector2i = furniture.reserve_access_tile_for_crew(crew, candidates)
+	crew._assignment_target_tile = reserved if reserved != Vector2i.ZERO else Vector2i.ZERO
+	if crew._assignment_target_tile != Vector2i.ZERO:
+		crew._flow_wander_goal = crew._assignment_target_tile
+		if crew.ASSIGN_DEBUG:
+			print("[AssignFlow][bed] crew=", crew.get_instance_id(), " reserved=", crew._assignment_target_tile, " bed=", furniture.name)
 	crew._is_flow_following = true
 	crew._flow_furniture = furniture
 	crew._flow_step_target = Vector2i.ZERO

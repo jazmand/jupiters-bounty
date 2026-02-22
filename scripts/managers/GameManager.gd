@@ -404,14 +404,16 @@ func show_furniture_info_panel_no_assignment(furniture: Furniture) -> void:
 
 
 func _assign_crew_to_furniture(furniture: Furniture, crew_member: CrewMember) -> bool:
-	# Assign a crew member to furniture and handle the movement via flow fields
 	var success = furniture.assign_crew(crew_member)
-	if success:
-		crew_member.assign_to_furniture_via_flow(furniture)
-		return true
-	else:
-		# TODO: Show error to users via UI
+	if not success:
 		return false
+	# Bed assignment: store as assigned_bed only; pathing to bed happens when tired (task 5.1)
+	if furniture.is_rest_furniture():
+		crew_member.assigned_bed = furniture
+		return true
+	# Work assignment: path to furniture via flow fields
+	crew_member.assign_to_furniture_via_flow(furniture)
+	return true
 
 # --- Assignment helpers ---
 
@@ -483,7 +485,7 @@ func _on_furniture_crew_unassigned(furniture: Furniture, crew_member: Node) -> v
 	var success = furniture.unassign_crew(crew_member)
 	if success:
 		if crew_member.has_method("unassign_from_furniture"):
-			crew_member.unassign_from_furniture()
+			crew_member.unassign_from_furniture(furniture)
 	else:
 		# TODO: Show error to users via UI
 		pass

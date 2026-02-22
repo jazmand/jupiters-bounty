@@ -128,6 +128,7 @@ var is_speaking: bool = false # legacy; handled by CrewSpeech
 
 var workplace: Room
 var furniture_workplace: Furniture  # Store reference to assigned furniture
+var assigned_bed: Furniture = null  # Optional bed for rest; pathing and rest logic target this when tired
 var work_location: Vector2i
 
 # Waypoint-based movement for multi-step navigation (e.g., via doors)
@@ -421,11 +422,18 @@ func _on_working_state_physics_processing(_delta: float) -> void:
 	if _is_flow_following:
 		_stop_flow_follow()
 	
-	# If assigned to furniture, stay in place at the beacon
+	# If assigned to furniture, stay in place at the beacon and deplete vigour while working
 	if furniture_workplace != null:
-		# Ensure crew stays stationary at furniture
+		crew_vigour.process_working(_delta)
 		current_animation_direction = Vector2.ZERO  # Preserve animation direction
 		navigation_agent.target_position = global_position
+		return
+	
+	# Resting at assigned bed: recover vigour at this location (task 5.2)
+	if assignment == &"rest" or state == STATE.REST:
+		current_animation_direction = crew_vigour.get_resting_direction()
+		navigation_agent.target_position = global_position
+		crew_vigour.process_resting(_delta, current_animation_direction, current_move_direction)
 		return
 	
 	# If not assigned to furniture, can do room work (future implementation)
@@ -453,7 +461,13 @@ func assign(room: Room, center: Vector2) -> void:
 func assign_to_furniture_via_flow(furniture: Furniture) -> void:
 	CrewNavigation.assign_to_furniture_via_flow(self, furniture)
 
-func unassign_from_furniture() -> void:
+func unassign_from_furniture(from_furniture: Furniture = null) -> void:
+	if from_furniture == null:
+		from_furniture = furniture_workplace
+	if from_furniture == assigned_bed:
+		assigned_bed = null
+	if from_furniture != furniture_workplace:
+		return
 	var prev_furniture := furniture_workplace
 	furniture_workplace = null
 	state_manager.send_event(&"unassigned")
@@ -635,6 +649,14 @@ func _on_resting_started() -> void:
 	state_transitioned.emit(STATE.REST)
 
 func _on_resting_finished() -> void:
+	# If we were resting at assigned bed (Working state), leave assignment and release bed tile (task 5.2)
+	if assignment == &"rest":
+		if assigned_bed != null and is_instance_valid(assigned_bed) and assigned_bed.has_method("release_access_tile_for_crew"):
+			assigned_bed.release_access_tile_for_crew(self)
+		assignment = &""
+		state_manager.set_expression_property(&"assignment", assignment)
+		_assignment_target_tile = Vector2i.ZERO
+		state_manager.send_event(&"idle")
 	state = STATE.WALK
 	# Force immediate animation update to walking
 	set_current_animation()
