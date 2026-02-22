@@ -18,3 +18,8 @@ mono_crash.*.json
 *.tmp
 
 variable-names.mdc
+
+# Kiro
+.cursor/commands/kiro/
+.kiro/
+AGENTS.md
