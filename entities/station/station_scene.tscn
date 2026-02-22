@@ -15,7 +15,7 @@
 [ext_resource type="Texture2D" uid="uid://dw0d3bcfauhf2" path="res://assets/tilesets/crew_quarters.png" id="13_a377u"]
 [ext_resource type="Texture2D" uid="uid://b011v7odriiqs" path="res://assets/tilesets/generator_room.png" id="14_hyxq5"]
 [ext_resource type="Texture2D" uid="uid://k3hf5argnn4k" path="res://assets/tilesets/storage_bay.png" id="15_7x8jn"]
-[ext_resource type="Texture2D" uid="uid://qt1ul65p36gd" path="res://assets/tilesets/mock_furniture_tileset.png" id="16_ulmio"]
+[ext_resource type="Texture2D" uid="uid://dyjlm6qqogqbm" path="res://assets/tilesets/mock_items_tileset.png" id="16_ulmio"]
 [ext_resource type="Script" path="res://entities/station/Camera2D.gd" id="17_22vys"]
 [ext_resource type="Texture2D" uid="uid://dxw6sc2jiis0i" path="res://assets/tilesets/bed_tileset.png" id="17_83wa7"]
 [ext_resource type="Script" path="res://scripts/managers/BuildingManager.gd" id="18_pwhfs"]

@@ -114,6 +114,9 @@ func load_furniture_types() -> void:
 					furniture_type_instance.collision_height = furniture_type_resource.collision_height
 					furniture_type_instance.sprite_offset = furniture_type_resource.sprite_offset
 					furniture_type_instance.sprite_offset_rotated = furniture_type_resource.sprite_offset_rotated
+					# Rest/work distinction: copy use_state so placed furniture (e.g. beds) is rest/sleep not work
+					furniture_type_instance.use_state = furniture_type_resource.use_state
+					furniture_type_instance.useState = furniture_type_resource.useState
 					
 					furniture_types.append(furniture_type_instance)
 					# Track modification time for hot-reload
@@ -166,9 +169,12 @@ func get_furniture_type_by_id(id: int) -> FurnitureType:
 
 func get_valid_furniture_for_room(room_type: RoomType) -> Array[FurnitureType]:
 	var valid_furniture: Array[FurnitureType] = []
+	var room_id := int(room_type.id)
 	for furniture in furniture_types:
-		if room_type.id in furniture.valid_room_types:
-			valid_furniture.append(furniture)
+		for valid_id in furniture.valid_room_types:
+			if int(valid_id) == room_id:
+				valid_furniture.append(furniture)
+				break
 	return valid_furniture
 
 ## Resource validation

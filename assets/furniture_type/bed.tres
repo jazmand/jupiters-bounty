@@ -24,3 +24,4 @@ access_rule = 3
 access_required_sides = Array[String](["east", "west"])
 access_required_count = 1
 access_required_sides_rotated = Array[String](["north", "south"])
+use_state = &"rest/sleep"

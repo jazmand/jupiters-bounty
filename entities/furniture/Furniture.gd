@@ -268,7 +268,7 @@ func _get_furniture_texture_path() -> String:
 			return "res://assets/tilesets/mock_items_tileset.png"
 		_:
 			# Fallback to generic furniture texture
-			return "res://assets/tilesets/mock_furniture_tileset.png"
+			return "res://assets/tilesets/mock_items_tileset.png"
 
 func _on_area_input_event(viewport, event, shape_idx):
 	# Don't handle input for preview furniture
@@ -334,6 +334,9 @@ func deselect() -> void:
 	_update_visual_state()
 
 # Crew Assignment Functions
+
+func is_rest_furniture() -> bool:
+	return furniture_type != null and furniture_type.get_use_state() == &"rest/sleep"
 
 func can_assign_crew() -> bool:
 	return assigned_crew.size() < max_crew_capacity
